@@ -1,0 +1,187 @@
+{
+  "lang": "nl",
+  "label": "Nederlands",
+  "meta": {
+    "title": "mise · App voor maaltijdplanning | Wekelijkse maaltijdplannen, recepten en maaltijdvoorbereiding",
+    "description": "mise is een app voor het plannen van maaltijden, recepten, het voorbereiden van maaltijden en het klaarmaken van eten. Stel een persoonlijk maaltijdplan samen, doe inspiratie op voor recepten en maak één slimme boodschappenlijst voor de supermarkt."
+  },
+  "regional": {
+    "marqueeStores": [
+      "Albert Heijn",
+      "Jumbo",
+      "Lidl",
+      "Aldi",
+      "PLUS",
+      "Dirk",
+      "SPAR",
+      "Dekamarkt",
+      "Picnic"
+    ],
+    "statSaving": "€25+",
+    "heroTrust": "Geliefd bij drukke thuiskoks in Nederland & daarbuiten",
+    "step1Shops": "Albert Heijn, Jumbo, Lidl en tientallen anderen",
+    "faqStores": "Albert Heijn, Jumbo, Lidl, Aldi, PLUS, Dirk",
+    "chipBudgetEmoji": "💶"
+  },
+  "nav": {
+    "how": "Hoe het werkt",
+    "features": "Kenmerken",
+    "vibes": "Sfeer",
+    "reviews": "Recensies",
+    "faq": "Veelgestelde vragen",
+    "getApp": "Download de app",
+    "toggleMenu": "Menu openen/sluiten"
+  },
+  "hero": {
+    "eyebrow": "🥗 Welkom bij mise",
+    "titleLead": "Eet lekker,",
+    "titleAccent": "Maak je niet zo druk.",
+    "sub": "mise is een maaltijdplanner voor het wekelijks plannen en voorbereiden van maaltijden. Stel je avondmaaltijden samen op basis van je budget, waar je zin in hebt en wat je al in huis hebt. Stel in ongeveer vijf minuten je weekmenu en één slimme boodschappenlijst samen.",
+    "chipList": "Eén boodschappenlijstje",
+    "chipBudget": "Binnen het budget",
+    "appStoreSmall": "Download op de",
+    "appStoreBig": "App Store",
+    "playStoreSmall": "Ga ervoor!",
+    "playStoreBig": "Google Play"
+  },
+  "marquee": {
+    "heading": "Opgebouwd rond de supermarkten waar je al boodschappen doet"
+  },
+  "stats": {
+    "timeNum": "5 minuten",
+    "timeLabel": "naar een plan voor een hele week",
+    "dinnersNum": "Maximaal 7",
+    "dinnersLabel": "elke week etentjes",
+    "listNum": "1",
+    "listLabel": "slimme boodschappenlijst",
+    "savingLabel": "gemiddelde wekelijkse besparing*"
+  },
+  "how": {
+    "eyebrow": "Hoe het werkt",
+    "title": "Het avondeten is binnen enkele seconden geregeld",
+    "sub": "Geen spreadsheets, geen receptenblogs waar je doorheen moet scrollen. Vertel me gewoon even iets over jezelf, dan regelt het de planning.",
+    "step1Title": "Kies je winkel",
+    "step1Body": "Albert Heijn, Jumbo, Lidl en tientallen anderen. De prijzen en lijsten zijn afgestemd op de winkels waar je daadwerkelijk winkelt.",
+    "step2Title": "Stel je voorkeuren in",
+    "step2Body": "Budget, voedingsbehoeften, allergieën, keukenuitrusting en de sfeer die je bij het eten zoekt.",
+    "step3Title": "Stel je plan op",
+    "step3Body": "Tot zeven avondmaaltijden voor de week, met duidelijke recepten en slim gebruik van dezelfde ingrediënten.",
+    "step4Title": "Eén keer winkelen",
+    "step4Body": "Eén overzichtelijke lijst, ingedeeld naar hoe je boodschappen doet, zodat er niets dubbel op staat of vergeten wordt."
+  },
+  "showcaseA": {
+    "eyebrow": "Gepersonaliseerd",
+    "title": "Een plan dat helemaal op jou is afgestemd, geen standaard sjabloon",
+    "body": "mise houdt rekening met je budget, de mensen voor wie je kookt, je voedingsbehoeften en de sfeer waar je deze week zin in hebt. Elk plan is helemaal op jou afgestemd.",
+    "tick1": "Prijsbewuste maaltijden die binnen je wekelijkse budget passen",
+    "tick2": "Geschikt voor vegetariërs, veganisten, pescatarianen, mensen met een glutenvrij dieet en meer, en veilig voor mensen met allergieën",
+    "tick3": "Kookapparaten voor in je keuken, van de heteluchtfriteuse tot modellen die alleen op de kookplaat werken en de slowcooker",
+    "tick4": "Vind je een maaltijd niet lekker? Ruil hem dan met één tik"
+  },
+  "showcaseB": {
+    "eyebrow": "Recepten die worden bereid",
+    "title": "Gewoon eten, duidelijke stappen, geen gekke capriolen van de chef",
+    "body": "Elk recept is bedacht voor een gewone doordeweekse avond, met praktische ingrediënten, realistische bereidingstijden en stappen die iedereen kan volgen.",
+    "tick1": "Realistische bereidings- en kooktijden die van tevoren duidelijk zijn",
+    "tick2": "Ingrediënten worden de hele week door hergebruikt om afval te verminderen",
+    "tick3": "Ontdek gerechten per keuken als je eens iets anders wilt proberen",
+    "tick4": "Aanpasbaar aan de grootte van uw huishouden"
+  },
+  "features": {
+    "eyebrow": "Kenmerken",
+    "title": "Alles wat je nodig hebt om deze week gezond te eten",
+    "sub": "Het strategische brein achter een maaltijdboxdienst, maar dan zonder de minuscule porties en de hoge rekening.",
+    "f1Title": "Wekelijkse maaltijdplannen",
+    "f1Body": "Elke week krijg je tot zeven dinerideeën aangeboden, klaar om te bereiden en eenvoudig aan te passen.",
+    "f2Title": "Eén slimme lijst",
+    "f2Body": "Al je ingrediënten zijn samengevoegd in één lijst, gegroepeerd per supermarkt.",
+    "f3Title": "Prijsbewust",
+    "f3Body": "Stel je wekelijkse budget vast en stel maaltijdplannen op waarmee je binnen dat budget blijft.",
+    "f4Title": "Filters voor voeding en allergieën",
+    "f4Body": "Vegetarisch, veganistisch, pescatarisch, glutenvrij en allergenevrije opties zijn standaard inbegrepen.",
+    "f5Title": "Omwisselen en opnieuw genereren",
+    "f5Body": "Geen zin in een maaltijd? Ruil 'm dan om, of stel de hele week in één tik opnieuw samen.",
+    "f6Title": "Kookspullen voor je keuken",
+    "f6Body": "Vertel me eens hoe je je apparatuur en recepten aanpast, van een heteluchtfriteuse tot alleen een kookplaat en nog veel meer.",
+    "f7Title": "Ontdek per keuken",
+    "f7Body": "Ontdek een wereld aan recepten en voeg je favorieten direct toe aan je plan.",
+    "f8Title": "Minder voedselverspilling",
+    "f8Body": "Ingrediënten worden waar mogelijk in verschillende maaltijden hergebruikt, zodat er minder in de vuilnisbak belandt.",
+    "f9Title": "Geschikt voor huishoudens",
+    "f9Body": "Houd rekening met het aantal mensen dat je te eten geeft en verdeel de taken met je gezin."
+  },
+  "vibesSection": {
+    "eyebrow": "Sfeer bij de maaltijd",
+    "title": "Vertel me wat voor sfeer je wilt, dan zorg ik voor de maaltijden",
+    "sub": "Kies een paar sferen uit en je plan sluit precies aan bij waar je deze week zin in hebt.",
+    "quickEasy": "Snelle maaltijden",
+    "lowCalorie": "Caloriearm",
+    "familyFavourites": "Familiefavorieten",
+    "healthyComfort": "Gezond comfort",
+    "fakeaway": "Fakeaway",
+    "gutFriendly": "Darmvriendelijk",
+    "highProtein": "Boordevol eiwitten",
+    "britishClassics": "Britse basisproducten"
+  },
+  "gallery": {
+    "eyebrow": "Neem eens een kijkje",
+    "title": "Prachtig eenvoudig, van begin tot eind",
+    "sub": "Blader door de app."
+  },
+  "reviewsSection": {
+    "eyebrow": "★★★★★ Geliefd bij thuiskoks",
+    "title": "Echte doordeweekse avonden, geregeld",
+    "sub": "Een paar woorden van mensen die mij hun week laten plannen.",
+    "r1Title": "Oké, heeft dit echt geholpen??",
+    "r1Body": "Ik had niet gedacht dat ik nog een app nodig had, maar ik geef zeker minder uit aan boodschappen. Geen idee, misschien €25–30? Mijn vrouw stuurt me nu het boodschappenlijstje, zodat ik niet zomaar door de Albert Heijn loop en dingen toevoeg.",
+    "r1User": "aldishopper_tx",
+    "r2Title": "Gewoon eten, geen chef-kokgerechten",
+    "r2Body": "Na het werk is alles te doen, en dat is eigenlijk mijn enige eis, haha. Geen rare ingrediënten waar mijn kinderen hun vingers niet aan willen zetten.",
+    "r2User": "mike.r1987",
+    "r3Title": "de lijst is het leukste deel",
+    "r3Body": "Albert Heijn kiezen, het plan ophalen, de boodschappenlijst naar mijn man sms'en. Vroeger kochten we elke week twee keer dezelfde spullen.",
+    "r3User": "k.martinez88",
+    "r4Title": "Hellofresh geannuleerd",
+    "r4Body": "Hetzelfde algemene concept, maar dan zonder die minuscule porties en die waanzinnige rekening. Het doet precies wat ik ervan verwacht.",
+    "r4User": "tiredoftakeout",
+    "r5Title": "mijn man kookt nu op de een of andere manier",
+    "r5Body": "De stappen zijn zo duidelijk dat hij niet meer automatisch zo’n twee keer per week op DoorDash terugvalt. Dat had ik niet zien aankomen.",
+    "r5User": "jen_mpls",
+    "r6Title": "snel genoeg na het werk",
+    "r6Body": "Het meeste duurt zo’n 30 minuten. Dat is letterlijk de reden waarom ik ervoor bleef betalen – niets bijzonders.",
+    "r6User": "weeknightdad92"
+  },
+  "faqSection": {
+    "eyebrow": "Veelgestelde vragen",
+    "title": "Goed om te weten",
+    "q1": "Welke supermarkten ondersteunt mise?",
+    "a1": "De app is opgezet rond grote supermarktketens, waaronder Albert Heijn, Jumbo, Lidl, Aldi, PLUS, Dirk en nog veel meer, en biedt ondersteuning voor winkels in verschillende landen. Je abonnement en boodschappenlijstje worden afgestemd op de winkel die je kiest.",
+    "q2": "Wordt er rekening gehouden met dieetwensen en allergieën?",
+    "a2": "Ja. Stel je voorkeuren in, zoals vegetarisch, veganistisch, pescatarisch of glutenvrij, en geef aan welke allergenen je wilt vermijden. Controleer altijd de ingrediëntenlijsten voordat je gaat koken. mise kan de veiligheid met betrekking tot allergenen niet garanderen.",
+    "q3": "Hoeveel kost een mise?",
+    "a3": "mise is een abonnement. Je kunt de app verkennen en ontdekken hoe deze werkt; de volledige planningsfuncties worden ontgrendeld via een abonnement dat je via de App Store of Google Play kunt beheren. Je kunt het abonnement op elk moment opzeggen via je account in de app store.",
+    "q4": "Moet ik elke maaltijd uit mijn schema zelf bereiden?",
+    "a4": "Helemaal niet. Plan zoveel of zo weinig overnachtingen als je wilt, tot maximaal zeven. Vervang elke maaltijd waar je geen zin in hebt, stel de hele week opnieuw samen, of kook gewoon de maaltijden die je lekker vindt. Je boodschappenlijstje wordt automatisch aangepast.",
+    "q5": "Zal ik hiermee echt geld besparen?",
+    "a5": "De meeste mensen besparen geld door vooruit te plannen, alleen te kopen wat ze nodig hebben en ingrediënten in verschillende maaltijden te hergebruiken. Hoeveel er wordt bespaard, verschilt per huishouden en per winkel.",
+    "q6": "Zijn mijn gegevens vertrouwelijk?",
+    "a6": "We gebruiken je voorkeuren uitsluitend om je plannen samen te stellen en verkopen je persoonsgegevens nooit. Raadpleeg ons <a href=\"privacy.html\">privacybeleid</a> voor meer informatie."
+  },
+  "cta": {
+    "title": "De avondmaaltijden voor de komende week, vanavond al geregeld",
+    "sub": "Download de app en ontvang binnen ongeveer vijf minuten een persoonlijk plan en een boodschappenlijstje."
+  },
+  "footer": {
+    "about": "Gepersonaliseerde weekmenu’s en één slimme boodschappenlijst, afgestemd op je budget en je supermarkt. Lekker eten, minder stress.",
+    "product": "Product",
+    "getApp": "Download de app",
+    "company": "Bedrijf",
+    "mealVibes": "Sfeer bij de maaltijd",
+    "support": "Ondersteuning",
+    "privacy": "Privacybeleid",
+    "terms": "Gebruiksvoorwaarden",
+    "contact": "Contact",
+    "rights": "TEGS Labs Ltd. Alle rechten voorbehouden.",
+    "madeIn": "Gemaakt met 🥬 in het Verenigd Koninkrijk · *De besparingen variëren per huishouden en winkel."
+  }
+}

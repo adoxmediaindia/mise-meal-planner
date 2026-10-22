@@ -1,0 +1,180 @@
+{
+  "lang": "en",
+  "label": "English",
+  "meta": {
+    "title": "mise · Meal Planner App | Weekly Meal Plans, Recipes & Meal Prep",
+    "description": "mise is a meal planner app for weekly meal planning, recipes, meal prep and food prep. Build a personalised meal plan, get recipe ideas, and one smart shopping list for your supermarket."
+  },
+  "regional": {
+    "marqueeStores": [
+      "Walmart", "Aldi", "Kroger", "Costco", "Publix",
+      "Safeway", "H-E-B", "Whole Foods", "Trader Joe's", "Food Lion", "Sprouts"
+    ],
+    "statSaving": "$30+",
+    "heroTrust": "Loved by busy home cooks across the US & beyond",
+    "step1Shops": "Walmart, Aldi, Kroger and dozens more",
+    "faqStores": "Walmart, Aldi, Kroger, Costco, Publix, Safeway",
+    "chipBudgetEmoji": "💵"
+  },
+  "nav": {
+    "how": "How it works",
+    "features": "Features",
+    "vibes": "Vibes",
+    "reviews": "Reviews",
+    "faq": "FAQ",
+    "getApp": "Get the app",
+    "toggleMenu": "Toggle menu"
+  },
+  "hero": {
+    "eyebrow": "🥗 Welcome to mise",
+    "titleLead": "Eat well,",
+    "titleAccent": "stress less.",
+    "sub": "mise is a meal planner for weekly meal planning and meal prep. Plan dinners around your budget, your cravings, and what's already in your kitchen. Build your week and one smart shopping list in about five minutes.",
+    "chipList": "One shopping list",
+    "chipBudget": "Under budget",
+    "appStoreSmall": "Download on the",
+    "appStoreBig": "App Store",
+    "playStoreSmall": "Get it on",
+    "playStoreBig": "Google Play"
+  },
+  "marquee": {
+    "heading": "Built around the supermarkets you already shop at"
+  },
+  "stats": {
+    "timeNum": "5 mins",
+    "timeLabel": "to a full week's plan",
+    "dinnersNum": "Up to 7",
+    "dinnersLabel": "dinners every week",
+    "listNum": "1",
+    "listLabel": "smart shopping list",
+    "savingLabel": "typical weekly saving*"
+  },
+  "how": {
+    "eyebrow": "How it works",
+    "title": "Dinner sorted in seconds",
+    "sub": "No spreadsheets, no scrolling recipe blogs. Just tell mise a little about you and it does the planning.",
+    "step1Title": "Pick your shop",
+    "step1Body": "{{step1Shops}}. Prices and lists are tuned to where you actually shop.",
+    "step2Title": "Set your preferences",
+    "step2Body": "Budget, dietary needs, allergies, kitchen kit and the meal vibes you're into.",
+    "step3Title": "Get your plan",
+    "step3Body": "Up to seven dinners for the week with clear recipes and clever ingredient overlap.",
+    "step4Title": "Shop once",
+    "step4Body": "One consolidated list, grouped how you shop, so nothing gets doubled up or forgotten."
+  },
+  "showcaseA": {
+    "eyebrow": "Personalised",
+    "title": "A plan built around you, not a generic template",
+    "body": "mise learns your budget, the people you're feeding, your dietary needs and the vibes you fancy this week. Every plan is yours.",
+    "tick1": "Budget-aware meals that hit your weekly spend",
+    "tick2": "Diet and allergy safe for veggie, vegan, pescatarian, gluten-free and more",
+    "tick3": "Cooks for your kitchen, from air fryer to hob-only and slow cooker",
+    "tick4": "Don't like a meal? Swap it in a tap"
+  },
+  "showcaseB": {
+    "eyebrow": "Recipes that get cooked",
+    "title": "Normal food, clear steps, no chef nonsense",
+    "body": "Every recipe is written for a real weeknight, with sensible ingredients, honest timings and steps anyone can follow.",
+    "tick1": "Realistic prep and cook times up front",
+    "tick2": "Ingredients reused across the week to cut waste",
+    "tick3": "Explore by cuisine when you want to mix it up",
+    "tick4": "Scales to the size of your household"
+  },
+  "features": {
+    "eyebrow": "Features",
+    "title": "Everything you need to eat well this week",
+    "sub": "The planning brain of a meal-kit service, without the tiny portions and the big bill.",
+    "f1Title": "Weekly meal plans",
+    "f1Body": "Up to seven dinners generated for you every week, ready to cook and easy to tweak.",
+    "f2Title": "One smart list",
+    "f2Body": "All your ingredients combined into a single list, grouped for your supermarket.",
+    "f3Title": "Budget-aware",
+    "f3Body": "Set your weekly spend and mise plans meals that keep you inside it.",
+    "f4Title": "Diet and allergy filters",
+    "f4Body": "Veggie, vegan, pescatarian, gluten-free and allergen avoidance baked in.",
+    "f5Title": "Swap and regenerate",
+    "f5Body": "Not feeling a meal? Swap it, or regenerate the whole week in a tap.",
+    "f6Title": "Cooks for your kitchen",
+    "f6Body": "Tell mise your equipment and recipes adapt, from air fryer to hob-only and more.",
+    "f7Title": "Explore by cuisine",
+    "f7Body": "Browse a world of recipes and pull favourites straight into your plan.",
+    "f8Title": "Less food waste",
+    "f8Body": "Ingredients are reused across meals where it makes sense, so less ends up in the bin.",
+    "f9Title": "Made for households",
+    "f9Body": "Plan for the number of people you feed and share the load with family."
+  },
+  "vibesSection": {
+    "eyebrow": "Meal vibes",
+    "title": "Tell mise the mood, get the meals",
+    "sub": "Pick a few vibes and your plan leans into exactly what you fancy this week.",
+    "quickEasy": "Speedy Meals",
+    "lowCalorie": "Low Calorie",
+    "familyFavourites": "Family Favs",
+    "healthyComfort": "Healthy Comfort",
+    "fakeaway": "Fakeaway",
+    "gutFriendly": "Gut Friendly",
+    "highProtein": "Protein Packed",
+    "britishClassics": "British Staples"
+  },
+  "gallery": {
+    "eyebrow": "Take a look",
+    "title": "Beautifully simple, start to finish",
+    "sub": "Swipe through the app."
+  },
+  "reviewsSection": {
+    "eyebrow": "★★★★★ Loved by home cooks",
+    "title": "Real weeknights, sorted",
+    "sub": "A few words from people who let mise plan their week.",
+    "r1Title": "ok this actually helped??",
+    "r1Body": "didnt think i needed another app but grocery spend is definitely down. idk maybe $25–30? wife sends me the list now so im not just wandering aldi adding stuff",
+    "r1User": "aldishopper_tx",
+    "r2Title": "Normal food not chef food",
+    "r2Body": "Everything's doable after work which is basically my only requirement lol. no random ingredients my kids refuse to touch",
+    "r2User": "mike.r1987",
+    "r3Title": "the list is the best part",
+    "r3Body": "pick walmart, get the plan, text the list to my husband. we kept buying the same stuff twice every week before this",
+    "r3User": "k.martinez88",
+    "r4Title": "cancelled hellofresh",
+    "r4Body": "same general idea but without tiny portions and the crazy bill. does what i need it to do",
+    "r4User": "tiredoftakeout",
+    "r5Title": "husband cooks now somehow",
+    "r5Body": "steps are clear enough that he stopped defaulting to doordash like twice a week. didnt see that coming",
+    "r5User": "jen_mpls",
+    "r6Title": "fast enough after work",
+    "r6Body": "most stuff is ~30 mins. thats literally why i kept paying for it nothing fancy",
+    "r6User": "weeknightdad92"
+  },
+  "faqSection": {
+    "eyebrow": "FAQ",
+    "title": "Good to know",
+    "q1": "Which supermarkets does mise support?",
+    "a1": "mise is built around major supermarkets including {{faqStores}} and more, with support for stores across several countries. Your plan and shopping list are tuned to the shop you choose.",
+    "q2": "Can it handle dietary needs and allergies?",
+    "a2": "Yes. Set preferences like vegetarian, vegan, pescatarian or gluten-free and flag allergens to avoid. Please always check ingredient labels before cooking. mise can't guarantee allergen safety.",
+    "q3": "How much does mise cost?",
+    "a3": "mise is a subscription. You can explore the app and see how it works, with full planning unlocked by a subscription managed through the App Store or Google Play. Cancel anytime from your store account.",
+    "q4": "Do I have to cook every meal on my plan?",
+    "a4": "Not at all. Plan as many or as few nights as you like, up to seven. Swap any meal you don't fancy, regenerate the whole week, or just cook the ones you like. Your shopping list updates to match.",
+    "q5": "Will it really save me money?",
+    "a5": "Most people save by planning ahead, buying only what they need and reusing ingredients across meals. Savings vary by household and shop.",
+    "q6": "Is my data private?",
+    "a6": "We only use your preferences to build your plans and never sell your personal information. See our <a href=\"privacy.html\">Privacy Policy</a> for details."
+  },
+  "cta": {
+    "title": "Your week's dinners, sorted tonight",
+    "sub": "Download mise and get a personalised plan and shopping list in about five minutes."
+  },
+  "footer": {
+    "about": "Personalised weekly meal plans and one smart shopping list, built around your budget and your supermarket. Eat well, stress less.",
+    "product": "Product",
+    "getApp": "Get the app",
+    "company": "Company",
+    "mealVibes": "Meal vibes",
+    "support": "Support",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "contact": "Contact",
+    "rights": "TEGS Labs Ltd. All rights reserved.",
+    "madeIn": "Made with 🥬 in the UK · *Savings vary by household and shop."
+  }
+}

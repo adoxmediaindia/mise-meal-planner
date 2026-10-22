@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>mise · Meal Planner App | Weekly Meal Plans, Recipes &amp; Meal Prep</title>
+    <meta
+      name="description"
+      content="mise is a meal planner app for weekly meal planning, recipes, meal prep and food prep. Build a personalised meal plan, get recipe ideas, and one smart shopping list for your supermarket."
+    />
+    <meta
+      name="keywords"
+      content="meal planner, meal plan, meal planning, weekly meal plan, recipes, meal prep, food prep, dinner planner, shopping list, budget meals"
+    />
+    <meta name="robots" content="index, follow" />
+    <meta name="author" content="TEGS Labs Ltd" />
+    <link rel="canonical" href="https://misemealplanner.com/" />
+    <meta name="theme-color" content="#9ED034" />
+
+    <!-- Open Graph -->
+    <meta property="og:site_name" content="mise" />
+    <meta property="og:title" content="mise · Meal planner for weekly meal plans, recipes &amp; meal prep" />
+    <meta
+      property="og:description"
+      content="Plan your week with personalised meal plans, easy recipes, meal prep and one smart shopping list. Built for your budget and your supermarket."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://misemealplanner.com/" />
+    <meta property="og:locale" content="en_US" />
+    <meta
+      property="og:image"
+      content="https://misemealplanner.com/assets/screens/plan-overview.png"
+    />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="mise · Meal planner for weekly meal plans &amp; recipes" />
+    <meta
+      name="twitter:description"
+      content="Personalised weekly meal plans, recipes, meal prep and one smart shopping list. Eat well, stress less."
+    />
+    <meta
+      name="twitter:image"
+      content="https://misemealplanner.com/assets/screens/plan-overview.png"
+    />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "https://misemealplanner.com/#website",
+            "url": "https://misemealplanner.com/",
+            "name": "mise",
+            "description": "Meal planner app for weekly meal planning, recipes, meal prep and smart shopping lists.",
+            "publisher": { "@id": "https://misemealplanner.com/#organization" }
+          },
+          {
+            "@type": "Organization",
+            "@id": "https://misemealplanner.com/#organization",
+            "name": "TEGS Labs Ltd",
+            "url": "https://misemealplanner.com/",
+            "logo": "https://misemealplanner.com/assets/favicon-192.png"
+          },
+          {
+            "@type": "MobileApplication",
+            "@id": "https://misemealplanner.com/#app",
+            "name": "mise",
+            "operatingSystem": "iOS, Android",
+            "applicationCategory": "LifestyleApplication",
+            "description": "mise is a meal planner and meal planning app that builds weekly meal plans with recipes, meal prep ideas, and a smart shopping list tailored to your budget and supermarket.",
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "USD",
+              "description": "Free download with optional subscription"
+            },
+            "installUrl": [
+              "https://apps.apple.com/app/id6777471316",
+              "https://play.google.com/store/apps/details?id=com.gregorytaylor.shopping"
+            ],
+            "downloadUrl": "https://apps.apple.com/app/id6777471316",
+            "screenshot": "https://misemealplanner.com/assets/screens/plan-overview.png",
+            "author": { "@id": "https://misemealplanner.com/#organization" }
+          }
+        ]
+      }
+    </script>
+
+    <link rel="icon" type="image/png" sizes="192x192" href="assets/favicon-192.png?v=3" />
+    <link rel="icon" type="image/png" sizes="48x48" href="assets/favicon.png?v=3" />
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png?v=3" />
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png?v=3" />
+
+    <link rel="stylesheet" href="styles.css?v=5" />
+  </head>
+  <body>
+    <!-- ===================== NAV ===================== -->
+    <header class="nav">
+      <div class="container nav-inner">
+        <a href="#top" class="brand">
+          <img src="assets/mise-logo.png" alt="mise" />
+        </a>
+
+        <nav class="nav-links" id="navLinks">
+          <a href="#how" data-i18n="nav.how">How it works</a>
+          <a href="#features" data-i18n="nav.features">Features</a>
+          <a href="#vibes" data-i18n="nav.vibes">Vibes</a>
+          <a href="#reviews" data-i18n="nav.reviews">Reviews</a>
+          <a href="#faq" data-i18n="nav.faq">FAQ</a>
+        </nav>
+
+        <div class="nav-cta">
+          <div class="lang-switch">
+            <button
+              type="button"
+              class="lang-switch__btn"
+              id="langBtn"
+              aria-haspopup="listbox"
+              aria-expanded="false"
+            >
+              🇺🇸 <span>English</span>
+            </button>
+            <div class="lang-switch__menu" id="langMenu" role="listbox"></div>
+          </div>
+          <a href="#download" class="btn btn--primary" data-i18n="nav.getApp">Get the app</a>
+          <button
+            class="nav-toggle"
+            id="navToggle"
+            aria-label="Toggle menu"
+            data-i18n-aria="nav.toggleMenu"
+            aria-expanded="false"
+          >
+            <span></span><span></span><span></span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main id="top">
+      <!-- ===================== HERO ===================== -->
+      <section class="hero">
+        <span class="blob blob--green"></span>
+        <span class="blob blob--yellow"></span>
+        <div class="container hero-grid">
+          <div class="hero-copy">
+            <span class="eyebrow" data-i18n="hero.eyebrow">🥗 Welcome to mise</span>
+            <h1><span data-i18n="hero.titleLead">Eat well,</span><br /><span class="accent" data-i18n="hero.titleAccent">stress less.</span></h1>
+            <p class="hero-sub" data-i18n="hero.sub">
+              mise is a meal planner for weekly meal planning and meal prep. Plan
+              dinners around your budget, your cravings, and what's already in
+              your kitchen. Build your week and one smart shopping list in about
+              five minutes.
+            </p>
+
+            <div class="hero-actions">
+              <div class="store-badges" id="download">
+                <a
+                  class="store-badge"
+                  href="https://apps.apple.com/app/id6777471316"
+                  aria-label="Download on the App Store"
+                >
+                  <svg viewBox="0 0 384 512" fill="currentColor" aria-hidden="true">
+                    <path
+                      d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"
+                    />
+                  </svg>
+                  <span class="badge-copy">
+                    <span class="badge-small" data-i18n="hero.appStoreSmall">Download on the</span>
+                    <span class="badge-big" data-i18n="hero.appStoreBig">App Store</span>
+                  </span>
+                </a>
+
+                <a
+                  class="store-badge"
+                  href="https://play.google.com/store/apps/details?id=com.gregorytaylor.shopping"
+                  aria-label="Get it on Google Play"
+                >
+                  <svg viewBox="0 0 512 512" aria-hidden="true">
+                    <path
+                      fill="#00d3ff"
+                      d="M48 59.5c-6 4.5-9 11.7-9 21.3v350.4c0 9.6 3 16.8 9 21.3l1.9 1.5L246.7 258v-4L49.9 58z"
+                    />
+                    <path
+                      fill="#ffce00"
+                      d="M312 323.7l-65.3-65.3v-4.8l65.4-65.4 1.5.9 77.4 44c22.1 12.5 22.1 33.1 0 45.7l-77.4 44z"
+                    />
+                    <path
+                      fill="#ff3d47"
+                      d="M313.5 322.8L246.7 256 48 454.7c7.3 7.7 19.3 8.6 32.9.9z"
+                    />
+                    <path
+                      fill="#00f076"
+                      d="M313.5 189.2L80.9 56.5C67.3 48.7 55.3 49.7 48 57.4L246.7 256z"
+                    />
+                  </svg>
+                  <span class="badge-copy">
+                    <span class="badge-small" data-i18n="hero.playStoreSmall">Get it on</span>
+                    <span class="badge-big" data-i18n="hero.playStoreBig">Google Play</span>
+                  </span>
+                </a>
+              </div>
+
+              <div class="hero-trust">
+                <span class="stars">★★★★★</span>
+                <span id="heroTrustCopy">Loved by busy home cooks across the US &amp; beyond</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="hero-visual">
+            <div class="phone phone--behind-left">
+              <img
+                data-screen="preferencesVibes"
+                src="assets/screens/en/preferences-vibes.png"
+                alt="Choosing meal vibes in mise"
+              />
+            </div>
+            <div class="phone phone--main phone--floating">
+              <img
+                data-screen="planOverview"
+                src="assets/screens/en/plan-overview.png"
+                alt="mise weekly meal plan overview"
+              />
+            </div>
+            <div class="phone phone--behind-right">
+              <img
+                data-screen="exploreByCuisine"
+                src="assets/screens/en/explore-by-cuisine.png"
+                alt="Explore recipes by cuisine"
+              />
+            </div>
+            <div class="chip chip--tl">
+              <span class="chip-emoji">🛒</span> <span data-i18n="hero.chipList">One shopping list</span>
+            </div>
+            <div class="chip chip--br">
+              <span class="chip-emoji" id="chipBudgetEmoji">💵</span> <span data-i18n="hero.chipBudget">Under budget</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== SUPERMARKET MARQUEE ===================== -->
+      <section class="section--tight" aria-label="Supported supermarkets">
+        <div class="container">
+          <p
+            style="text-align:center;color:var(--muted);font-weight:600;margin-bottom:6px;"
+            data-i18n="marquee.heading"
+          >
+            Built around the supermarkets you already shop at
+          </p>
+        </div>
+        <div class="marquee">
+          <div class="marquee-track" id="marqueeTrack">
+            <span>Walmart</span><span>Aldi</span><span>Kroger</span
+            ><span>Costco</span><span>Publix</span><span>Safeway</span
+            ><span>H-E-B</span><span>Whole Foods</span><span>Trader Joe's</span
+            ><span>Food Lion</span><span>Sprouts</span
+            ><span>Walmart</span><span>Aldi</span><span>Kroger</span
+            ><span>Costco</span><span>Publix</span><span>Safeway</span
+            ><span>H-E-B</span><span>Whole Foods</span><span>Trader Joe's</span
+            ><span>Food Lion</span><span>Sprouts</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== STATS ===================== -->
+      <section class="section--tight">
+        <div class="container">
+          <div class="stats reveal">
+            <div class="stat">
+              <div class="num" data-i18n="stats.timeNum">5 mins</div>
+              <div class="label" data-i18n="stats.timeLabel">to a full week's plan</div>
+            </div>
+            <div class="stat">
+              <div class="num" data-i18n="stats.dinnersNum">Up to 7</div>
+              <div class="label" data-i18n="stats.dinnersLabel">dinners every week</div>
+            </div>
+            <div class="stat">
+              <div class="num" data-i18n="stats.listNum">1</div>
+              <div class="label" data-i18n="stats.listLabel">smart shopping list</div>
+            </div>
+            <div class="stat">
+              <div class="num" id="statSaving">$30+</div>
+              <div class="label" data-i18n="stats.savingLabel">typical weekly saving*</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== HOW IT WORKS ===================== -->
+      <section class="section" id="how">
+        <div class="container">
+          <div class="section-head reveal">
+            <span class="eyebrow" data-i18n="how.eyebrow">How it works</span>
+            <h2 data-i18n="how.title">Dinner sorted in seconds</h2>
+            <p data-i18n="how.sub">No spreadsheets, no scrolling recipe blogs. Just tell mise a
+              little about you and it does the planning.</p>
+          </div>
+
+          <div class="steps">
+            <div class="step reveal">
+              <div class="step-num">1</div>
+              <h3 data-i18n="how.step1Title">Pick your shop</h3>
+              <p data-i18n="how.step1Body">Walmart, Aldi, Kroger and dozens more. Prices and lists are tuned
+                to where you actually shop.</p>
+            </div>
+            <div class="step reveal">
+              <div class="step-num">2</div>
+              <h3 data-i18n="how.step2Title">Set your preferences</h3>
+              <p data-i18n="how.step2Body">Budget, dietary needs, allergies, kitchen kit and the meal
+                vibes you're into.</p>
+            </div>
+            <div class="step reveal">
+              <div class="step-num">3</div>
+              <h3 data-i18n="how.step3Title">Get your plan</h3>
+              <p data-i18n="how.step3Body">Up to seven dinners for the week with clear recipes and clever
+                ingredient overlap.</p>
+            </div>
+            <div class="step reveal">
+              <div class="step-num">4</div>
+              <h3 data-i18n="how.step4Title">Shop once</h3>
+              <p data-i18n="how.step4Body">One consolidated list, grouped how you shop, so nothing gets
+                doubled up or forgotten.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== SHOWCASE A ===================== -->
+      <section class="section" style="background:#fff;">
+        <div class="container showcase">
+          <div class="showcase-media reveal">
+            <div class="phone">
+              <img
+                data-screen="preferencesVibes"
+                src="assets/screens/en/preferences-vibes.png"
+                alt="Choosing meal vibes in mise"
+              />
+            </div>
+          </div>
+          <div class="showcase-copy reveal">
+            <span class="eyebrow" data-i18n="showcaseA.eyebrow">Personalised</span>
+            <h2 data-i18n="showcaseA.title">A plan built around you, not a generic template</h2>
+            <p data-i18n="showcaseA.body">
+              mise learns your budget, the people you're feeding, your dietary
+              needs and the vibes you fancy this week. Every plan is yours.
+            </p>
+            <ul class="tick-list">
+              <li data-i18n="showcaseA.tick1">Budget-aware meals that hit your weekly spend</li>
+              <li data-i18n="showcaseA.tick2">Diet and allergy safe for veggie, vegan, pescatarian, gluten-free and more</li>
+              <li data-i18n="showcaseA.tick3">Cooks for your kitchen, from air fryer to hob-only and slow cooker</li>
+              <li data-i18n="showcaseA.tick4">Don't like a meal? Swap it in a tap</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== SHOWCASE B ===================== -->
+      <section class="section">
+        <div class="container showcase showcase--reverse">
+          <div class="showcase-media reveal">
+            <div class="phone">
+              <img
+                data-screen="recipeDetail"
+                src="assets/screens/en/recipe-detail.png"
+                alt="A mise recipe with clear steps"
+              />
+            </div>
+          </div>
+          <div class="showcase-copy reveal">
+            <span class="eyebrow" data-i18n="showcaseB.eyebrow">Recipes that get cooked</span>
+            <h2 data-i18n="showcaseB.title">Normal food, clear steps, no chef nonsense</h2>
+            <p data-i18n="showcaseB.body">
+              Every recipe is written for a real weeknight, with sensible
+              ingredients, honest timings and steps anyone can follow.
+            </p>
+            <ul class="tick-list">
+              <li data-i18n="showcaseB.tick1">Realistic prep and cook times up front</li>
+              <li data-i18n="showcaseB.tick2">Ingredients reused across the week to cut waste</li>
+              <li data-i18n="showcaseB.tick3">Explore by cuisine when you want to mix it up</li>
+              <li data-i18n="showcaseB.tick4">Scales to the size of your household</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== FEATURES ===================== -->
+      <section class="section" id="features" style="background:#fff;">
+        <div class="container">
+          <div class="section-head reveal">
+            <span class="eyebrow" data-i18n="features.eyebrow">Features</span>
+            <h2 data-i18n="features.title">Everything you need to eat well this week</h2>
+            <p data-i18n="features.sub">The planning brain of a meal-kit service, without the tiny
+              portions and the big bill.</p>
+          </div>
+
+          <div class="feature-grid">
+            <div class="feature reveal">
+              <div class="icon" style="background:#E0D4FF;">🗓️</div>
+              <h3 data-i18n="features.f1Title">Weekly meal plans</h3>
+              <p data-i18n="features.f1Body">Up to seven dinners generated for you every week, ready to cook and
+                easy to tweak.</p>
+            </div>
+            <div class="feature reveal">
+              <div class="icon" style="background:#DDF4FF;">🛒</div>
+              <h3 data-i18n="features.f2Title">One smart list</h3>
+              <p data-i18n="features.f2Body">All your ingredients combined into a single list, grouped for
+                your supermarket.</p>
+            </div>
+            <div class="feature reveal">
+              <div class="icon" style="background:#FFE0BC;">💷</div>
+              <h3 data-i18n="features.f3Title">Budget-aware</h3>
+              <p data-i18n="features.f3Body">Set your weekly spend and mise plans meals that keep you inside
+                it.</p>
+            </div>
+            <div class="feature reveal">
+              <div class="icon" style="background:#9BD88F;">🥗</div>
+              <h3 data-i18n="features.f4Title">Diet and allergy filters</h3>
+              <p data-i18n="features.f4Body">Veggie, vegan, pescatarian, gluten-free and allergen avoidance
+                baked in.</p>
+            </div>
+            <div class="feature reveal">
+              <div class="icon" style="background:#FFA8BC;">🔄</div>
+              <h3 data-i18n="features.f5Title">Swap and regenerate</h3>
+              <p data-i18n="features.f5Body">Not feeling a meal? Swap it, or regenerate the whole week in a
+                tap.</p>
+            </div>
+            <div class="feature reveal">
+              <div class="icon" style="background:#5EEAD4;">🍳</div>
+              <h3 data-i18n="features.f6Title">Cooks for your kitchen</h3>
+              <p data-i18n="features.f6Body">Tell mise your equipment and recipes adapt, from air fryer to
+                hob-only and more.</p>
+            </div>
+            <div class="feature reveal">
+              <div class="icon" style="background:#A8B8E8;">🌍</div>
+              <h3 data-i18n="features.f7Title">Explore by cuisine</h3>
+              <p data-i18n="features.f7Body">Browse a world of recipes and pull favourites straight into
+                your plan.</p>
+            </div>
+            <div class="feature reveal">
+              <div class="icon" style="background:#7DD3FC;">♻️</div>
+              <h3 data-i18n="features.f8Title">Less food waste</h3>
+              <p data-i18n="features.f8Body">Ingredients are reused across meals where it makes sense, so
+                less ends up in the bin.</p>
+            </div>
+            <div class="feature reveal">
+              <div class="icon" style="background:#FFD966;">👨‍👩‍👧</div>
+              <h3 data-i18n="features.f9Title">Made for households</h3>
+              <p data-i18n="features.f9Body">Plan for the number of people you feed and share the load with
+                family.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== VIBES ===================== -->
+      <section class="section" id="vibes">
+        <div class="container">
+          <div class="section-head reveal">
+            <span class="eyebrow" data-i18n="vibesSection.eyebrow">Meal vibes</span>
+            <h2 data-i18n="vibesSection.title">Tell mise the mood, get the meals</h2>
+            <p data-i18n="vibesSection.sub">Pick a few vibes and your plan leans into exactly what you fancy
+              this week.</p>
+          </div>
+
+          <div class="vibe-grid">
+            <div class="vibe reveal" style="background:#E0D4FF;">
+              <span class="vibe-emoji">⚡</span> <span data-i18n="vibesSection.quickEasy">Speedy Meals</span>
+            </div>
+            <div class="vibe reveal" style="background:#7DD3FC;">
+              <span class="vibe-emoji">⚖️</span> <span data-i18n="vibesSection.lowCalorie">Low Calorie</span>
+            </div>
+            <div class="vibe reveal" style="background:#FFE0BC;">
+              <span class="vibe-emoji">👨‍👩‍👧</span> <span data-i18n="vibesSection.familyFavourites">Family Favs</span>
+            </div>
+            <div class="vibe reveal" style="background:#9BD88F;">
+              <span class="vibe-emoji">🥗</span> <span data-i18n="vibesSection.healthyComfort">Healthy Comfort</span>
+            </div>
+            <div class="vibe reveal" style="background:#FF9F68;">
+              <span class="vibe-emoji">🍔</span> <span data-i18n="vibesSection.fakeaway">Fakeaway</span>
+            </div>
+            <div class="vibe reveal" style="background:#5EEAD4;">
+              <span class="vibe-emoji">💚</span> <span data-i18n="vibesSection.gutFriendly">Gut Friendly</span>
+            </div>
+            <div class="vibe reveal" style="background:#FFA8BC;">
+              <span class="vibe-emoji">💪</span> <span data-i18n="vibesSection.highProtein">Protein Packed</span>
+            </div>
+            <div class="vibe reveal" style="background:#A8B8E8;">
+              <span class="vibe-emoji">🇬🇧</span> <span data-i18n="vibesSection.britishClassics">British Staples</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== GALLERY ===================== -->
+      <section class="section" style="background:#fff;">
+        <div class="container">
+          <div class="section-head reveal">
+            <span class="eyebrow" data-i18n="gallery.eyebrow">Take a look</span>
+            <h2 data-i18n="gallery.title">Beautifully simple, start to finish</h2>
+            <p data-i18n="gallery.sub">Swipe through the app.</p>
+          </div>
+        </div>
+        <div class="gallery">
+          <div class="phone">
+            <img data-screen="planOverview" src="assets/screens/en/plan-overview.png" alt="Weekly plan overview" />
+          </div>
+          <div class="phone">
+            <img data-screen="preferencesVibes" src="assets/screens/en/preferences-vibes.png" alt="Meal vibe picker" />
+          </div>
+          <div class="phone">
+            <img data-screen="exploreByCuisine" src="assets/screens/en/explore-by-cuisine.png" alt="Explore by cuisine" />
+          </div>
+          <div class="phone">
+            <img data-screen="recipeDetail" src="assets/screens/en/recipe-detail.png" alt="Recipe detail" />
+          </div>
+          <div class="phone">
+            <img
+              data-screen="preferencesSetup"
+              src="assets/screens/en/preferences-setup.png"
+              alt="Setting up preferences in mise"
+            />
+          </div>
+          <div class="phone">
+            <img
+              data-screen="spaghetti"
+              src="assets/screens/en/spaghetti-bolognese-recipe-detail.png"
+              alt="Spaghetti bolognese recipe"
+            />
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== REVIEWS ===================== -->
+      <section class="section" id="reviews">
+        <div class="container">
+          <div class="section-head reveal">
+            <span class="eyebrow" data-i18n="reviewsSection.eyebrow">★★★★★ Loved by home cooks</span>
+            <h2 data-i18n="reviewsSection.title">Real weeknights, sorted</h2>
+            <p data-i18n="reviewsSection.sub">A few words from people who let mise plan their week.</p>
+          </div>
+
+          <div class="review-grid">
+            <div class="review reveal">
+              <div class="stars">★★★★★</div>
+              <h4 data-i18n="reviewsSection.r1Title">ok this actually helped??</h4>
+              <p data-i18n-quote="reviewsSection.r1Body">“didnt think i needed another app but grocery spend is definitely
+                down. idk maybe $25–30? wife sends me the list now so im not just
+                wandering target adding stuff”</p>
+              <div class="who"><span class="avatar">A</span> aldishopper_tx</div>
+            </div>
+            <div class="review reveal">
+              <div class="stars">★★★★★</div>
+              <h4 data-i18n="reviewsSection.r2Title">Normal food not chef food</h4>
+              <p data-i18n-quote="reviewsSection.r2Body">“Everything's doable after work which is basically my only
+                requirement lol. no random ingredients my kids refuse to touch”</p>
+              <div class="who"><span class="avatar">M</span> mike.r1987</div>
+            </div>
+            <div class="review reveal">
+              <div class="stars">★★★★★</div>
+              <h4 data-i18n="reviewsSection.r3Title">the list is the best part</h4>
+              <p data-i18n-quote="reviewsSection.r3Body">“pick walmart, get the plan, text the list to my husband. we
+                kept buying the same stuff twice every week before this”</p>
+              <div class="who"><span class="avatar">K</span> k.martinez88</div>
+            </div>
+            <div class="review reveal">
+              <div class="stars">★★★★★</div>
+              <h4 data-i18n="reviewsSection.r4Title">cancelled hellofresh</h4>
+              <p data-i18n-quote="reviewsSection.r4Body">“same general idea but without tiny portions and the crazy bill.
+                does what i need it to do”</p>
+              <div class="who"><span class="avatar">T</span> tiredoftakeout</div>
+            </div>
+            <div class="review reveal">
+              <div class="stars">★★★★★</div>
+              <h4 data-i18n="reviewsSection.r5Title">husband cooks now somehow</h4>
+              <p data-i18n-quote="reviewsSection.r5Body">“steps are clear enough that he stopped defaulting to doordash
+                like twice a week. didnt see that coming”</p>
+              <div class="who"><span class="avatar">J</span> jen_mpls</div>
+            </div>
+            <div class="review reveal">
+              <div class="stars">★★★★★</div>
+              <h4 data-i18n="reviewsSection.r6Title">fast enough after work</h4>
+              <p data-i18n-quote="reviewsSection.r6Body">“most stuff is ~30 mins. thats literally why i kept paying for
+                it nothing fancy”</p>
+              <div class="who"><span class="avatar">W</span> weeknightdad92</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== FAQ ===================== -->
+      <section class="section" id="faq" style="background:#fff;">
+        <div class="container">
+          <div class="section-head reveal">
+            <span class="eyebrow" data-i18n="faqSection.eyebrow">FAQ</span>
+            <h2 data-i18n="faqSection.title">Good to know</h2>
+          </div>
+
+          <div class="faq reveal">
+            <details>
+              <summary data-i18n="faqSection.q1">Which supermarkets does mise support?</summary>
+              <p data-i18n="faqSection.a1">mise is built around major supermarkets including {{faqStores}} and more,
+                with support for stores across several countries. Your plan and
+                shopping list are tuned to the shop you choose.</p>
+            </details>
+            <details>
+              <summary data-i18n="faqSection.q2">Can it handle dietary needs and allergies?</summary>
+              <p data-i18n="faqSection.a2">Yes. Set preferences like vegetarian, vegan, pescatarian or
+                gluten-free and flag allergens to avoid. Please always check
+                ingredient labels before cooking. mise can't guarantee allergen
+                safety.</p>
+            </details>
+            <details>
+              <summary data-i18n="faqSection.q3">How much does mise cost?</summary>
+              <p data-i18n="faqSection.a3">mise is a subscription. You can explore the app and see how it
+                works, with full planning unlocked by a subscription managed
+                through the App Store or Google Play. Cancel anytime from your
+                store account.</p>
+            </details>
+            <details>
+              <summary data-i18n="faqSection.q4">Do I have to cook every meal on my plan?</summary>
+              <p data-i18n="faqSection.a4">Not at all. Plan as many or as few nights as you like, up to
+                seven. Swap any meal you don't fancy, regenerate the whole week,
+                or just cook the ones you like. Your shopping list updates to
+                match.</p>
+            </details>
+            <details>
+              <summary data-i18n="faqSection.q5">Will it really save me money?</summary>
+              <p data-i18n="faqSection.a5">Most people save by planning ahead, buying only what they need
+                and reusing ingredients across meals. Savings vary by household
+                and shop.</p>
+            </details>
+            <details>
+              <summary data-i18n="faqSection.q6">Is my data private?</summary>
+              <p data-i18n-html="faqSection.a6">We only use your preferences to build your plans and never sell
+                your personal information. See our
+                <a href='/privacy'>Privacy Policy</a> for details.</p>
+            </details>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== CTA ===================== -->
+      <section class="section">
+        <div class="container">
+          <div class="cta reveal">
+            <span class="cta-blob a"></span>
+            <span class="cta-blob b"></span>
+            <div class="cta-inner">
+              <h2 data-i18n="cta.title">Your week's dinners, sorted tonight</h2>
+              <p data-i18n="cta.sub">Download mise and get a personalised plan and shopping list in
+                about five minutes.</p>
+              <div class="store-badges">
+                <a
+                  class="store-badge"
+                  href="https://apps.apple.com/app/id6777471316"
+                  aria-label="Download on the App Store"
+                >
+                  <svg viewBox="0 0 384 512" fill="currentColor" aria-hidden="true">
+                    <path
+                      d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"
+                    />
+                  </svg>
+                  <span class="badge-copy">
+                    <span class="badge-small" data-i18n="hero.appStoreSmall">Download on the</span>
+                    <span class="badge-big" data-i18n="hero.appStoreBig">App Store</span>
+                  </span>
+                </a>
+                <a
+                  class="store-badge"
+                  href="https://play.google.com/store/apps/details?id=com.gregorytaylor.shopping"
+                  aria-label="Get it on Google Play"
+                >
+                  <svg viewBox="0 0 512 512" aria-hidden="true">
+                    <path fill="#00d3ff" d="M48 59.5c-6 4.5-9 11.7-9 21.3v350.4c0 9.6 3 16.8 9 21.3l1.9 1.5L246.7 258v-4L49.9 58z" />
+                    <path fill="#ffce00" d="M312 323.7l-65.3-65.3v-4.8l65.4-65.4 1.5.9 77.4 44c22.1 12.5 22.1 33.1 0 45.7l-77.4 44z" />
+                    <path fill="#ff3d47" d="M313.5 322.8L246.7 256 48 454.7c7.3 7.7 19.3 8.6 32.9.9z" />
+                    <path fill="#00f076" d="M313.5 189.2L80.9 56.5C67.3 48.7 55.3 49.7 48 57.4L246.7 256z" />
+                  </svg>
+                  <span class="badge-copy">
+                    <span class="badge-small" data-i18n="hero.playStoreSmall">Get it on</span>
+                    <span class="badge-big" data-i18n="hero.playStoreBig">Google Play</span>
+                  </span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ===================== FOOTER ===================== -->
+    <footer class="footer">
+      <div class="container">
+        <div class="footer-grid">
+          <div class="footer-about">
+            <a href="#top" class="brand">
+              <img src="assets/mise-logo.png" alt="mise" />
+            </a>
+            <p data-i18n="footer.about">
+              Personalised weekly meal plans and one smart shopping list, built
+              around your budget and your supermarket. Eat well, stress less.
+            </p>
+          </div>
+
+          <div class="footer-col">
+            <h5 data-i18n="footer.product">Product</h5>
+            <a href="#how" data-i18n="nav.how">How it works</a>
+            <a href="#features" data-i18n="nav.features">Features</a>
+            <a href="#vibes" data-i18n="footer.mealVibes">Meal vibes</a>
+            <a href="#reviews" data-i18n="nav.reviews">Reviews</a>
+          </div>
+
+          <div class="footer-col">
+            <h5 data-i18n="footer.getApp">Get the app</h5>
+            <a href="https://apps.apple.com/app/id6777471316" data-i18n="hero.appStoreBig">App Store</a>
+            <a href="https://play.google.com/store/apps/details?id=com.gregorytaylor.shopping"
+              data-i18n="hero.playStoreBig">Google Play</a
+            >
+            <a href="#faq" data-i18n="nav.faq">FAQ</a>
+          </div>
+
+          <div class="footer-col">
+            <h5 data-i18n="footer.company">Company</h5>
+            <a data-i18n='footer.support' href='/support'>Support</a>
+            <a data-i18n='footer.privacy' href='/privacy'>Privacy Policy</a>
+            <a data-i18n='footer.terms' href='/terms'>Terms of Service</a>
+            <a href="mailto:support@misemealplanner.com" data-i18n="footer.contact">Contact</a>
+          </div>
+        </div>
+
+        <div class="footer-bottom">
+          <span>© <span id="year"></span> <span data-i18n="footer.rights">TEGS Labs Ltd. All rights reserved.</span></span>
+          <span data-i18n="footer.madeIn">Made with 🥬 in the UK · *Savings vary by household and shop.</span>
+        </div>
+      </div>
+    </footer>
+
+    <script src="i18n.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>
+<script async src="/.netlify/scripts/hud?variant=public" data-nf-variant="public" data-netlify-site-id="9e0782aa-4953-49d2-a018-c189913641a8" data-app-host="app.netlify.com" data-account-tier="free"></script>

@@ -1,0 +1,187 @@
+{
+  "lang": "fr",
+  "label": "Français",
+  "meta": {
+    "title": "mise · Application de planification des repas | Menus hebdomadaires, recettes et préparation des repas",
+    "description": "mise est une application de planification des repas qui vous aide à organiser vos repas hebdomadaires, à trouver des recettes et à préparer vos repas et vos ingrédients. Créez un menu personnalisé, découvrez des idées de recettes et générez une liste de courses intelligente pour vos achats au supermarché."
+  },
+  "regional": {
+    "marqueeStores": [
+      "Lidl",
+      "Carrefour",
+      "Aldi",
+      "Intermarché",
+      "Franprix",
+      "E.Leclerc",
+      "Auchan",
+      "Super U",
+      "Monoprix"
+    ],
+    "statSaving": "€25+",
+    "heroTrust": "Plébiscité par les foyers pressés en France & ailleurs",
+    "step1Shops": "Lidl, Carrefour, Aldi et bien d'autres",
+    "faqStores": "Lidl, Carrefour, Aldi, Intermarché, Franprix, Auchan",
+    "chipBudgetEmoji": "💶"
+  },
+  "nav": {
+    "how": "Comment ça marche ?",
+    "features": "Caractéristiques",
+    "vibes": "Ambiance",
+    "reviews": "Avis",
+    "faq": "FAQ",
+    "getApp": "Téléchargez l'application",
+    "toggleMenu": "Afficher/masquer le menu"
+  },
+  "hero": {
+    "eyebrow": "🥗 Bienvenue chez mise",
+    "titleLead": "Mangez bien,",
+    "titleAccent": "Ne vous faites pas trop de soucis.",
+    "sub": "mise est un outil de planification des repas qui vous aide à organiser vos menus hebdomadaires et à préparer vos plats à l'avance. Organisez vos dîners en fonction de votre budget, de vos envies et des ingrédients dont vous disposez déjà dans votre cuisine. Préparez votre menu de la semaine et une liste de courses intelligente en cinq minutes environ.",
+    "chipList": "Une liste de courses",
+    "chipBudget": "En dessous du budget",
+    "appStoreSmall": "Télécharger sur le",
+    "appStoreBig": "App Store",
+    "playStoreSmall": "C'est parti !",
+    "playStoreBig": "Google Play"
+  },
+  "marquee": {
+    "heading": "Conçu autour des supermarchés où vous faites déjà vos courses"
+  },
+  "stats": {
+    "timeNum": "5 minutes",
+    "timeLabel": "pour un programme d'une semaine complète",
+    "dinnersNum": "Jusqu'à 7",
+    "dinnersLabel": "des dîners chaque semaine",
+    "listNum": "1",
+    "listLabel": "liste de courses intelligente",
+    "savingLabel": "économie hebdomadaire type*"
+  },
+  "how": {
+    "eyebrow": "Comment ça marche ?",
+    "title": "Le dîner est prêt en quelques secondes",
+    "sub": "Pas de tableurs, pas besoin de parcourir des blogs de recettes. Il suffit de donner quelques informations à Mise, et elle s'occupe de tout organiser.",
+    "step1Title": "Choisissez votre magasin",
+    "step1Body": "Lidl, Carrefour, Aldi et bien d'autres. Les prix et les listes sont adaptés aux magasins où vous faites vos achats.",
+    "step2Title": "Définissez vos préférences",
+    "step2Body": "Ton budget, tes besoins alimentaires, tes allergies, ton équipement de cuisine et l'ambiance que tu recherches pour tes repas.",
+    "step3Title": "Souscrivez à votre formule",
+    "step3Body": "Jusqu'à sept dîners pour la semaine, avec des recettes claires et une utilisation astucieuse des mêmes ingrédients.",
+    "step4Title": "Faire ses achats une seule fois",
+    "step4Body": "Une liste unique et complète, organisée en fonction de vos habitudes d'achat, pour éviter les doublons et les oublis."
+  },
+  "showcaseA": {
+    "eyebrow": "Personnalisé",
+    "title": "Un projet conçu spécialement pour vous, et non un modèle standardisé",
+    "body": "mise prend en compte votre budget, le nombre de personnes à nourrir, vos besoins alimentaires et l'ambiance qui vous fait envie cette semaine. Chaque menu est conçu sur mesure pour vous.",
+    "tick1": "Des repas adaptés à votre budget qui respectent vos dépenses hebdomadaires",
+    "tick2": "Adapté aux régimes alimentaires et sans risque d'allergies pour les végétariens, les végétaliens, les pescatariens, les personnes suivant un régime sans gluten et bien d'autres encore",
+    "tick3": "Des appareils pour votre cuisine, de la friteuse à air chaud aux modèles destinés uniquement à la plaque de cuisson, en passant par la mijoteuse",
+    "tick4": "Un plat ne vous plaît pas ? Échangez-le d'un simple clic"
+  },
+  "showcaseB": {
+    "eyebrow": "Des recettes à réaliser",
+    "title": "Des plats normaux, des étapes claires, pas de chichis de chef",
+    "body": "Chaque recette est conçue pour un vrai dîner de semaine, avec des ingrédients accessibles, des temps de préparation réalistes et des étapes à la portée de tous.",
+    "tick1": "Des temps de préparation et de cuisson réalistes indiqués dès le départ",
+    "tick2": "Réutilisation des ingrédients tout au long de la semaine pour réduire le gaspillage",
+    "tick3": "Découvrez les différentes cuisines lorsque vous avez envie de varier les plaisirs",
+    "tick4": "S'adapte à la taille de votre foyer"
+  },
+  "features": {
+    "eyebrow": "Caractéristiques",
+    "title": "Tout ce qu'il vous faut pour bien manger cette semaine",
+    "sub": "Tout le côté organisationnel d'un service de paniers-repas, sans les portions minuscules ni la facture salée.",
+    "f1Title": "Menus hebdomadaires",
+    "f1Body": "Jusqu'à sept idées de dîners proposées chaque semaine, prêtes à cuisiner et faciles à adapter.",
+    "f2Title": "Une liste intelligente",
+    "f2Body": "Tous vos ingrédients regroupés dans une seule liste, classés par magasin.",
+    "f3Title": "Soucieux de son budget",
+    "f3Body": "Définissez votre budget hebdomadaire et planifiez vos repas de manière à ne pas le dépasser.",
+    "f4Title": "Filtres « Régime alimentaire » et « Allergies »",
+    "f4Body": "Options végétariennes, végétaliennes, pescatariennes, sans gluten et adaptées aux personnes souffrant d'allergies, intégrées dès la préparation.",
+    "f5Title": "Échanger et régénérer",
+    "f5Body": "Vous n'avez pas envie d'un repas ? Remplacez-le, ou réorganisez toute votre semaine d'un simple clic.",
+    "f6Title": "Des cuisiniers pour votre cuisine",
+    "f6Body": "Dites-moi comment adapter votre matériel et vos recettes, que ce soit pour une friteuse à air chaud, une cuisson sur plaque de cuisson ou autre.",
+    "f7Title": "Découvrir par type de cuisine",
+    "f7Body": "Parcourez une multitude de recettes et ajoutez vos préférées directement à votre programme.",
+    "f8Title": "Moins de gaspillage alimentaire",
+    "f8Body": "Les ingrédients sont réutilisés dans différents repas lorsque cela s'avère judicieux, ce qui permet de réduire le gaspillage.",
+    "f9Title": "Conçu pour les particuliers",
+    "f9Body": "Prévoyez en fonction du nombre de personnes à nourrir et répartissez les tâches avec votre famille."
+  },
+  "vibesSection": {
+    "eyebrow": "Ambiance autour du repas",
+    "title": "Dis-moi ce dont tu as envie, je m'occupe du repas",
+    "sub": "Choisissez quelques ambiances et votre programme s'adaptera parfaitement à vos envies de cette semaine.",
+    "quickEasy": "Repas express",
+    "lowCalorie": "Peu calorique",
+    "familyFavourites": "Favoris familiaux",
+    "healthyComfort": "Comfort sain",
+    "fakeaway": "Fakeaway",
+    "gutFriendly": "Digestion facile",
+    "highProtein": "Riche en protéines",
+    "britishClassics": "Classiques britanniques"
+  },
+  "gallery": {
+    "eyebrow": "Jetez-y un œil",
+    "title": "Une simplicité magnifique, du début à la fin",
+    "sub": "Faites défiler l'application."
+  },
+  "reviewsSection": {
+    "eyebrow": "★★★★★ Très apprécié des cuisiniers amateurs",
+    "title": "Des soirs de semaine comme il faut, c'est réglé !",
+    "sub": "Quelques mots de personnes qui me confient l'organisation de leur semaine.",
+    "r1Title": "Bon, ça t'a vraiment aidé ?",
+    "r1Body": "Je ne pensais pas avoir besoin d'une autre appli, mais mes dépenses en courses ont clairement baissé. Je ne sais pas, peut-être 25–30 euros ? Maintenant, c'est ma femme qui m'envoie la liste, donc je ne me contente plus de flâner chez Carrefour en ajoutant des articles au hasard.",
+    "r1User": "aldishopper_tx",
+    "r2Title": "De la cuisine de tous les jours, pas de la cuisine de chef",
+    "r2Body": "Tout est faisable après le boulot, ce qui est en gros ma seule exigence lol. Pas d'ingrédients bizarres que mes enfants refusent de toucher.",
+    "r2User": "mike.r1987",
+    "r3Title": "c'est la liste qui est le plus intéressant",
+    "r3Body": "Je passe par Lidl, je récupère le plan, j'envoie la liste par SMS à mon mari. Avant ça, on achetait toujours les mêmes produits deux fois par semaine.",
+    "r3User": "k.martinez88",
+    "r4Title": "annulation de Hellofresh",
+    "r4Body": "C'est le même principe, mais sans les portions minuscules ni l'addition exorbitante. Ça répond à mes besoins.",
+    "r4User": "tiredoftakeout",
+    "r5Title": "mon mari cuisine maintenant, je ne sais pas trop comment",
+    "r5Body": "Les étapes sont suffisamment claires pour qu'il ait arrêté de se rabattre systématiquement sur DoorDash, genre deux fois par semaine. Je ne m'y attendais pas du tout.",
+    "r5User": "jen_mpls",
+    "r6Title": "assez vite après le travail",
+    "r6Body": "La plupart des vidéos durent environ 30 minutes. C'est exactement pour ça que j'ai continué à m'abonner, rien d'extraordinaire.",
+    "r6User": "weeknightdad92"
+  },
+  "faqSection": {
+    "eyebrow": "FAQ",
+    "title": "Bon à savoir",
+    "q1": "Quels supermarchés sont pris en charge par Mise ?",
+    "a1": "L'application s'articule autour des principaux supermarchés, notamment Lidl, Carrefour, Aldi, Intermarché, Franprix, Auchan et bien d'autres, et prend en charge des magasins dans plusieurs pays. Votre forfait et votre liste de courses sont adaptés au magasin que vous choisissez.",
+    "q2": "Est-ce qu’il tient compte des besoins alimentaires et des allergies ?",
+    "a2": "Oui. Définissez vos préférences (végétarien, végétalien, pescatarien ou sans gluten) et indiquez les allergènes à éviter. Veuillez toujours vérifier la liste des ingrédients avant de cuisiner. mise ne peut garantir l'absence d'allergènes.",
+    "q3": "Combien coûte la mise ?",
+    "a3": "mise est un service par abonnement. Vous pouvez découvrir l'application et voir comment elle fonctionne ; l'accès à toutes les fonctionnalités de planification est débloqué via un abonnement géré depuis l'App Store ou Google Play. Vous pouvez résilier votre abonnement à tout moment depuis votre compte sur la boutique d'applications.",
+    "q4": "Dois-je préparer tous les repas prévus dans mon programme ?",
+    "a4": "Pas du tout. Prévoyez autant de nuits que vous le souhaitez, jusqu’à sept. Remplacez les repas qui ne vous tentent pas, réorganisez toute la semaine ou préparez simplement ceux qui vous plaisent. Votre liste de courses s’adaptera en conséquence.",
+    "q5": "Est-ce que cela va vraiment me permettre de faire des économies ?",
+    "a5": "La plupart des gens font des économies en s'organisant à l'avance, en n'achetant que ce dont ils ont besoin et en réutilisant les ingrédients d'un repas à l'autre. Le montant des économies varie selon les foyers et les magasins.",
+    "q6": "Mes données sont-elles confidentielles ?",
+    "a6": "Nous utilisons vos préférences uniquement pour élaborer vos programmes et ne vendons jamais vos données personnelles. Consultez notre <a href=\"privacy.html\">Politique de confidentialité</a> pour plus de détails."
+  },
+  "cta": {
+    "title": "Les dîners de la semaine, déjà organisés ce soir",
+    "sub": "Téléchargez l'application et obtenez un programme personnalisé ainsi qu'une liste de courses en cinq minutes environ."
+  },
+  "footer": {
+    "about": "Des menus hebdomadaires personnalisés et une liste de courses intelligente, adaptés à votre budget et à votre supermarché. Mangez sainement, sans stress.",
+    "product": "Produit",
+    "getApp": "Téléchargez l'application",
+    "company": "Entreprise",
+    "mealVibes": "Ambiance autour du repas",
+    "support": "Assistance",
+    "privacy": "Politique de confidentialité",
+    "terms": "Conditions générales d'utilisation",
+    "contact": "Contact",
+    "rights": "TEGS Labs Ltd. Tous droits réservés.",
+    "madeIn": "Fabriqué avec 🥬 au Royaume-Uni · *Les économies réalisées varient selon les foyers et les magasins."
+  }
+}

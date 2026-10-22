@@ -1,0 +1,187 @@
+{
+  "lang": "de",
+  "label": "Deutsch",
+  "meta": {
+    "title": "mise · App zur Essensplanung | Wöchentliche Speisepläne, Rezepte & Essensvorbereitung",
+    "description": "mise ist eine App zur wöchentlichen Essensplanung, mit Rezepten, Tipps zur Essenszubereitung und zur Vorratshaltung. Erstellen Sie einen individuellen Speiseplan, holen Sie sich Rezeptideen und erstellen Sie eine intelligente Einkaufsliste für Ihren Supermarkt."
+  },
+  "regional": {
+    "marqueeStores": [
+      "Aldi",
+      "Lidl",
+      "EDEKA",
+      "REWE",
+      "Kaufland",
+      "Netto",
+      "Penny",
+      "Globus",
+      "HIT"
+    ],
+    "statSaving": "€25+",
+    "heroTrust": "Von vielen Haushalten in Deutschland & darüber hinaus geschätzt",
+    "step1Shops": "Aldi, Lidl, EDEKA und viele mehr",
+    "faqStores": "Aldi, Lidl, EDEKA, REWE, Kaufland, Netto",
+    "chipBudgetEmoji": "💶"
+  },
+  "nav": {
+    "how": "So funktioniert es",
+    "features": "Funktionen",
+    "vibes": "Stimmung",
+    "reviews": "Rezensionen",
+    "faq": "Häufig gestellte Fragen",
+    "getApp": "Lade die App herunter",
+    "toggleMenu": "Menü ein-/ausblenden"
+  },
+  "hero": {
+    "eyebrow": "🥗 Willkommen bei mise",
+    "titleLead": "Iss gut,",
+    "titleAccent": "Mach dir weniger Stress.",
+    "sub": "mise ist ein Planer für die wöchentliche Essensplanung und Essensvorbereitung. Planen Sie Ihre Abendessen ganz nach Ihrem Budget, Ihren Gelüsten und dem, was Sie bereits in Ihrer Küche vorrätig haben. Stellen Sie in etwa fünf Minuten Ihren Wochenplan und eine intelligente Einkaufsliste zusammen.",
+    "chipList": "Eine Einkaufsliste",
+    "chipBudget": "Unter dem Budget",
+    "appStoreSmall": "Download auf der",
+    "appStoreBig": "App Store",
+    "playStoreSmall": "Los geht’s!",
+    "playStoreBig": "Google Play"
+  },
+  "marquee": {
+    "heading": "Aufbauend auf den Supermärkten, in denen Sie bereits einkaufen"
+  },
+  "stats": {
+    "timeNum": "5 Minuten",
+    "timeLabel": "zu einem Plan für eine ganze Woche",
+    "dinnersNum": "Bis zu 7",
+    "dinnersLabel": "jeden Woche Abendessen",
+    "listNum": "1",
+    "listLabel": "Intelligente Einkaufsliste",
+    "savingLabel": "typische wöchentliche Ersparnis*"
+  },
+  "how": {
+    "eyebrow": "So funktioniert es",
+    "title": "Das Abendessen ist im Handumdrehen erledigt",
+    "sub": "Keine Tabellenkalkulationen, kein Scrollen durch Rezeptblogs. Erzähl mir einfach ein bisschen was über dich, und es übernimmt die Planung.",
+    "step1Title": "Wählen Sie Ihre Filiale aus",
+    "step1Body": "Aldi, Lidl, EDEKA und viele mehr. Die Preise und Listen sind auf die Geschäfte abgestimmt, in denen Sie tatsächlich einkaufen.",
+    "step2Title": "Stellen Sie Ihre Einstellungen ein",
+    "step2Body": "Budget, Ernährungsbedürfnisse, Allergien, Küchenausstattung und die Art von Essen, auf die du gerade Lust hast.",
+    "step3Title": "Holen Sie sich Ihren Plan",
+    "step3Body": "Bis zu sieben Abendessen für die Woche mit übersichtlichen Rezepten und cleverer Wiederverwendung von Zutaten.",
+    "step4Title": "Einmal einkaufen",
+    "step4Body": "Eine übersichtliche Liste, sortiert nach Ihren Einkaufsgewohnheiten, damit nichts doppelt aufgeführt oder vergessen wird."
+  },
+  "showcaseA": {
+    "eyebrow": "Individuell gestaltet",
+    "title": "Ein Plan, der ganz auf Sie zugeschnitten ist – keine Standardvorlage",
+    "body": "mise berücksichtigt Ihr Budget, die Anzahl der Personen, die Sie versorgen, Ihre Ernährungsbedürfnisse und die Stimmung, auf die Sie diese Woche Lust haben. Jeder Plan ist ganz auf Sie zugeschnitten.",
+    "tick1": "Preisbewusste Mahlzeiten, die Ihr wöchentliches Budget schonen",
+    "tick2": "Für Vegetarier, Veganer, Pescatarier, Menschen mit Glutenunverträglichkeit und mehr geeignet – ohne Bedenken hinsichtlich Ernährung und Allergien",
+    "tick3": "Geräte für Ihre Küche – von der Heißluftfritteuse über reine Kochfelder bis hin zum Slow Cooker",
+    "tick4": "Schmeckt dir ein Gericht nicht? Tausch es mit einem Fingertipp aus"
+  },
+  "showcaseB": {
+    "eyebrow": "Rezepte, die zubereitet werden",
+    "title": "Normales Essen, klare Abläufe, kein Koch-Quatsch",
+    "body": "Jedes Rezept ist für einen ganz normalen Abend unter der Woche gedacht – mit alltagstauglichen Zutaten, realistischen Zubereitungszeiten und Schritten, die jeder nachvollziehen kann.",
+    "tick1": "Realistische Zubereitungs- und Kochzeiten von vornherein",
+    "tick2": "Zutaten werden über die Woche hinweg wiederverwendet, um Abfall zu vermeiden",
+    "tick3": "Entdecken Sie verschiedene Küchen, wenn Sie mal Abwechslung möchten",
+    "tick4": "Passt sich der Größe Ihres Haushalts an"
+  },
+  "features": {
+    "eyebrow": "Funktionen",
+    "title": "Alles, was Sie brauchen, um sich diese Woche gesund zu ernähren",
+    "sub": "Die Planungshilfe eines Kochbox-Dienstes – aber ohne die winzigen Portionen und die hohe Rechnung.",
+    "f1Title": "Wöchentliche Speisepläne",
+    "f1Body": "Jede Woche werden bis zu sieben Abendessen für Sie zusammengestellt – fertig zum Kochen und ganz einfach anzupassen.",
+    "f2Title": "Eine intelligente Liste",
+    "f2Body": "Alle Ihre Zutaten in einer einzigen Liste zusammengefasst und für Ihren Einkauf im Supermarkt gruppiert.",
+    "f3Title": "Budgetbewusst",
+    "f3Body": "Legen Sie Ihr wöchentliches Budget fest und planen Sie Mahlzeiten, mit denen Sie dieses Budget einhalten können.",
+    "f4Title": "Filter für Ernährung und Allergien",
+    "f4Body": "Vegetarisch, vegan, pescetarisch, glutenfrei und allergenarm – von Grund auf berücksichtigt.",
+    "f5Title": "Austauschen und erneuern",
+    "f5Body": "Keine Lust auf eine Mahlzeit? Tausche sie aus oder plane die ganze Woche mit einem Fingertipp neu.",
+    "f6Title": "Köche für Ihre Küche",
+    "f6Body": "Sag mir, wie sich deine Geräte und Rezepte anpassen lassen – von der Heißluftfritteuse bis hin zu reinen Kochfeldern und mehr.",
+    "f7Title": "Nach Küche entdecken",
+    "f7Body": "Entdecken Sie eine Welt voller Rezepte und fügen Sie Ihre Favoriten direkt in Ihren Plan ein.",
+    "f8Title": "Weniger Lebensmittelverschwendung",
+    "f8Body": "Zutaten werden, wo es sinnvoll ist, für verschiedene Mahlzeiten wiederverwendet, sodass weniger im Müll landet.",
+    "f9Title": "Für den Hausgebrauch konzipiert",
+    "f9Body": "Planen Sie entsprechend der Anzahl der Personen, die Sie bewirten, und teilen Sie sich die Arbeit mit der Familie."
+  },
+  "vibesSection": {
+    "eyebrow": "Stimmung beim Essen",
+    "title": "Sag mir, worauf du Lust hast, dann besorge ich das Essen",
+    "sub": "Wähle ein paar Stimmungen aus, und schon passt dein Plan genau zu dem, worauf du diese Woche Lust hast.",
+    "quickEasy": "Schnelle Gerichte",
+    "lowCalorie": "Kalorienarm",
+    "familyFavourites": "Familienfavoriten",
+    "healthyComfort": "Gesunder Comfort",
+    "fakeaway": "Fakeaway",
+    "gutFriendly": "Magenfreundlich",
+    "highProtein": "Proteinreich",
+    "britishClassics": "Britische Klassiker"
+  },
+  "gallery": {
+    "eyebrow": "Schau mal rein",
+    "title": "Wunderschön einfach, von Anfang bis Ende",
+    "sub": "Wische durch die App."
+  },
+  "reviewsSection": {
+    "eyebrow": "★★★★★ Bei Hobbyköchen sehr beliebt",
+    "title": "Echte Wochentage – alles geregelt",
+    "sub": "Ein paar Worte von Menschen, die sich von „mise“ ihre Woche planen lassen.",
+    "r1Title": "Ok, hat das tatsächlich geholfen??",
+    "r1Body": "Hätte nicht gedacht, dass ich noch eine App brauche, aber meine Ausgaben für Lebensmittel sind definitiv gesunken. Keine Ahnung, vielleicht 25–30 Euro? Meine Frau schickt mir jetzt die Einkaufsliste, damit ich nicht einfach durch den Aldi laufe und Sachen hinzufüge.",
+    "r1User": "aldishopper_tx",
+    "r2Title": "Normales Essen, kein Gourmetessen",
+    "r2Body": "Nach der Arbeit lässt sich alles machen, was im Grunde meine einzige Voraussetzung ist, lol. Keine seltsamen Zutaten, die meine Kinder nicht anrühren wollen.",
+    "r2User": "mike.r1987",
+    "r3Title": "Die Liste ist das Beste daran",
+    "r3Body": "Aldi wählen, Plan holen, die Liste per SMS an meinen Mann schicken. Vorher haben wir jede Woche zweimal dieselben Sachen gekauft.",
+    "r3User": "k.martinez88",
+    "r4Title": "Hellofresh gekündigt",
+    "r4Body": "Das gleiche Grundkonzept, aber ohne winzige Portionen und die wahnsinnige Rechnung. Erfüllt genau meine Anforderungen.",
+    "r4User": "tiredoftakeout",
+    "r5Title": "Mein Mann kocht jetzt irgendwie",
+    "r5Body": "Die Schritte sind so klar, dass er aufgehört hat, standardmäßig etwa zweimal pro Woche auf DoorDash zurückzugreifen. Das hätte ich nicht erwartet.",
+    "r5User": "jen_mpls",
+    "r6Title": "nach der Arbeit schnell genug",
+    "r6Body": "Das meiste dauert etwa 30 Minuten. Das ist buchstäblich der Grund, warum ich dafür weiterbezahlt habe – nichts Besonderes.",
+    "r6User": "weeknightdad92"
+  },
+  "faqSection": {
+    "eyebrow": "Häufig gestellte Fragen",
+    "title": "Gut zu wissen",
+    "q1": "Welche Supermärkte werden von mise unterstützt?",
+    "a1": "Die App basiert auf großen Supermarktketten wie Aldi, Lidl, EDEKA, REWE, Kaufland, Netto und weiteren und unterstützt Filialen in mehreren Ländern. Ihr Plan und Ihre Einkaufsliste werden auf das von Ihnen ausgewählte Geschäft abgestimmt.",
+    "q2": "Wird auf Ernährungsbedürfnisse und Allergien Rücksicht genommen?",
+    "a2": "Ja. Legen Sie Ihre Ernährungspräferenzen fest, z. B. vegetarisch, vegan, pescetarisch oder glutenfrei, und geben Sie Allergene an, die vermieden werden sollen. Bitte überprüfen Sie vor dem Kochen stets die Zutatenangaben. mise kann keine Garantie für die Allergenfreiheit übernehmen.",
+    "q3": "Wie viel kostet die Mise?",
+    "a3": "mise ist ein Abonnement. Sie können die App erkunden und sich mit ihrer Funktionsweise vertraut machen. Der volle Planungsumfang wird durch ein Abonnement freigeschaltet, das über den App Store oder Google Play verwaltet wird. Sie können das Abonnement jederzeit über Ihr Store-Konto kündigen.",
+    "q4": "Muss ich jede Mahlzeit aus meinem Ernährungsplan selbst zubereiten?",
+    "a4": "Aber natürlich nicht. Planen Sie so viele oder so wenige Übernachtungen ein, wie Sie möchten – bis zu sieben. Tauschen Sie jede Mahlzeit aus, auf die Sie keine Lust haben, stellen Sie die gesamte Woche neu zusammen oder kochen Sie einfach nur die Gerichte, die Ihnen schmecken. Ihre Einkaufsliste wird entsprechend aktualisiert.",
+    "q5": "Werde ich dadurch wirklich Geld sparen?",
+    "a5": "Die meisten Menschen sparen, indem sie vorausplanen, nur das kaufen, was sie brauchen, und Zutaten für verschiedene Mahlzeiten wiederverwenden. Die Höhe der Einsparungen variiert je nach Haushalt und Geschäft.",
+    "q6": "Sind meine Daten geschützt?",
+    "a6": "Wir verwenden Ihre Präferenzen ausschließlich zur Erstellung Ihrer Pläne und verkaufen Ihre personenbezogenen Daten niemals. Weitere Informationen finden Sie in unserer <a href=\"privacy.html\">Datenschutzerklärung</a>."
+  },
+  "cta": {
+    "title": "Die Abendessen für die ganze Woche – schon heute Abend geplant",
+    "sub": "Laden Sie die App herunter und erhalten Sie in etwa fünf Minuten einen individuellen Plan und eine Einkaufsliste."
+  },
+  "footer": {
+    "about": "Individuell abgestimmte Wochenmenüpläne und eine praktische Einkaufsliste, ganz auf Ihr Budget und Ihren Supermarkt zugeschnitten. Gut essen, weniger Stress.",
+    "product": "Produkt",
+    "getApp": "Lade die App herunter",
+    "company": "Unternehmen",
+    "mealVibes": "Stimmung beim Essen",
+    "support": "Support",
+    "privacy": "Datenschutzerklärung",
+    "terms": "Nutzungsbedingungen",
+    "contact": "Kontakt",
+    "rights": "TEGS Labs Ltd. Alle Rechte vorbehalten.",
+    "madeIn": "Hergestellt mit 🥬 in Großbritannien · *Die Ersparnisse variieren je nach Haushalt und Geschäft."
+  }
+}
