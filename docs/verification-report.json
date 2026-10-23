@@ -1,0 +1,121 @@
+{
+  "homepage": {
+    "status": "PASS",
+    "checks": [
+      "Page title matches: \"mise · Meal Planner App | Weekly Meal Plans, Recipes & Meal Prep\"",
+      "Section #top exists: true",
+      "Section #how exists: true",
+      "Section #features exists: true",
+      "Section #vibes exists: true",
+      "Section #reviews exists: true",
+      "Section #faq exists: true",
+      "Section #download exists: true"
+    ]
+  },
+  "navigation": {
+    "status": "PASS",
+    "checks": [
+      "Nav anchor /#how found: true",
+      "Nav anchor /#features found: true",
+      "Nav anchor /#vibes found: true",
+      "Nav anchor /#reviews found: true",
+      "Nav anchor /#faq found: true"
+    ]
+  },
+  "languageSwitch": {
+    "status": "PASS",
+    "checks": [
+      "Switched to Deutsch successfully: true",
+      "Switched back to English successfully"
+    ]
+  },
+  "faqAccordion": {
+    "status": "PASS",
+    "checks": [
+      "All 6 FAQ accordions toggle aria-expanded properly: true"
+    ]
+  },
+  "mobileMenu": {
+    "status": "PASS",
+    "checks": [
+      "Mobile drawer opened on click: true"
+    ]
+  },
+  "infoPages": {
+    "status": "PASS",
+    "checks": [
+      "/support renders with heading: \"Support\"",
+      "/privacy renders with heading: \"Privacy Policy\"",
+      "/terms renders with heading: \"Terms of Service\"",
+      "Terms contains Section 4 Allergy Disclaimer: true"
+    ]
+  },
+  "authAndOnboarding": {
+    "status": "PASS",
+    "checks": [
+      "Registration created user and redirected to /onboarding: cook_1792736373025@test.com"
+    ]
+  },
+  "mealPlanAndSwap": {
+    "status": "PASS",
+    "checks": [
+      "Plan greeting displayed: \"Elena!\"",
+      "Dinners rendered count: 10",
+      "Weekly plan broken images: 0"
+    ]
+  },
+  "recipeDetail": {
+    "status": "PASS",
+    "checks": [
+      "Recipe title: \"Mediterranean Greek Salad with Warm Pitta\"",
+      "Recipe detail displays mandatory food safety notice: true",
+      "Recipe detail broken images: 0"
+    ]
+  },
+  "exploreAndCuisines": {
+    "status": "PASS",
+    "checks": [
+      "Explore header: \"Explore by cuisine\"",
+      "Cuisine cards count: 6",
+      "Explore images broken: 0",
+      "Filtered recipes by Italian cuisine successfully"
+    ]
+  },
+  "preferencesManagement": {
+    "status": "PASS",
+    "checks": [
+      "Preferences heading: \"preferences\""
+    ]
+  },
+  "shoppingList": {
+    "status": "PASS",
+    "checks": [
+      "Grocery list items count: 68",
+      "Copy button activated: \"Copied!\""
+    ]
+  },
+  "dataIsolation": {
+    "status": "PASS",
+    "checks": [
+      "Data isolation confirmed: Logged-in user is \"Chef Alex\", distinct from registered user."
+    ]
+  },
+  "consoleAndNetworkErrors": [
+    "[Console Error]: Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "[Console Error]: Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "[Console Error]: Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "[Console Error]: Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "[Console Error]: Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "[Console Error]: Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "[Console Error]: Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "[Console Error]: Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "[Console Error]: Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "[Console Error]: Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "[Console Error]: Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "[Console Error]: Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "[Console Error]: Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "[Console Error]: Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+  ],
+  "brokenImages": [],
+  "realErrors": []
+}

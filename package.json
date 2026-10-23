@@ -11,10 +11,12 @@
     "install:all": "npm install",
     "dev": "concurrently \"npm run dev --workspace=server\" \"npm run dev --workspace=client\"",
     "build": "npm run build --workspace=server && npm run build --workspace=client",
+    "start:server": "npm run start --workspace=server",
     "test": "npm run test --workspace=server && npm run test --workspace=client",
     "seed": "npm run seed --workspace=server"
   },
   "devDependencies": {
-    "concurrently": "^9.1.2"
+    "concurrently": "^9.1.2",
+    "playwright-core": "^1.64.1"
   }
 }

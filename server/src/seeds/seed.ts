@@ -14,16 +14,16 @@ export const seedDatabase = async (): Promise<void> => {
   try {
     await connectDB();
 
-    console.log('[Seed] Clearing existing recipes and indexes...');
-    try {
-      await Recipe.collection.drop();
-    } catch {
-      await Recipe.deleteMany({});
+    console.log('[Seed] Synchronizing recipe catalogue (upserting by slug to preserve existing IDs)...');
+    for (const recipe of SEED_RECIPES) {
+      await Recipe.findOneAndUpdate(
+        { slug: recipe.slug },
+        { $set: recipe },
+        { upsert: true, new: true, setDefaultsOnInsert: true }
+      );
     }
-
-    console.log('[Seed] Inserting recipes...');
-    const insertedRecipes = await Recipe.insertMany(SEED_RECIPES);
-    console.log(`[Seed] Successfully inserted ${insertedRecipes.length} recipes.`);
+    const insertedRecipes = await Recipe.find();
+    console.log(`[Seed] Successfully synchronized ${insertedRecipes.length} recipes.`);
 
     // Upsert Demo User
     const demoEmail = 'chef@misemealplanner.com';

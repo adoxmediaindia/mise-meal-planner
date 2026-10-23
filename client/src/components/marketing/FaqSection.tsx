@@ -67,7 +67,7 @@ export const FaqSection: React.FC = () => {
       a: (
         <p>
           We only use your preferences to build your plans and never sell your personal information. See our{' '}
-          <Link to="/privacy" className="text-[#8bc020] underline font-semibold">
+          <Link to="/privacy" style={{ color: 'var(--primary-dark)', textDecoration: 'underline', fontWeight: 600 }}>
             Privacy Policy
           </Link>{' '}
           for details.
@@ -81,42 +81,71 @@ export const FaqSection: React.FC = () => {
   };
 
   return (
-    <section className="py-16 sm:py-24 bg-white" id="faq">
-      <div className="w-full max-w-[760px] mx-auto px-5 sm:px-6">
-        <div className="text-center mb-12">
-          <span className="inline-flex items-center font-sans font-bold text-xs uppercase tracking-wider text-[#8bc020] bg-[#9ed034]/15 px-3.5 py-1.5 rounded-full mb-4">
-            {t('faqSection.eyebrow', 'FAQ')}
-          </span>
-          <h2 className="font-serif font-semibold text-[32px] sm:text-[44px] text-[#2a2a2a] leading-tight">
-            {t('faqSection.title', 'Good to know')}
-          </h2>
+    <section className="section" id="faq" style={{ background: '#fff' }}>
+      <div className="container">
+        <div className="section-head">
+          <span className="eyebrow">{t('faqSection.eyebrow', 'FAQ')}</span>
+          <h2>{t('faqSection.title', 'Good to know')}</h2>
         </div>
 
-        <div className="space-y-3.5">
+        <div className="faq">
           {faqs.map((faq, index) => {
             const isOpen = openIndex === index;
             return (
               <div
                 key={index}
-                className="bg-[#fafaf8] rounded-2xl border border-[#2a2a2a]/6 px-6 py-1 transition-all shadow-sm"
+                style={{
+                  background: 'var(--surface)',
+                  borderRadius: 'var(--radius-sm)',
+                  boxShadow: isOpen ? 'var(--shadow-md)' : 'var(--shadow-sm)',
+                  padding: '4px 24px',
+                  transition: 'box-shadow 0.2s ease',
+                }}
               >
                 <button
                   type="button"
                   onClick={() => toggle(index)}
-                  className="w-full py-4 text-left font-bold text-[16px] sm:text-[17px] text-[#2a2a2a] flex items-center justify-between gap-4 cursor-pointer focus:outline-none"
+                  style={{
+                    width: '100%',
+                    padding: '20px 0',
+                    border: 'none',
+                    background: 'transparent',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    fontFamily: 'inherit',
+                    fontWeight: 700,
+                    fontSize: '17px',
+                    color: 'var(--text)',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    gap: '16px',
+                  }}
                   aria-expanded={isOpen}
                 >
                   <span>{faq.q}</span>
                   <span
-                    className={`text-2xl font-light text-[#8bc020] transition-transform duration-200 select-none ${
-                      isOpen ? 'rotate-45' : ''
-                    }`}
+                    style={{
+                      fontSize: '24px',
+                      color: 'var(--primary-dark)',
+                      fontWeight: 400,
+                      transform: isOpen ? 'rotate(45deg)' : 'none',
+                      transition: 'transform 0.2s ease',
+                      flexShrink: 0,
+                    }}
                   >
                     +
                   </span>
                 </button>
                 {isOpen && (
-                  <div className="pb-5 pt-1 text-sm sm:text-[15px] text-[#6b6b6b] leading-relaxed border-t border-[#2a2a2a]/5 animate-fadeIn">
+                  <div
+                    style={{
+                      color: 'var(--muted)',
+                      fontSize: '15.5px',
+                      lineHeight: '1.6',
+                      paddingBottom: '20px',
+                    }}
+                  >
                     {faq.a}
                   </div>
                 )}

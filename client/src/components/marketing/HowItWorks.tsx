@@ -28,16 +28,12 @@ export const HowItWorks: React.FC = () => {
   ];
 
   return (
-    <section className="py-16 sm:py-24" id="how">
-      <div className="w-full max-w-[1120px] mx-auto px-5 sm:px-6">
-        <div className="max-w-[640px] mx-auto text-center mb-12 sm:mb-16">
-          <span className="inline-flex items-center font-sans font-bold text-xs uppercase tracking-wider text-[#8bc020] bg-[#9ed034]/15 px-3.5 py-1.5 rounded-full mb-4">
-            {t('how.eyebrow', 'How it works')}
-          </span>
-          <h2 className="font-serif font-semibold text-[32px] sm:text-[44px] text-[#2a2a2a] leading-tight mb-4">
-            {t('how.title', 'Dinner sorted in seconds')}
-          </h2>
-          <p className="text-base sm:text-lg text-[#6b6b6b]">
+    <section className="section" id="how">
+      <div className="container">
+        <div className="section-head">
+          <span className="eyebrow">{t('how.eyebrow', 'How it works')}</span>
+          <h2>{t('how.title', 'Dinner sorted in seconds')}</h2>
+          <p>
             {t(
               'how.sub',
               'No spreadsheets, no scrolling recipe blogs. Just tell mise a little about you and it does the planning.'
@@ -45,21 +41,12 @@ export const HowItWorks: React.FC = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="steps">
           {steps.map((step) => (
-            <div
-              key={step.num}
-              className="bg-white rounded-[24px] p-7 shadow-[0_4px_16px_rgba(42,42,42,0.06)] border border-[#2a2a2a]/5 hover:shadow-[0_12px_32px_rgba(42,42,42,0.1)] hover:-translate-y-1 transition-all"
-            >
-              <div className="w-11 h-11 rounded-full bg-[#9ed034] text-[#1f2a06] font-extrabold flex items-center justify-center text-lg mb-5 shadow-sm">
-                {step.num}
-              </div>
-              <h3 className="font-serif font-semibold text-xl text-[#2a2a2a] mb-2.5">
-                {step.title}
-              </h3>
-              <p className="text-sm sm:text-[15px] text-[#6b6b6b] leading-relaxed">
-                {step.body}
-              </p>
+            <div key={step.num} className="step">
+              <div className="step-num">{step.num}</div>
+              <h3>{step.title}</h3>
+              <p>{step.body}</p>
             </div>
           ))}
         </div>

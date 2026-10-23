@@ -22,22 +22,25 @@ export const SupermarketMarquee: React.FC = () => {
   const doubled = [...stores, ...stores];
 
   return (
-    <section className="py-10 overflow-hidden" aria-label="Supported supermarkets">
-      <div className="w-full max-w-[1120px] mx-auto px-5 text-center mb-4">
-        <p className="text-sm sm:text-base font-semibold text-[#6b6b6b]">
+    <section className="section--tight" aria-label="Supported supermarkets">
+      <div className="container">
+        <p
+          style={{
+            textAlign: 'center',
+            color: 'var(--muted)',
+            fontWeight: 600,
+            marginBottom: '6px',
+            fontSize: '15px',
+          }}
+        >
           {t('marquee.heading', 'Built around the supermarkets you already shop at')}
         </p>
       </div>
 
-      <div className="relative w-full overflow-hidden [mask-image:linear-gradient(90deg,transparent,#000_12%,#000_88%,transparent)]">
-        <div className="flex gap-10 sm:gap-14 w-max animate-marquee py-3">
+      <div className="marquee">
+        <div className="marquee-track" id="marqueeTrack">
           {doubled.map((store, index) => (
-            <span
-              key={`${store}-${index}`}
-              className="font-serif text-xl sm:text-2xl font-semibold text-[#9a9a94] whitespace-nowrap select-none hover:text-[#2a2a2a] transition-colors"
-            >
-              {store}
-            </span>
+            <span key={`${store}-${index}`}>{store}</span>
           ))}
         </div>
       </div>

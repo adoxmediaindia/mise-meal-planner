@@ -15,7 +15,7 @@ export const Explore: React.FC = () => {
     {
       name: 'Italian',
       subtitle: 'Pasta • Risotto • Gnocchi',
-      image: 'https://images.unsplash.com/photo-1621996346565-e3d5d6281691?auto=format&fit=crop&w=600&q=80',
+      image: 'https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=600&q=80',
     },
     {
       name: 'Asian',
@@ -40,7 +40,7 @@ export const Explore: React.FC = () => {
     {
       name: 'British',
       subtitle: 'Pies • Roasts • Comforts',
-      image: 'https://images.unsplash.com/photo-1584947897537-8e6840902c52?auto=format&fit=crop&w=600&q=80',
+      image: 'https://images.unsplash.com/photo-1574484284002-952d92456975?auto=format&fit=crop&w=600&q=80',
     },
   ];
 

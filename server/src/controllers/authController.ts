@@ -30,10 +30,11 @@ const generateTokenAndSetCookie = (res: Response, user: any) => {
     { expiresIn: '30d' }
   );
 
+  const isProduction = process.env.NODE_ENV === 'production';
   res.cookie('mise_token', token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    secure: isProduction,
+    sameSite: isProduction ? 'none' : 'lax',
     maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
   });
 
@@ -146,6 +147,11 @@ export const me = async (req: AuthRequest, res: Response): Promise<void> => {
 };
 
 export const logout = (_req: Request, res: Response): void => {
-  res.clearCookie('mise_token');
+  const isProduction = process.env.NODE_ENV === 'production';
+  res.clearCookie('mise_token', {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? 'none' : 'lax',
+  });
   res.json({ success: true, message: 'Logged out successfully' });
 };

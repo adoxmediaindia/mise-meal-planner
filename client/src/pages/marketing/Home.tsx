@@ -16,9 +16,9 @@ import { Footer } from '../../components/marketing/Footer.js';
 
 export const Home: React.FC = () => {
   return (
-    <div className="min-h-screen flex flex-col bg-[#fafaf8] text-[#2a2a2a]">
+    <>
       <Nav />
-      <main id="top" className="flex-1">
+      <main id="top">
         <Hero />
         <SupermarketMarquee />
         <StatsSection />
@@ -33,6 +33,6 @@ export const Home: React.FC = () => {
         <CtaBanner />
       </main>
       <Footer />
-    </div>
+    </>
   );
 };

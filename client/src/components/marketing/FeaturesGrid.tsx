@@ -62,38 +62,24 @@ export const FeaturesGrid: React.FC = () => {
   ];
 
   return (
-    <section className="py-16 sm:py-24 bg-white" id="features">
-      <div className="w-full max-w-[1120px] mx-auto px-5 sm:px-6">
-        <div className="max-w-[640px] mx-auto text-center mb-12 sm:mb-16">
-          <span className="inline-flex items-center font-sans font-bold text-xs uppercase tracking-wider text-[#8bc020] bg-[#9ed034]/15 px-3.5 py-1.5 rounded-full mb-4">
-            {t('features.eyebrow', 'Features')}
-          </span>
-          <h2 className="font-serif font-semibold text-[32px] sm:text-[44px] text-[#2a2a2a] leading-tight mb-4">
-            {t('features.title', 'Everything you need to eat well this week')}
-          </h2>
-          <p className="text-base sm:text-lg text-[#6b6b6b]">
+    <section className="section" id="features" style={{ background: '#fff' }}>
+      <div className="container">
+        <div className="section-head">
+          <span className="eyebrow">{t('features.eyebrow', 'Features')}</span>
+          <h2>{t('features.title', 'Everything you need to eat well this week')}</h2>
+          <p>
             {t('features.sub', 'The planning brain of a meal-kit service, without the tiny portions and the big bill.')}
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
+        <div className="feature-grid">
           {features.map((item, index) => (
-            <div
-              key={index}
-              className="bg-[#fafaf8] rounded-[24px] p-8 text-center border border-[#2a2a2a]/5 hover:shadow-[0_12px_32px_rgba(42,42,42,0.1)] hover:-translate-y-1 transition-all"
-            >
-              <div
-                className="w-14 h-14 rounded-[18px] flex items-center justify-center text-3xl mx-auto mb-4.5 shadow-sm"
-                style={{ backgroundColor: item.bg }}
-              >
+            <div key={index} className="feature">
+              <div className="icon" style={{ background: item.bg }}>
                 {item.icon}
               </div>
-              <h3 className="font-serif font-semibold text-xl text-[#2a2a2a] mb-2.5">
-                {item.title}
-              </h3>
-              <p className="text-sm sm:text-[15px] text-[#6b6b6b] leading-relaxed">
-                {item.body}
-              </p>
+              <h3>{item.title}</h3>
+              <p>{item.body}</p>
             </div>
           ))}
         </div>
