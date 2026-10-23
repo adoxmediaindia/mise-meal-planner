@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 import { z } from 'zod';
 import { User } from '../models/User.js';
 import { Preference } from '../models/Preference.js';
@@ -16,6 +17,15 @@ export const registerSchema = z.object({
 export const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(1, 'Password is required'),
+});
+
+export const forgotPasswordSchema = z.object({
+  email: z.string().email('Invalid email address'),
+});
+
+export const resetPasswordSchema = z.object({
+  token: z.string().min(1, 'Reset token is required'),
+  newPassword: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
 const generateTokenAndSetCookie = (res: Response, user: any) => {
@@ -154,4 +164,64 @@ export const logout = (_req: Request, res: Response): void => {
     sameSite: isProduction ? 'none' : 'lax',
   });
   res.json({ success: true, message: 'Logged out successfully' });
+};
+
+export const forgotPassword = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+
+    // For privacy, we return a success response even if the email does not exist
+    if (!user) {
+      res.json({
+        success: true,
+        message: 'If an account with that email exists, reset instructions have been generated.',
+      });
+      return;
+    }
+
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    user.resetPasswordToken = resetToken;
+    user.resetPasswordExpires = new Date(Date.now() + 3600000); // 1 hour
+    await user.save();
+
+    res.json({
+      success: true,
+      message: 'Password reset instructions have been generated.',
+      resetToken, // Provided for direct use and integration testing
+    });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+export const resetPassword = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { token, newPassword } = req.body;
+
+    const user = await User.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: new Date() },
+    });
+
+    if (!user) {
+      res.status(400).json({
+        success: false,
+        error: 'Password reset token is invalid or has expired.',
+      });
+      return;
+    }
+
+    user.password = newPassword;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    res.json({
+      success: true,
+      message: 'Password has been reset successfully. You can now log in.',
+    });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
 };

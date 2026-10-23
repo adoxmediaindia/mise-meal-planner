@@ -15,6 +15,8 @@ router.post('/auth/register', validate(authCtrl.registerSchema), authCtrl.regist
 router.post('/auth/login', validate(authCtrl.loginSchema), authCtrl.login);
 router.post('/auth/logout', authCtrl.logout);
 router.get('/auth/me', authenticate, authCtrl.me);
+router.post('/auth/forgot-password', validate(authCtrl.forgotPasswordSchema), authCtrl.forgotPassword);
+router.post('/auth/reset-password', validate(authCtrl.resetPasswordSchema), authCtrl.resetPassword);
 
 // 2. Preferences routes
 router.get('/preferences', authenticate, prefCtrl.getPreferences);
@@ -40,5 +42,6 @@ router.post('/shopping-list/reset', authenticate, shopCtrl.resetList);
 // 6. Subscriptions routes
 router.get('/subscriptions/status', authenticate, subCtrl.getStatus);
 router.post('/subscriptions/mock-upgrade', authenticate, subCtrl.mockUpgrade);
+router.post('/subscriptions/webhook', subCtrl.webhook);
 
 export default router;

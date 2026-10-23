@@ -46,6 +46,18 @@ export const api = {
   getMe: () =>
     request<{ success: boolean; data: any }>('/auth/me'),
 
+  forgotPassword: (email: string) =>
+    request<{ success: boolean; message: string; resetToken?: string }>('/auth/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    }),
+
+  resetPassword: (payload: { token: string; newPassword: string }) =>
+    request<{ success: boolean; message: string }>('/auth/reset-password', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+
   // Preferences
   getPreferences: () =>
     request<{ success: boolean; data: any }>('/preferences'),

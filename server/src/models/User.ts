@@ -8,6 +8,8 @@ export interface IUser extends Document {
   subscriptionTier: 'free' | 'pro';
   subscriptionStatus: 'active' | 'trial' | 'cancelled';
   favorites: mongoose.Types.ObjectId[];
+  resetPasswordToken?: string;
+  resetPasswordExpires?: Date;
   comparePassword(candidate: string): Promise<boolean>;
   createdAt: Date;
   updatedAt: Date;
@@ -32,6 +34,8 @@ const UserSchema = new Schema<IUser>(
       default: 'trial',
     },
     favorites: [{ type: Schema.Types.ObjectId, ref: 'Recipe' }],
+    resetPasswordToken: { type: String },
+    resetPasswordExpires: { type: Date },
   },
   { timestamps: true }
 );
