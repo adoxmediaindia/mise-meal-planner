@@ -105,9 +105,17 @@ export const Login: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-[#6b6b6b] mb-1.5">
-                Password
-              </label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#6b6b6b]">
+                  Password
+                </label>
+                <Link
+                  to="/auth/forgot-password"
+                  className="text-xs font-semibold text-[#8bc020] hover:underline"
+                >
+                  Forgot password?
+                </Link>
+              </div>
               <input
                 type="password"
                 required

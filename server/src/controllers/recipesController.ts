@@ -5,7 +5,7 @@ import { AuthRequest } from '../middleware/auth.js';
 
 export const getRecipes = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { cuisine, vibe, dietary, search, limit = '50' } = req.query;
+    const { cuisine, vibe, dietary, search, mealType, maxCookTime, excludeAllergens, limit = '50' } = req.query;
 
     const query: Record<string, any> = {};
 
@@ -21,6 +21,24 @@ export const getRecipes = async (req: Request, res: Response): Promise<void> => 
       query.dietaryTags = dietary;
     }
 
+    if (mealType && typeof mealType === 'string') {
+      query.mealTypes = mealType;
+    }
+
+    if (maxCookTime && typeof maxCookTime === 'string') {
+      const maxTime = parseInt(maxCookTime, 10);
+      if (!isNaN(maxTime) && maxTime > 0) {
+        query.cookTimeMinutes = { $lte: maxTime };
+      }
+    }
+
+    if (excludeAllergens && typeof excludeAllergens === 'string') {
+      const allergensList = excludeAllergens.split(',').map((a) => a.trim()).filter(Boolean);
+      if (allergensList.length > 0) {
+        query.allergens = { $nin: allergensList };
+      }
+    }
+
     if (search && typeof search === 'string') {
       query.$or = [
         { title: { $regex: search, $options: 'i' } },
@@ -32,6 +50,20 @@ export const getRecipes = async (req: Request, res: Response): Promise<void> => 
     const recipes = await Recipe.find(query).limit(parseInt(limit as string, 10));
 
     res.json({ success: true, count: recipes.length, data: recipes });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+export const getFavorites = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const user = await User.findById(req.user?.id).populate('favorites');
+    if (!user) {
+      res.status(404).json({ success: false, error: 'User not found' });
+      return;
+    }
+
+    res.json({ success: true, data: user.favorites || [] });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message });
   }

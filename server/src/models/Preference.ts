@@ -18,6 +18,7 @@ export interface IPreference extends Document {
   allergies: Allergen[];
   equipment: KitchenEquipment[];
   vibes: MealVibe[];
+  maxCookTimeMinutes?: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -52,6 +53,7 @@ const PreferenceSchema = new Schema<IPreference>(
     allergies: { type: [String], default: [] },
     equipment: { type: [String], default: ['Hob Only', 'Oven'] },
     vibes: { type: [String], default: ['Speedy Meals', 'Family Favs'] },
+    maxCookTimeMinutes: { type: Number, default: 60 },
   },
   { timestamps: true }
 );

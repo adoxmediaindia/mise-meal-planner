@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
-import { ClipboardList, Compass, Sliders, Settings as SettingsIcon, Smartphone, Monitor } from 'lucide-react';
+import { ClipboardList, Compass, Sliders, Settings as SettingsIcon, Smartphone, Monitor, Package } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.js';
 
 export const AppShell: React.FC = () => {
@@ -10,6 +10,7 @@ export const AppShell: React.FC = () => {
 
   const tabs = [
     { to: '/app/plan', label: 'plan', icon: ClipboardList },
+    { to: '/app/pantry', label: 'pantry', icon: Package },
     { to: '/app/explore', label: 'explore', icon: Compass },
     { to: '/app/preferences', label: 'preferences', icon: Sliders },
     { to: '/app/settings', label: 'settings', icon: SettingsIcon },
@@ -28,6 +29,14 @@ export const AppShell: React.FC = () => {
           </NavLink>
           <span className="hidden sm:inline text-gray-300">|</span>
           <span className="hidden sm:inline">Logged in as: <strong>{user?.name}</strong> ({user?.subscriptionTier.toUpperCase()} TIER)</span>
+          {user?.role === 'admin' && (
+            <NavLink
+              to="/app/admin"
+              className="font-bold text-purple-700 bg-purple-100 hover:bg-purple-200 px-2 py-0.5 rounded-md transition-colors"
+            >
+              👑 Admin Console
+            </NavLink>
+          )}
         </div>
 
         {/* View mode toggle */}

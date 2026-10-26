@@ -29,6 +29,18 @@ coverage/
 test-results/
 playwright-report/
 
+# Mobile / Expo build artifacts and credentials
+.expo/
+**/.expo/
+.eas/
+**/.eas/
+*.keystore
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
 # OS and IDE files
 .DS_Store
 Thumbs.db

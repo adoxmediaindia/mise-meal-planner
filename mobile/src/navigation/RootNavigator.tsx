@@ -11,6 +11,7 @@ import { ForgotPasswordScreen } from '../screens/auth/ForgotPasswordScreen';
 
 // App Screens
 import { PlanScreen } from '../screens/app/PlanScreen';
+import { PantryScreen } from '../screens/app/PantryScreen';
 import { GroceryScreen } from '../screens/app/GroceryScreen';
 import { ExploreScreen } from '../screens/app/ExploreScreen';
 import { PreferencesScreen } from '../screens/app/PreferencesScreen';
@@ -19,7 +20,7 @@ import { RecipeDetailScreen } from '../screens/app/RecipeDetailScreen';
 import { LoadingState } from '../components/common/LoadingState';
 
 type AuthRoute = 'LOGIN' | 'REGISTER' | 'FORGOT_PASSWORD';
-type TabRoute = 'PLAN' | 'GROCERY' | 'EXPLORE' | 'PREFS' | 'PROFILE';
+type TabRoute = 'PLAN' | 'PANTRY' | 'GROCERY' | 'EXPLORE' | 'PREFS' | 'PROFILE';
 
 export const RootNavigator: React.FC = () => {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
@@ -87,6 +88,9 @@ export const RootNavigator: React.FC = () => {
             onNavigateToPreferences={() => setActiveTab('PREFS')}
           />
         )}
+        {activeTab === 'PANTRY' && (
+          <PantryScreen onSelectRecipe={setSelectedRecipe} />
+        )}
         {activeTab === 'GROCERY' && (
           <GroceryScreen onNavigateToPlan={() => setActiveTab('PLAN')} />
         )}
@@ -108,6 +112,18 @@ export const RootNavigator: React.FC = () => {
           </Text>
           <Text style={[styles.tabLabel, activeTab === 'PLAN' && styles.tabLabelActive]}>
             Plan
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.tabItem}
+          onPress={() => setActiveTab('PANTRY')}
+        >
+          <Text style={[styles.tabIcon, activeTab === 'PANTRY' && styles.tabIconActive]}>
+            🥫
+          </Text>
+          <Text style={[styles.tabLabel, activeTab === 'PANTRY' && styles.tabLabelActive]}>
+            Pantry
           </Text>
         </TouchableOpacity>
 

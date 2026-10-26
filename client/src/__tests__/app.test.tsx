@@ -9,6 +9,8 @@ import { AllergyBanner } from '../components/common/AllergyBanner.js';
 import { Button } from '../components/common/Button.js';
 import { StoreBadge } from '../components/common/StoreBadge.js';
 import { StatsSection } from '../components/marketing/StatsSection.js';
+import { ForgotPassword } from '../pages/auth/ForgotPassword.js';
+import { Login } from '../pages/auth/Login.js';
 
 describe('Mise Client UI Components', () => {
   it('renders AllergyBanner with mandatory safety notice', () => {
@@ -52,5 +54,49 @@ describe('Mise Client UI Components', () => {
     expect(screen.getByText(/Up to 7/i)).toBeInTheDocument();
     expect(screen.getByText(/1/i)).toBeInTheDocument();
     expect(screen.getByText(/typical weekly saving\*/i)).toBeInTheDocument();
+  });
+
+  it('renders Login page with visible Forgot Password link', () => {
+    render(
+      <BrowserRouter>
+        <AuthProvider>
+          <Login />
+        </AuthProvider>
+      </BrowserRouter>
+    );
+
+    const forgotLink = screen.getByRole('link', { name: /Forgot password\?/i });
+    expect(forgotLink).toBeInTheDocument();
+    expect(forgotLink).toHaveAttribute('href', '/auth/forgot-password');
+  });
+
+  it('renders ForgotPassword page in recovery request mode', () => {
+    render(
+      <BrowserRouter>
+        <ForgotPassword />
+      </BrowserRouter>
+    );
+
+    expect(screen.getByText(/Reset your password/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Registered Email Address/i)).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /Send Recovery Instructions/i })
+    ).toBeInTheDocument();
+  });
+
+  it('renders ForgotPassword page in token reset mode', () => {
+    render(
+      <BrowserRouter>
+        <ForgotPassword defaultMode="reset" />
+      </BrowserRouter>
+    );
+
+    expect(screen.getByText(/Create new password/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Reset Token/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^New Password/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Confirm New Password/i)).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /Update Password/i })
+    ).toBeInTheDocument();
   });
 });

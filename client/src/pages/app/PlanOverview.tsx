@@ -4,29 +4,69 @@ import { usePlan } from '../../context/PlanContext.js';
 import { useAuth } from '../../context/AuthContext.js';
 import { Button } from '../../components/common/Button.js';
 import { AllergyBanner } from '../../components/common/AllergyBanner.js';
-import { Clock, Users, RefreshCw, ArrowLeftRight, Check, X } from 'lucide-react';
-import { DayOfWeek, IRecipe } from '../../types/index.js';
+import {
+  Clock,
+  Users,
+  RefreshCw,
+  ArrowLeftRight,
+  Check,
+  X,
+  Plus,
+  Trash2,
+  Calendar,
+  History,
+  Archive,
+} from 'lucide-react';
+import { DayOfWeek, IRecipe, MealType, IMealSlot } from '../../types/index.js';
 import { api } from '../../services/api.js';
 
 export const PlanOverview: React.FC = () => {
-  const { plan, shoppingList, isLoading, swapMeal, generatePlan, toggleDinnerCooked } = usePlan();
+  const {
+    plan,
+    shoppingList,
+    planHistory,
+    isLoading,
+    swapMeal,
+    addMealSlot,
+    removeMealSlot,
+    editMealSlot,
+    updateHouseholdSize,
+    archivePlan,
+    fetchPlanHistory,
+    generatePlan,
+    toggleDinnerCooked,
+  } = usePlan();
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const [isSwappingDay, setIsSwappingDay] = useState<DayOfWeek | null>(null);
+  const [activeMealTypeFilter, setActiveMealTypeFilter] = useState<MealType | 'all'>('all');
+  const [isSwappingSlot, setIsSwappingSlot] = useState<{ day: DayOfWeek; slotId?: string } | null>(null);
   const [candidateRecipes, setCandidateRecipes] = useState<IRecipe[]>([]);
   const [loadingCandidates, setLoadingCandidates] = useState(false);
   const [isRegenerating, setIsRegenerating] = useState(false);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+
+  // Add Meal Modal state
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [addDay, setAddDay] = useState<DayOfWeek>('Monday');
+  const [addMealType, setAddMealType] = useState<MealType>('dinner');
+  const [addServings, setAddServings] = useState<number>(plan?.householdSize || 2);
+  const [addSearch, setAddSearch] = useState('');
+  const [addRecipes, setAddRecipes] = useState<IRecipe[]>([]);
+  const [loadingAddRecipes, setLoadingAddRecipes] = useState(false);
+  const [addError, setAddError] = useState<string | null>(null);
 
   // Open Swap Modal
-  const handleOpenSwapModal = async (day: DayOfWeek) => {
-    setIsSwappingDay(day);
+  const handleOpenSwapModal = async (day: DayOfWeek, slotId?: string) => {
+    setIsSwappingSlot({ day, slotId });
     setLoadingCandidates(true);
     try {
       const res = await api.getRecipes();
       if (res.data) {
         // Exclude recipes currently in the plan
-        const currentRecipeIds = plan?.dinners.map((d) => d.recipe?._id) || [];
+        const currentRecipeIds = (plan?.meals && plan.meals.length > 0
+          ? plan.meals.map((m) => m.recipe?._id)
+          : plan?.dinners.map((d) => d.recipe?._id)) || [];
         const available = res.data.filter((r) => !currentRecipeIds.includes(r._id));
         setCandidateRecipes(available);
       }
@@ -38,12 +78,57 @@ export const PlanOverview: React.FC = () => {
   };
 
   const handleSelectSwap = async (recipeId: string) => {
-    if (!isSwappingDay) return;
+    if (!isSwappingSlot) return;
     try {
-      await swapMeal(isSwappingDay, recipeId);
-      setIsSwappingDay(null);
+      if (isSwappingSlot.slotId) {
+        await editMealSlot(isSwappingSlot.slotId, { recipeId });
+      } else {
+        await swapMeal(isSwappingSlot.day, recipeId);
+      }
+      setIsSwappingSlot(null);
     } catch (err: any) {
       alert(err.message || 'Failed to swap meal');
+    }
+  };
+
+  // Open Add Meal Modal
+  const handleOpenAddModal = async (defaultDay?: DayOfWeek) => {
+    if (defaultDay) setAddDay(defaultDay);
+    setAddServings(plan?.householdSize || 2);
+    setAddError(null);
+    setIsAddModalOpen(true);
+    setLoadingAddRecipes(true);
+    try {
+      const res = await api.getRecipes();
+      setAddRecipes(res.data || []);
+    } catch {
+      setAddRecipes([]);
+    } finally {
+      setLoadingAddRecipes(false);
+    }
+  };
+
+  const handleAddMealSubmit = async (recipeId: string) => {
+    setAddError(null);
+    try {
+      await addMealSlot(addDay, addMealType, recipeId, addServings);
+      setIsAddModalOpen(false);
+    } catch (err: any) {
+      setAddError(err.message || 'Failed to add meal to planner');
+    }
+  };
+
+  const handleOpenHistory = async () => {
+    setIsHistoryOpen(true);
+    await fetchPlanHistory();
+  };
+
+  const handleArchiveWeek = async () => {
+    if (!confirm('Archive current week and start fresh with a new meal plan?')) return;
+    try {
+      await archivePlan();
+    } catch (err: any) {
+      alert(err.message || 'Failed to archive plan');
     }
   };
 
@@ -88,33 +173,107 @@ export const PlanOverview: React.FC = () => {
     }
   };
 
+  const getMealTypeBadge = (mealType?: string) => {
+    switch (mealType) {
+      case 'breakfast':
+        return 'bg-amber-100 text-amber-800 border-amber-200';
+      case 'lunch':
+        return 'bg-emerald-100 text-emerald-800 border-emerald-200';
+      case 'snack':
+        return 'bg-purple-100 text-purple-800 border-purple-200';
+      default:
+        return 'bg-sky-100 text-sky-800 border-sky-200';
+    }
+  };
+
+  // Prepare list of display slots (using meals array if populated, falling back to dinners)
+  const displaySlots = (plan?.meals && plan.meals.length > 0)
+    ? plan.meals.filter((m) => activeMealTypeFilter === 'all' || m.mealType === activeMealTypeFilter)
+    : (plan?.dinners || []).map((d, i) => ({
+        id: `dinner_${i}_${d.day}`,
+        day: d.day,
+        mealType: 'dinner' as MealType,
+        recipe: d.recipe,
+        servings: plan?.householdSize || 2,
+        isCooked: d.isCooked,
+      })).filter(() => activeMealTypeFilter === 'all' || activeMealTypeFilter === 'dinner');
+
+  const daysOfWeek: DayOfWeek[] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
   return (
     <div className="space-y-5 animate-fadeIn pb-6">
-      {/* Greeting Header */}
-      <div>
-        <span className="block text-xs font-bold uppercase tracking-widest text-[#9a9a94]">
-          Good Afternoon
-        </span>
-        <h1 className="font-serif text-3xl font-bold text-[#2a2a2a] mt-0.5">
-          {user?.name ? `${user.name.split(' ')[0]}!` : 'Chef!'}
-        </h1>
+      {/* Greeting Header & History CTA */}
+      <div className="flex items-center justify-between">
+        <div>
+          <span className="block text-xs font-bold uppercase tracking-widest text-[#9a9a94]">
+            Weekly Smart Planner
+          </span>
+          <h1 className="font-serif text-3xl font-bold text-[#2a2a2a] mt-0.5">
+            {user?.name ? `${user.name.split(' ')[0]}!` : 'Chef!'}
+          </h1>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handleOpenHistory}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-gray-200 text-xs font-bold text-[#6b6b6b] hover:text-[#2a2a2a] shadow-xs hover:border-[#8bc020] transition-all cursor-pointer"
+            title="View previous weeks"
+          >
+            <History className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">History</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleArchiveWeek}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-gray-200 text-xs font-bold text-[#6b6b6b] hover:text-[#2a2a2a] shadow-xs hover:border-[#8bc020] transition-all cursor-pointer"
+            title="Archive current week & start new"
+          >
+            <Archive className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">New Week</span>
+          </button>
+        </div>
       </div>
 
-      {/* Top 2 Cards Row */}
+      {/* Top Cards Row: Est Cost + Grocery List */}
       <div className="grid grid-cols-2 gap-3.5">
         {/* Cost vs Budget Card */}
         <div className="bg-white rounded-[22px] p-4 shadow-[0_4px_16px_rgba(42,42,42,0.06)] border border-[#2a2a2a]/5 flex flex-col justify-between">
-          <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#9a9a94]">
-            Est. Cost
-          </span>
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#9a9a94]">
+              Est. Cost
+            </span>
+            {/* Household size stepper */}
+            <div className="flex items-center gap-1 bg-gray-50 border border-gray-200 rounded-lg px-1.5 py-0.5 text-xs font-bold">
+              <span className="text-[#888] text-[10px]">Family:</span>
+              <button
+                type="button"
+                onClick={() => updateHouseholdSize(Math.max(1, (plan?.householdSize || 2) - 1))}
+                className="w-4 h-4 flex items-center justify-center text-gray-500 hover:text-black cursor-pointer"
+              >
+                -
+              </button>
+              <span className="text-[#2a2a2a] font-black">{plan?.householdSize || 2}</span>
+              <button
+                type="button"
+                onClick={() => updateHouseholdSize(Math.min(12, (plan?.householdSize || 2) + 1))}
+                className="w-4 h-4 flex items-center justify-center text-gray-500 hover:text-black cursor-pointer"
+              >
+                +
+              </button>
+            </div>
+          </div>
           <div className="my-1.5 font-sans">
-            <span className="text-2xl font-black text-[#2a2a2a]">{cost.toFixed(2)}</span>
-            <span className="text-sm font-bold text-[#9a9a94]"> / {budget}</span>
+            <span className="text-2xl font-black text-[#2a2a2a]">${cost.toFixed(2)}</span>
+            <span className="text-sm font-bold text-[#9a9a94]"> / ${budget}</span>
           </div>
           {/* Progress bar */}
           <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
             <div
-              className="bg-[#9ed034] h-full rounded-full transition-all duration-500"
+              className={`h-full rounded-full transition-all duration-500 ${
+                cost > budget ? 'bg-amber-500' : 'bg-[#9ed034]'
+              }`}
               style={{ width: `${costPercentage}%` }}
             />
           </div>
@@ -139,25 +298,81 @@ export const PlanOverview: React.FC = () => {
         </Link>
       </div>
 
-      {/* Dinners List */}
+      {/* Pantry Inventory Shortcut Banner */}
+      <div className="bg-white rounded-[20px] p-3 px-4 shadow-[0_2px_12px_rgba(42,42,42,0.04)] border border-[#2a2a2a]/6 flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-[#9ed034]/20 flex items-center justify-center text-base">
+            🥫
+          </div>
+          <div>
+            <div className="text-xs font-bold text-[#2a2a2a]">Kitchen Pantry</div>
+            <div className="text-[11px] text-[#6b6b6b]">Track inventory, expiry dates &amp; cook with what you have</div>
+          </div>
+        </div>
+        <Link
+          to="/app/pantry"
+          className="text-xs font-bold text-[#1f2a06] bg-[#9ed034]/30 hover:bg-[#9ed034]/50 px-3 py-1.5 rounded-full transition-colors flex items-center gap-1"
+        >
+          <span>Pantry</span>
+          <span>→</span>
+        </Link>
+      </div>
+
+      {/* Filter Bar: Meal Types & Add Meal Button */}
+      <div className="flex items-center justify-between gap-2 pt-1 overflow-x-auto pb-1 [scrollbar-width:none]">
+        <div className="flex items-center gap-1.5 bg-white p-1 rounded-full border border-gray-200 shadow-xs">
+          {(['all', 'breakfast', 'lunch', 'dinner', 'snack'] as const).map((type) => (
+            <button
+              key={type}
+              type="button"
+              onClick={() => setActiveMealTypeFilter(type)}
+              className={`px-3 py-1 rounded-full text-xs font-bold capitalize transition-all cursor-pointer ${
+                activeMealTypeFilter === type
+                  ? 'bg-[#9ed034] text-[#1f2a06] shadow-xs'
+                  : 'text-[#6b6b6b] hover:text-[#2a2a2a]'
+              }`}
+            >
+              {type}
+            </button>
+          ))}
+        </div>
+
+        <button
+          type="button"
+          onClick={() => handleOpenAddModal()}
+          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#1f2a06] text-white text-xs font-bold hover:bg-[#2e3e09] transition-all shadow-xs cursor-pointer flex-shrink-0"
+        >
+          <Plus className="w-3.5 h-3.5" />
+          <span>Add Meal</span>
+        </button>
+      </div>
+
+      {/* Meals List */}
       <div className="space-y-4 pt-1">
         {isLoading && !plan ? (
           <div className="text-center py-12 text-[#6b6b6b]">Loading your weekly meals...</div>
-        ) : plan?.dinners && plan.dinners.length > 0 ? (
-          plan.dinners.map((slot) => {
+        ) : displaySlots.length > 0 ? (
+          displaySlots.map((slot) => {
             const recipe = slot.recipe;
             if (!recipe) return null;
             const primaryVibe = recipe.vibes?.[0] || 'Family Favs';
 
             return (
               <div
-                key={slot.day}
+                key={slot.id}
                 className="relative bg-white rounded-[24px] pt-4 p-4 shadow-[0_4px_16px_rgba(42,42,42,0.06)] border border-[#2a2a2a]/6 transition-all hover:shadow-[0_8px_24px_rgba(42,42,42,0.08)]"
               >
-                {/* Attached Day Pill */}
-                <div className="absolute -top-3 left-6 bg-white border border-[#2a2a2a]/10 px-3 py-0.5 rounded-full shadow-xs">
-                  <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#6b6b6b]">
+                {/* Attached Day & MealType Pill */}
+                <div className="absolute -top-3 left-6 flex items-center gap-1.5">
+                  <span className="bg-white border border-[#2a2a2a]/10 px-3 py-0.5 rounded-full shadow-xs text-[11px] font-extrabold uppercase tracking-wider text-[#6b6b6b]">
                     {slot.day}
+                  </span>
+                  <span
+                    className={`border px-2.5 py-0.5 rounded-full shadow-xs text-[10px] font-extrabold uppercase tracking-wider ${getMealTypeBadge(
+                      slot.mealType
+                    )}`}
+                  >
+                    {slot.mealType}
                   </span>
                 </div>
 
@@ -194,34 +409,87 @@ export const PlanOverview: React.FC = () => {
                       </span>
                     </div>
 
-                    {/* Timing & Servings info */}
+                    {/* Timing & Servings Stepper */}
                     <div className="flex items-center gap-3 text-xs font-semibold text-[#888] mt-2">
                       <span className="flex items-center gap-1">
                         <Clock className="w-3.5 h-3.5 text-[#888]" />
                         <span>{recipe.cookTimeMinutes}m</span>
                       </span>
                       <span>|</span>
+                      {/* Per-slot serving size stepper */}
                       <span className="flex items-center gap-1">
                         <Users className="w-3.5 h-3.5 text-[#888]" />
-                        <span>{plan.householdSize}</span>
+                        <span className="font-bold text-[#2a2a2a]">{slot.servings || plan?.householdSize || 2}</span>
+                        <div className="inline-flex items-center gap-1 ml-1">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              editMealSlot(slot.id, {
+                                servings: Math.max(1, (slot.servings || 2) - 1),
+                              })
+                            }
+                            className="w-4 h-4 rounded bg-gray-100 text-gray-600 hover:bg-gray-200 flex items-center justify-center text-[10px] cursor-pointer"
+                            title="Decrease servings"
+                          >
+                            -
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              editMealSlot(slot.id, {
+                                servings: Math.min(12, (slot.servings || 2) + 1),
+                              })
+                            }
+                            className="w-4 h-4 rounded bg-gray-100 text-gray-600 hover:bg-gray-200 flex items-center justify-center text-[10px] cursor-pointer"
+                            title="Increase servings"
+                          >
+                            +
+                          </button>
+                        </div>
                       </span>
                     </div>
                   </div>
 
                   {/* Actions Column */}
                   <div className="flex flex-col items-end gap-2 flex-shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => handleOpenSwapModal(slot.day)}
-                      className="p-2 text-xs font-bold text-[#6b6b6b] hover:text-[#8bc020] bg-gray-50 hover:bg-[#9ed034]/15 rounded-xl transition-all cursor-pointer flex items-center gap-1"
-                      title="Swap this meal"
-                    >
-                      <ArrowLeftRight className="w-3.5 h-3.5" />
-                    </button>
+                    <div className="flex items-center gap-1">
+                      {/* Swap button */}
+                      <button
+                        type="button"
+                        onClick={() => handleOpenSwapModal(slot.day, slot.id)}
+                        className="p-1.5 text-xs font-bold text-[#6b6b6b] hover:text-[#8bc020] bg-gray-50 hover:bg-[#9ed034]/15 rounded-xl transition-all cursor-pointer flex items-center gap-1"
+                        title="Swap this meal"
+                      >
+                        <ArrowLeftRight className="w-3.5 h-3.5" />
+                      </button>
 
+                      {/* Remove button (only if more than 1 meal slot in meals) */}
+                      {plan?.meals && plan.meals.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (confirm(`Remove "${recipe.title}" from ${slot.day}?`)) {
+                              removeMealSlot(slot.id);
+                            }
+                          }}
+                          className="p-1.5 text-xs font-bold text-gray-400 hover:text-red-500 bg-gray-50 hover:bg-red-50 rounded-xl transition-all cursor-pointer"
+                          title="Remove from plan"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Cooked Checkbox */}
                     <button
                       type="button"
-                      onClick={() => toggleDinnerCooked(slot.day)}
+                      onClick={() => {
+                        if (plan?.meals && plan.meals.length > 0) {
+                          editMealSlot(slot.id, { isCooked: !slot.isCooked });
+                        } else {
+                          toggleDinnerCooked(slot.day);
+                        }
+                      }}
                       className={`w-6 h-6 rounded-full border flex items-center justify-center transition-colors cursor-pointer ${
                         slot.isCooked
                           ? 'bg-[#9ed034] border-[#9ed034] text-[#1f2a06]'
@@ -238,10 +506,20 @@ export const PlanOverview: React.FC = () => {
           })
         ) : (
           <div className="bg-white rounded-[24px] p-8 text-center border border-[#2a2a2a]/6">
-            <p className="text-sm text-[#6b6b6b] mb-4">No meal plan found for this week.</p>
-            <Button onClick={generatePlan} isLoading={isLoading}>
-              Generate Plan
-            </Button>
+            <p className="text-sm text-[#6b6b6b] mb-4">
+              {activeMealTypeFilter === 'all'
+                ? 'No meal plan found for this week.'
+                : `No ${activeMealTypeFilter} meals planned for this week.`}
+            </p>
+            {activeMealTypeFilter === 'all' ? (
+              <Button onClick={generatePlan} isLoading={isLoading}>
+                Generate Plan
+              </Button>
+            ) : (
+              <Button onClick={() => handleOpenAddModal()}>
+                Add a {activeMealTypeFilter}
+              </Button>
+            )}
           </div>
         )}
       </div>
@@ -262,19 +540,19 @@ export const PlanOverview: React.FC = () => {
       <AllergyBanner compact={true} />
 
       {/* MEAL SWAP MODAL */}
-      {isSwappingDay && (
+      {isSwappingSlot && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-[28px] max-w-md w-full max-h-[85vh] flex flex-col shadow-2xl overflow-hidden animate-scaleUp">
             <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
               <div>
                 <h3 className="font-serif font-bold text-xl text-[#2a2a2a]">
-                  Swap Dinner for {isSwappingDay}
+                  Swap Meal for {isSwappingSlot.day}
                 </h3>
                 <p className="text-xs text-[#6b6b6b]">Pick an alternative compliant recipe</p>
               </div>
               <button
                 type="button"
-                onClick={() => setIsSwappingDay(null)}
+                onClick={() => setIsSwappingSlot(null)}
                 className="p-1 rounded-full text-gray-400 hover:text-gray-700"
               >
                 <X className="w-5 h-5" />
@@ -303,6 +581,173 @@ export const PlanOverview: React.FC = () => {
                 ))
               ) : (
                 <div className="text-center py-8 text-sm text-[#888]">No other matching recipes available.</div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ADD MEAL MODAL */}
+      {isAddModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-[28px] max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-scaleUp">
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+              <div>
+                <h3 className="font-serif font-bold text-xl text-[#2a2a2a]">Add Meal to Plan</h3>
+                <p className="text-xs text-[#6b6b6b]">Select slot details and pick a recipe</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsAddModalOpen(false)}
+                className="p-1 rounded-full text-gray-400 hover:text-gray-700"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Config selectors */}
+            <div className="p-4 bg-gray-50 border-b border-gray-100 space-y-3">
+              {addError && (
+                <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl font-medium">
+                  {addError}
+                </div>
+              )}
+
+              <div className="grid grid-cols-3 gap-2">
+                <div>
+                  <label className="block text-[10px] font-extrabold uppercase text-[#6b6b6b] mb-1">
+                    Day
+                  </label>
+                  <select
+                    value={addDay}
+                    onChange={(e) => setAddDay(e.target.value as DayOfWeek)}
+                    className="w-full bg-white border border-gray-200 rounded-xl px-2 py-1.5 text-xs font-semibold"
+                  >
+                    {daysOfWeek.map((d) => (
+                      <option key={d} value={d}>
+                        {d}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-extrabold uppercase text-[#6b6b6b] mb-1">
+                    Meal Type
+                  </label>
+                  <select
+                    value={addMealType}
+                    onChange={(e) => setAddMealType(e.target.value as MealType)}
+                    className="w-full bg-white border border-gray-200 rounded-xl px-2 py-1.5 text-xs font-semibold capitalize"
+                  >
+                    {(['breakfast', 'lunch', 'dinner', 'snack'] as const).map((t) => (
+                      <option key={t} value={t}>
+                        {t}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-extrabold uppercase text-[#6b6b6b] mb-1">
+                    Servings
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="12"
+                    value={addServings}
+                    onChange={(e) => setAddServings(parseInt(e.target.value, 10) || 2)}
+                    className="w-full bg-white border border-gray-200 rounded-xl px-2 py-1.5 text-xs font-semibold"
+                  />
+                </div>
+              </div>
+
+              {/* Recipe Search */}
+              <input
+                type="text"
+                placeholder="Search recipe..."
+                value={addSearch}
+                onChange={(e) => setAddSearch(e.target.value)}
+                className="w-full bg-white border border-gray-200 rounded-xl px-3 py-1.5 text-xs"
+              />
+            </div>
+
+            {/* Recipe Results */}
+            <div className="p-4 overflow-y-auto space-y-2.5 flex-1">
+              {loadingAddRecipes ? (
+                <div className="text-center py-8 text-sm text-[#888]">Loading recipes...</div>
+              ) : (
+                addRecipes
+                  .filter((r) => !addSearch || r.title.toLowerCase().includes(addSearch.toLowerCase()))
+                  .map((r) => (
+                    <div
+                      key={r._id}
+                      onClick={() => handleAddMealSubmit(r._id)}
+                      className="flex items-center gap-3 p-2.5 rounded-2xl border border-gray-100 hover:border-[#9ed034] hover:bg-[#9ed034]/10 cursor-pointer transition-all"
+                    >
+                      <img src={r.image} alt={r.title} className="w-12 h-12 rounded-xl object-cover flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-sans font-bold text-xs text-[#2a2a2a] truncate">{r.title}</h4>
+                        <p className="text-[11px] text-[#888]">
+                          {r.cuisine} • {r.cookTimeMinutes}m • {r.calories} kcal
+                        </p>
+                      </div>
+                      <Button size="sm" variant="outline">
+                        Add
+                      </Button>
+                    </div>
+                  ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* PLAN HISTORY MODAL */}
+      {isHistoryOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-[28px] max-w-md w-full max-h-[85vh] flex flex-col shadow-2xl overflow-hidden animate-scaleUp">
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+              <div>
+                <h3 className="font-serif font-bold text-xl text-[#2a2a2a]">Meal Plan History</h3>
+                <p className="text-xs text-[#6b6b6b]">Previous weekly meal plans</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsHistoryOpen(false)}
+                className="p-1 rounded-full text-gray-400 hover:text-gray-700"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-4 overflow-y-auto space-y-3 flex-1">
+              {planHistory.length > 0 ? (
+                planHistory.map((hPlan, idx) => (
+                  <div
+                    key={hPlan._id || idx}
+                    className="p-4 rounded-2xl border border-gray-100 bg-gray-50/70 space-y-2"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5 text-xs font-bold text-[#2a2a2a]">
+                        <Calendar className="w-3.5 h-3.5 text-[#8bc020]" />
+                        <span>Week of {new Date(hPlan.weekStartDate).toLocaleDateString()}</span>
+                      </div>
+                      <span className="text-xs font-black text-[#2a2a2a]">
+                        ${hPlan.estimatedCost.toFixed(2)}
+                      </span>
+                    </div>
+
+                    <p className="text-xs text-[#6b6b6b]">
+                      Family of {hPlan.householdSize} •{' '}
+                      {(hPlan.meals && hPlan.meals.length > 0 ? hPlan.meals.length : hPlan.dinners?.length) || 0}{' '}
+                      meals planned
+                    </p>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-8 text-sm text-[#888]">No archived meal plans yet.</div>
               )}
             </div>
           </div>

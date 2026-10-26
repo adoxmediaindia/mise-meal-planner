@@ -1,35 +1,95 @@
-import { Response } from 'express';
-import { User } from '../models/User.js';
+import { Response, Request } from 'express';
+import { z } from 'zod';
 import { AuthRequest } from '../middleware/auth.js';
+import { SubscriptionService } from '../services/subscriptionService.js';
+import { EntitlementService } from '../services/entitlementService.js';
+
+export const upgradePlanSchema = z.object({
+  planId: z.enum(['mise_pro_monthly', 'mise_pro_yearly']),
+});
 
 export const getStatus = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const user = await User.findById(req.user!.id);
-    if (!user) {
-      res.status(404).json({ success: false, error: 'User not found' });
+    const userId = req.user!.id;
+    const status = await SubscriptionService.getStatus(userId);
+    res.json({ success: true, data: status });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+export const upgradeSubscription = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const userId = req.user!.id;
+    const { planId } = req.body;
+
+    const isProduction = process.env.NODE_ENV === 'production';
+    const isMockAllowed = !isProduction || process.env.ENABLE_MOCK_BILLING === 'true';
+
+    // In production without mock billing enabled, direct self-upgrades are rejected
+    if (!isMockAllowed) {
+      res.status(402).json({
+        success: false,
+        error: 'Payment verification required: Direct self-upgrades without a verified payment processor are disabled in production.',
+        code: 'PAYMENT_VERIFICATION_REQUIRED',
+      });
       return;
     }
 
+    const result = await SubscriptionService.upgrade(userId, planId);
     res.json({
       success: true,
-      data: {
-        tier: user.subscriptionTier,
-        status: user.subscriptionStatus,
-        isActive: user.subscriptionTier === 'pro' && user.subscriptionStatus === 'active',
-        planDetails: {
-          name: user.subscriptionTier === 'pro' ? 'Mise Pro Chef' : 'Mise Starter (Trial)',
-          billingPeriod: 'Monthly',
-          price: user.subscriptionTier === 'pro' ? '$4.99 / month' : 'Free Trial',
-          features: [
-            'Unlimited weekly dinner planning',
-            'Smart consolidated supermarket shopping list',
-            'Full dietary and allergy safety filters',
-            'Instant 1-tap meal swapping',
-            'Access to all world cuisines and vibes',
-          ],
-        },
-      },
+      data: result.subscription,
+      message: result.message,
     });
+  } catch (err: any) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+};
+
+export const cancelSubscription = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const userId = req.user!.id;
+    const result = await SubscriptionService.cancelSubscription(userId);
+    res.json({
+      success: true,
+      data: result.subscription,
+      message: result.message,
+    });
+  } catch (err: any) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+};
+
+export const reactivateSubscription = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const userId = req.user!.id;
+    const result = await SubscriptionService.reactivateSubscription(userId);
+    res.json({
+      success: true,
+      data: result.subscription,
+      message: result.message,
+    });
+  } catch (err: any) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+};
+
+export const getInvoices = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const userId = req.user!.id;
+    const invoices = await SubscriptionService.getInvoices(userId);
+    res.json({ success: true, count: invoices.length, data: invoices });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+export const getUsageStats = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const userId = req.user!.id;
+    const stats = await EntitlementService.getUserUsageStats(userId);
+    res.json({ success: true, data: stats });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -37,66 +97,47 @@ export const getStatus = async (req: AuthRequest, res: Response): Promise<void> 
 
 export const mockUpgrade = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const user = await User.findById(req.user!.id);
-    if (!user) {
-      res.status(404).json({ success: false, error: 'User not found' });
+    const isProduction = process.env.NODE_ENV === 'production';
+    const isMockAllowed = !isProduction || process.env.ENABLE_MOCK_BILLING === 'true';
+
+    if (!isMockAllowed) {
+      res.status(403).json({
+        success: false,
+        error: 'Forbidden: Mock upgrades are disabled in production environment.',
+        code: 'MOCK_UPGRADES_DISABLED',
+      });
       return;
     }
 
-    const newTier = user.subscriptionTier === 'pro' ? 'free' : 'pro';
-    const newStatus = newTier === 'pro' ? 'active' : 'trial';
+    const userId = req.user!.id;
+    const currentStatus = await SubscriptionService.getStatus(userId);
 
-    user.subscriptionTier = newTier;
-    user.subscriptionStatus = newStatus;
-    await user.save();
-
-    res.json({
-      success: true,
-      data: {
-        tier: user.subscriptionTier,
-        status: user.subscriptionStatus,
-      },
-      message: `Subscription tier switched to ${newTier.toUpperCase()}`,
-    });
+    if (currentStatus.tier === 'pro') {
+      const result = await SubscriptionService.downgrade(userId);
+      res.json({
+        success: true,
+        data: { tier: 'free', status: 'trial' },
+        message: result.message,
+      });
+    } else {
+      const result = await SubscriptionService.upgrade(userId, 'mise_pro_monthly');
+      res.json({
+        success: true,
+        data: { tier: 'pro', status: 'active' },
+        message: result.message,
+      });
+    }
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message });
   }
 };
 
-export const webhook = async (req: any, res: any): Promise<void> => {
+export const webhook = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { event, data } = req.body;
-
-    if (!event || !data) {
-      res.status(400).json({ success: false, error: 'Invalid webhook payload structure' });
-      return;
-    }
-
-    // Process customer subscription update events
-    if (event === 'customer.subscription.updated' || event === 'customer.subscription.created') {
-      const email = data.customer_email || data.email;
-      if (email) {
-        const user = await User.findOne({ email });
-        if (user) {
-          user.subscriptionTier = data.tier === 'free' ? 'free' : 'pro';
-          user.subscriptionStatus = data.status || 'active';
-          await user.save();
-        }
-      }
-    } else if (event === 'customer.subscription.deleted') {
-      const email = data.customer_email || data.email;
-      if (email) {
-        const user = await User.findOne({ email });
-        if (user) {
-          user.subscriptionTier = 'free';
-          user.subscriptionStatus = 'cancelled';
-          await user.save();
-        }
-      }
-    }
-
-    res.json({ received: true, event });
+    const rawBody = (req as any).rawBody;
+    const result = await SubscriptionService.processWebhook(req.body, req.headers, rawBody);
+    res.json(result);
   } catch (err: any) {
-    res.status(500).json({ success: false, error: err.message });
+    res.status(400).json({ success: false, error: err.message });
   }
 };

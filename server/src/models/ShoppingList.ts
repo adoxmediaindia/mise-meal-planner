@@ -11,6 +11,8 @@ export interface IShoppingItem {
   isBought: boolean;
   recipeTitles: string[];
   icon?: string;
+  isCustom?: boolean;
+  pantryNote?: string;
 }
 
 export interface IShoppingListDoc extends Document {
@@ -48,6 +50,8 @@ const ShoppingItemSchema = new Schema<IShoppingItem>(
     isBought: { type: Boolean, default: false },
     recipeTitles: { type: [String], default: [] },
     icon: { type: String, default: '🛒' },
+    isCustom: { type: Boolean, default: false },
+    pantryNote: { type: String },
   },
   { _id: false }
 );

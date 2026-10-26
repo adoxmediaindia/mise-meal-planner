@@ -1,19 +1,58 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePlan } from '../../context/PlanContext.js';
-import { ArrowLeft, Copy, Check, RotateCcw } from 'lucide-react';
+import {
+  ArrowLeft,
+  Copy,
+  Check,
+  RotateCcw,
+  Plus,
+  Trash2,
+  X,
+  Edit2,
+} from 'lucide-react';
 import { SupermarketAisle } from '../../types/index.js';
+import { Button } from '../../components/common/Button.js';
 
 export const GroceryList: React.FC = () => {
-  const { shoppingList, toggleShoppingItem, resetShoppingList, isLoading } = usePlan();
+  const {
+    shoppingList,
+    toggleShoppingItem,
+    resetShoppingList,
+    addCustomShoppingItem,
+    editShoppingItem,
+    deleteShoppingItem,
+    isLoading,
+  } = usePlan();
   const navigate = useNavigate();
+
   const [copied, setCopied] = useState(false);
   const [activeAisleFilter, setActiveAisleFilter] = useState<string>('All');
+
+  // Custom Item Modal state
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [itemName, setItemName] = useState('');
+  const [itemQty, setItemQty] = useState(1);
+  const [itemUnit, setItemUnit] = useState('');
+  const [itemAisle, setItemAisle] = useState<SupermarketAisle>('Fresh Produce');
+  const [itemCost, setItemCost] = useState(0);
+  const [itemIcon, setItemIcon] = useState('🛒');
+  const [addError, setAddError] = useState<string | null>(null);
 
   const items = shoppingList?.items || [];
   const itemsBought = shoppingList?.itemsBoughtCount || 0;
   const totalItems = shoppingList?.totalItemsCount || 0;
   const percentage = totalItems > 0 ? Math.round((itemsBought / totalItems) * 100) : 0;
+
+  const allAisles: SupermarketAisle[] = [
+    'Fresh Produce',
+    'Meat & Seafood',
+    'Dairy & Refrigerated',
+    'Bakery',
+    'Pantry & Grains',
+    'Spices & Condiments',
+    'Frozen',
+  ];
 
   // Unique aisles present in the current shopping list
   const aisles: SupermarketAisle[] = Array.from(
@@ -52,6 +91,33 @@ export const GroceryList: React.FC = () => {
     setTimeout(() => setCopied(false), 2500);
   };
 
+  const handleAddCustomItem = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!itemName.trim()) {
+      setAddError('Item name is required');
+      return;
+    }
+    setAddError(null);
+
+    try {
+      await addCustomShoppingItem({
+        name: itemName.trim(),
+        totalQuantity: itemQty || 1,
+        unit: itemUnit.trim(),
+        aisle: itemAisle,
+        estimatedCost: itemCost || 0,
+        icon: itemIcon || '🛒',
+      });
+      setIsAddModalOpen(false);
+      setItemName('');
+      setItemQty(1);
+      setItemUnit('');
+      setItemCost(0);
+    } catch (err: any) {
+      setAddError(err.message || 'Failed to add item');
+    }
+  };
+
   return (
     <div className="space-y-5 animate-fadeIn pb-10">
       {/* Header Row */}
@@ -74,6 +140,19 @@ export const GroceryList: React.FC = () => {
 
         {/* Action Controls */}
         <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              setAddError(null);
+              setIsAddModalOpen(true);
+            }}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1f2a06] text-white text-xs font-bold shadow-xs hover:bg-[#2e3e09] cursor-pointer transition-all"
+            title="Add custom item"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Add Item</span>
+          </button>
+
           <button
             type="button"
             onClick={handleCopyList}
@@ -159,12 +238,12 @@ export const GroceryList: React.FC = () => {
                 {aisleItems.map((item) => (
                   <div
                     key={item.id}
-                    onClick={() => toggleShoppingItem(item.id)}
-                    className="flex items-center gap-3.5 p-3.5 px-4 hover:bg-gray-50/70 transition-colors cursor-pointer select-none"
+                    className="flex items-center gap-3.5 p-3.5 px-4 hover:bg-gray-50/70 transition-colors select-none group"
                   >
                     {/* Custom Checkbox */}
                     <div
-                      className={`w-6 h-6 rounded-lg border flex items-center justify-center transition-colors flex-shrink-0 ${
+                      onClick={() => toggleShoppingItem(item.id)}
+                      className={`w-6 h-6 rounded-lg border flex items-center justify-center transition-colors flex-shrink-0 cursor-pointer ${
                         item.isBought
                           ? 'bg-[#9ed034] border-[#9ed034] text-[#1f2a06]'
                           : 'border-gray-300 bg-white'
@@ -176,28 +255,55 @@ export const GroceryList: React.FC = () => {
                     <span className="text-xl flex-shrink-0">{item.icon || '🛒'}</span>
 
                     {/* Text content */}
-                    <div className="flex-1 min-w-0">
-                      <div
-                        className={`font-sans font-bold text-sm text-[#2a2a2a] transition-all truncate ${
-                          item.isBought ? 'line-through text-gray-400 font-normal' : ''
-                        }`}
-                      >
-                        {item.name}
+                    <div
+                      onClick={() => toggleShoppingItem(item.id)}
+                      className="flex-1 min-w-0 cursor-pointer"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`font-sans font-bold text-sm text-[#2a2a2a] transition-all truncate ${
+                            item.isBought ? 'line-through text-gray-400 font-normal' : ''
+                          }`}
+                        >
+                          {item.name}
+                        </span>
+                        {item.isCustom && (
+                          <span className="text-[10px] font-extrabold px-1.5 py-0.2 rounded bg-purple-100 text-purple-700">
+                            Custom
+                          </span>
+                        )}
                       </div>
-                      {item.recipeTitles && item.recipeTitles.length > 0 && (
+                      {item.recipeTitles && item.recipeTitles.length > 0 && !item.isCustom && (
                         <div className="text-[11px] text-[#9a9a94] truncate">
                           Used in: {item.recipeTitles.join(', ')}
                         </div>
                       )}
+                      {item.pantryNote && (
+                        <div className="text-[11px] font-semibold text-amber-700 bg-amber-50 border border-amber-200/60 rounded px-1.5 py-0.5 mt-0.5 inline-block">
+                          📦 {item.pantryNote}
+                        </div>
+                      )}
                     </div>
 
-                    {/* Quantity */}
-                    <div
-                      className={`text-xs font-bold flex-shrink-0 ${
-                        item.isBought ? 'text-gray-300' : 'text-[#6b6b6b]'
-                      }`}
-                    >
-                      {item.totalQuantity} {item.unit}
+                    {/* Quantity & Controls */}
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <div
+                        className={`text-xs font-bold ${
+                          item.isBought ? 'text-gray-300' : 'text-[#6b6b6b]'
+                        }`}
+                      >
+                        {item.totalQuantity} {item.unit}
+                      </div>
+
+                      {/* Delete button (always available, especially useful for custom items) */}
+                      <button
+                        type="button"
+                        onClick={() => deleteShoppingItem(item.id)}
+                        className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-red-500 rounded transition-all cursor-pointer"
+                        title="Delete item"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
                     </div>
                   </div>
                 ))}
@@ -207,7 +313,126 @@ export const GroceryList: React.FC = () => {
         </div>
       ) : (
         <div className="bg-white rounded-[24px] p-8 text-center text-[#6b6b6b] border border-gray-200">
-          No items in shopping list. Generate a meal plan to populate your groceries!
+          No items in shopping list. Generate a meal plan or add custom items to get started!
+        </div>
+      )}
+
+      {/* ADD CUSTOM ITEM MODAL */}
+      {isAddModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-[28px] max-w-md w-full p-6 shadow-2xl animate-scaleUp">
+            <div className="flex justify-between items-center mb-4">
+              <div>
+                <h3 className="font-serif font-bold text-xl text-[#2a2a2a]">Add Custom Item</h3>
+                <p className="text-xs text-[#6b6b6b]">Add non-recipe groceries to your list</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsAddModalOpen(false)}
+                className="p-1 rounded-full text-gray-400 hover:text-gray-700"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {addError && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl font-medium">
+                {addError}
+              </div>
+            )}
+
+            <form onSubmit={handleAddCustomItem} className="space-y-3.5">
+              <div>
+                <label className="block text-xs font-bold text-[#2a2a2a] mb-1">Item Name *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Milk, Kitchen Roll, Eggs"
+                  value={itemName}
+                  onChange={(e) => setItemName(e.target.value)}
+                  className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#8bc020]"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-[#2a2a2a] mb-1">Quantity</label>
+                  <input
+                    type="number"
+                    min="0.1"
+                    step="any"
+                    value={itemQty}
+                    onChange={(e) => setItemQty(parseFloat(e.target.value) || 1)}
+                    className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[#2a2a2a] mb-1">Unit</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. bottle, pack, g"
+                    value={itemUnit}
+                    onChange={(e) => setItemUnit(e.target.value)}
+                    className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-[#2a2a2a] mb-1">Aisle</label>
+                  <select
+                    value={itemAisle}
+                    onChange={(e) => setItemAisle(e.target.value as SupermarketAisle)}
+                    className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs font-semibold"
+                  >
+                    {allAisles.map((a) => (
+                      <option key={a} value={a}>
+                        {a}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[#2a2a2a] mb-1">Est. Cost ($)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={itemCost}
+                    onChange={(e) => setItemCost(parseFloat(e.target.value) || 0)}
+                    className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-[#2a2a2a] mb-1">Emoji Icon</label>
+                <div className="flex gap-2">
+                  {['🛒', '🥛', '🍞', '🍎', '🥩', '🧻', '☕', '🧼'].map((emoji) => (
+                    <button
+                      key={emoji}
+                      type="button"
+                      onClick={() => setItemIcon(emoji)}
+                      className={`text-xl p-1.5 rounded-lg border transition-all ${
+                        itemIcon === emoji ? 'border-[#9ed034] bg-[#9ed034]/20' : 'border-gray-200'
+                      }`}
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="pt-2">
+                <Button type="submit" className="w-full">
+                  Add to Grocery List
+                </Button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
     </div>

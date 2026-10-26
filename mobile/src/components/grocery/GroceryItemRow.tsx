@@ -37,6 +37,9 @@ export const GroceryItemRow: React.FC<GroceryItemRowProps> = ({
           {item.totalQuantity} {item.unit}
           {item.recipeTitles?.length ? ` • for ${item.recipeTitles[0]}` : ''}
         </Text>
+        {item.pantryNote && (
+          <Text style={styles.pantryNoteText}>📦 {item.pantryNote}</Text>
+        )}
       </View>
 
       {/* Estimated Cost */}
@@ -99,6 +102,17 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#6B7280',
     marginTop: 2,
+  },
+  pantryNoteText: {
+    fontSize: 11,
+    color: '#B45309',
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    marginTop: 3,
+    alignSelf: 'flex-start',
+    overflow: 'hidden',
   },
   cost: {
     fontSize: 14,

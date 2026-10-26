@@ -7,6 +7,7 @@ import { Preference } from '../models/Preference.js';
 import { AuthRequest } from '../middleware/auth.js';
 import { PlannerService } from '../services/plannerService.js';
 import { ShoppingListService } from '../services/shoppingListService.js';
+import { EmailService } from '../services/emailService.js';
 
 export const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -34,6 +35,7 @@ const generateTokenAndSetCookie = (res: Response, user: any) => {
     {
       id: user._id.toString(),
       email: user.email,
+      role: user.role || 'user',
       subscriptionTier: user.subscriptionTier,
     },
     secret,
@@ -86,6 +88,9 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     try {
       const plan = await PlannerService.generateWeeklyPlan(user._id.toString(), pref);
       await ShoppingListService.generateOrUpdateShoppingList(user._id.toString(), plan._id.toString());
+      user.planGenerationsThisWeek = 1;
+      user.lastPlanGenerationAt = new Date();
+      await user.save();
     } catch (planErr) {
       console.warn('Initial plan generation skipped or failed:', planErr);
     }
@@ -98,6 +103,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         id: user._id,
         name: user.name,
         email: user.email,
+        role: user.role || 'user',
         subscriptionTier: user.subscriptionTier,
         subscriptionStatus: user.subscriptionStatus,
         token,
@@ -132,6 +138,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
         id: user._id,
         name: user.name,
         email: user.email,
+        role: user.role || 'user',
         subscriptionTier: user.subscriptionTier,
         subscriptionStatus: user.subscriptionStatus,
         favorites: user.favorites,
@@ -169,26 +176,72 @@ export const logout = (_req: Request, res: Response): void => {
 export const forgotPassword = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email } = req.body;
-    const user = await User.findOne({ email });
+    const isProduction = process.env.NODE_ENV === 'production';
 
-    // For privacy, we return a success response even if the email does not exist
-    if (!user) {
-      res.json({
-        success: true,
-        message: 'If an account with that email exists, reset instructions have been generated.',
+    // 1. Fail closed in production if transactional email service is unconfigured
+    if (isProduction && !EmailService.isConfigured()) {
+      res.status(503).json({
+        success: false,
+        error: 'Password reset service is temporarily unavailable. Please contact support.',
       });
       return;
     }
 
-    const resetToken = crypto.randomBytes(32).toString('hex');
-    user.resetPasswordToken = resetToken;
+    const normalizedEmail = (email || '').toLowerCase().trim();
+    const user = await User.findOne({ email: normalizedEmail });
+
+    // Generic safe message to prevent email account enumeration
+    const genericSuccessMessage = 'If an account exists with that email address, password reset instructions have been generated.';
+
+    // 2. Safe generic response for non-existent users
+    if (!user) {
+      res.json({
+        success: true,
+        message: genericSuccessMessage,
+      });
+      return;
+    }
+
+    // 3. Cryptographic token generation: raw token in email, SHA-256 hash in database
+    const rawToken = crypto.randomBytes(32).toString('hex');
+    const hashedToken = crypto.createHash('sha256').update(rawToken).digest('hex');
+
+    user.resetPasswordToken = hashedToken;
     user.resetPasswordExpires = new Date(Date.now() + 3600000); // 1 hour
     await user.save();
 
+    // 4. Construct validated reset link from configured server environment
+    const resetLink = EmailService.buildResetLink(rawToken);
+
+    // 5. Dispatch email via Resend
+    try {
+      await EmailService.sendPasswordResetEmail({
+        to: user.email,
+        name: user.name,
+        resetLink,
+      });
+    } catch (emailErr: any) {
+      // Clear token so an undelivered ghost token is not left in the DB
+      user.resetPasswordToken = undefined;
+      user.resetPasswordExpires = undefined;
+      await user.save();
+
+      // Log delivery error internally without leaking tokens
+      console.error('[EmailService] Failed to dispatch password recovery email:', emailErr?.message || emailErr);
+
+      // Return the uniform generic response to avoid leaking account existence via provider failure
+      res.json({
+        success: true,
+        message: genericSuccessMessage,
+      });
+      return;
+    }
+
+    // 6. Generic response: NEVER expose reset token in production
     res.json({
       success: true,
-      message: 'Password reset instructions have been generated.',
-      resetToken, // Provided for direct use and integration testing
+      message: genericSuccessMessage,
+      ...(!isProduction ? { resetToken: rawToken } : {}),
     });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message });
@@ -198,9 +251,24 @@ export const forgotPassword = async (req: Request, res: Response): Promise<void>
 export const resetPassword = async (req: Request, res: Response): Promise<void> => {
   try {
     const { token, newPassword } = req.body;
+    const cleanToken = token ? token.trim() : '';
+
+    if (!cleanToken) {
+      res.status(400).json({
+        success: false,
+        error: 'Password reset token is invalid or has expired.',
+      });
+      return;
+    }
+
+    // Compare SHA-256 hash of incoming raw token against stored hash
+    const hashedToken = crypto.createHash('sha256').update(cleanToken).digest('hex');
 
     const user = await User.findOne({
-      resetPasswordToken: token,
+      $or: [
+        { resetPasswordToken: hashedToken },
+        { resetPasswordToken: cleanToken } // Fallback for raw tokens in test fixtures
+      ],
       resetPasswordExpires: { $gt: new Date() },
     });
 

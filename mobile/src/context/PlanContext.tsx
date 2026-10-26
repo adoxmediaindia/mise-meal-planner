@@ -8,17 +8,27 @@ interface PlanContextType {
   plan: IMealPlan | null;
   preferences: IUserPreferences | null;
   shoppingList: IShoppingList | null;
+  planHistory: IMealPlan[];
   isLoading: boolean;
   offlinePendingCount: number;
   fetchPlan: () => Promise<void>;
   regeneratePlan: () => Promise<void>;
   swapMeal: (day: string, targetRecipeId?: string) => Promise<void>;
+  addMealSlot: (day: string, mealType: string, recipeId: string, servings?: number) => Promise<void>;
+  removeMealSlot: (slotId: string) => Promise<void>;
+  editMealSlot: (slotId: string, updates: any) => Promise<void>;
+  updateHouseholdSize: (householdSize: number) => Promise<void>;
+  archivePlan: () => Promise<void>;
+  fetchPlanHistory: () => Promise<void>;
   toggleDinnerCooked: (day: string) => Promise<void>;
   fetchPreferences: () => Promise<void>;
   updatePreferences: (updates: Partial<IUserPreferences>, autoRegenerate?: boolean) => Promise<void>;
   fetchShoppingList: () => Promise<void>;
   toggleShoppingItem: (itemId: string) => Promise<void>;
   resetShoppingList: () => Promise<void>;
+  addCustomShoppingItem: (payload: any) => Promise<void>;
+  editShoppingItem: (itemId: string, updates: any) => Promise<void>;
+  deleteShoppingItem: (itemId: string) => Promise<void>;
   syncOfflineChanges: () => Promise<void>;
 }
 
@@ -29,6 +39,7 @@ export const PlanProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [plan, setPlan] = useState<IMealPlan | null>(null);
   const [preferences, setPreferences] = useState<IUserPreferences | null>(null);
   const [shoppingList, setShoppingList] = useState<IShoppingList | null>(null);
+  const [planHistory, setPlanHistory] = useState<IMealPlan[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [offlinePendingCount, setOfflinePendingCount] = useState<number>(0);
 
@@ -134,10 +145,13 @@ export const PlanProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, [isAuthenticated]);
 
   const toggleShoppingItem = async (itemId: string) => {
+    let targetState: boolean | undefined = undefined;
     // Optimistic local state update
     if (shoppingList) {
+      const current = shoppingList.items.find((i) => i.id === itemId);
+      targetState = current ? !current.isBought : true;
       const nextItems = shoppingList.items.map((item) =>
-        item.id === itemId ? { ...item, isBought: !item.isBought } : item
+        item.id === itemId ? { ...item, isBought: targetState! } : item
       );
       const nextBought = nextItems.filter((i) => i.isBought).length;
       setShoppingList({
@@ -148,13 +162,13 @@ export const PlanProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
 
     try {
-      const res = await mobileApi.toggleShoppingItem(itemId);
+      const res = await mobileApi.toggleShoppingItem(itemId, targetState);
       if (res.success && res.data) {
         setShoppingList(res.data);
       }
     } catch (err) {
-      // If offline, mutation is already queued in offlineSyncQueue by mobileApi.toggleShoppingItem
-      console.log('[PlanContext] Toggle queued offline for item:', itemId);
+      // If offline, mutation is already queued in offlineSyncQueue by mobileApi.toggleShoppingItem with explicit target state
+      console.log('[PlanContext] Toggle queued offline for item:', itemId, 'targetState:', targetState);
     }
   };
 
@@ -167,6 +181,123 @@ export const PlanProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const addMealSlot = async (
+    day: string,
+    mealType: string,
+    recipeId: string,
+    servings?: number
+  ) => {
+    setIsLoading(true);
+    try {
+      const res = await mobileApi.addMealSlot({ day, mealType, recipeId, servings });
+      if (res.success && res.data) {
+        setPlan(res.data);
+        await fetchShoppingList();
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const removeMealSlot = async (slotId: string) => {
+    setIsLoading(true);
+    try {
+      const res = await mobileApi.removeMealSlot(slotId);
+      if (res.success && res.data) {
+        setPlan(res.data);
+        await fetchShoppingList();
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const editMealSlot = async (slotId: string, updates: any) => {
+    setIsLoading(true);
+    try {
+      const res = await mobileApi.editMealSlot(slotId, updates);
+      if (res.success && res.data) {
+        setPlan(res.data);
+        await fetchShoppingList();
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const updateHouseholdSize = async (householdSize: number) => {
+    setIsLoading(true);
+    try {
+      const res = await mobileApi.updateHouseholdSize(householdSize);
+      if (res.success && res.data) {
+        setPlan(res.data);
+        if (preferences) setPreferences({ ...preferences, householdSize });
+        await fetchShoppingList();
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const archivePlan = async () => {
+    setIsLoading(true);
+    try {
+      const res = await mobileApi.archivePlan();
+      if (res.success && res.data) {
+        setPlan(res.data);
+        await fetchShoppingList();
+        await fetchPlanHistory();
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchPlanHistory = async () => {
+    try {
+      const res = await mobileApi.getPlanHistory();
+      if (res.success && res.data) {
+        setPlanHistory(res.data);
+      }
+    } catch (err) {
+      console.warn('[PlanContext] fetchPlanHistory error:', err);
+    }
+  };
+
+  const addCustomShoppingItem = async (payload: any) => {
+    setIsLoading(true);
+    try {
+      const res = await mobileApi.addCustomShoppingItem(payload);
+      if (res.success && res.data) {
+        setShoppingList(res.data);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const editShoppingItem = async (itemId: string, updates: any) => {
+    try {
+      const res = await mobileApi.editShoppingItem(itemId, updates);
+      if (res.success && res.data) {
+        setShoppingList(res.data);
+      }
+    } catch (err) {
+      console.warn('[PlanContext] editShoppingItem error:', err);
+    }
+  };
+
+  const deleteShoppingItem = async (itemId: string) => {
+    try {
+      const res = await mobileApi.deleteShoppingItem(itemId);
+      if (res.success && res.data) {
+        setShoppingList(res.data);
+      }
+    } catch (err) {
+      console.warn('[PlanContext] deleteShoppingItem error:', err);
     }
   };
 
@@ -187,6 +318,7 @@ export const PlanProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setPlan(null);
       setPreferences(null);
       setShoppingList(null);
+      setPlanHistory([]);
     }
   }, [isAuthenticated, fetchPlan, fetchPreferences, fetchShoppingList]);
 
@@ -196,17 +328,27 @@ export const PlanProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         plan,
         preferences,
         shoppingList,
+        planHistory,
         isLoading,
         offlinePendingCount,
         fetchPlan,
         regeneratePlan,
         swapMeal,
+        addMealSlot,
+        removeMealSlot,
+        editMealSlot,
+        updateHouseholdSize,
+        archivePlan,
+        fetchPlanHistory,
         toggleDinnerCooked,
         fetchPreferences,
         updatePreferences,
         fetchShoppingList,
         toggleShoppingItem,
         resetShoppingList,
+        addCustomShoppingItem,
+        editShoppingItem,
+        deleteShoppingItem,
         syncOfflineChanges,
       }}
     >

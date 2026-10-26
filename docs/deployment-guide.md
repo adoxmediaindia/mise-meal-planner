@@ -70,17 +70,20 @@ The repository contains [`render.yaml`](../render.yaml).
 3. Configure the following fields:
    - **Name**: `mise-backend-api`
    - **Region**: Oregon or closest to your Atlas cluster
-   - **Branch**: `master` (or `main`)
-   - **Root Directory**: leave blank (repository root) or `server`
+   - **Branch**: `main` (or `master`)
+   - **Root Directory**: **Leave blank** (monorepo root)
+     > **Critical Workspace Requirement**: The Render Root Directory must remain **blank** (repository root). Do NOT set it to `server`. Setting Root Directory to `server` bypasses the monorepo workspace orchestration in root `package.json`, causing `npm run build --workspace=server` and `npm run start:server` to fail.
    - **Runtime**: `Node`
    - **Build Command**: `npm install && npm run build --workspace=server`
    - **Start Command**: `npm run start:server`
    - **Health Check Path**: `/api/health`
 4. Add Environment Variables:
    - `NODE_ENV`: `production`
+   - `PORT`: `10000` (auto-injected or manually set)
    - `MONGODB_URI`: `<your-atlas-connection-string>`
-   - `JWT_SECRET`: `<your-random-jwt-secret>`
-   - `CLIENT_URL`: `https://your-mise-app.vercel.app`
+   - `JWT_SECRET`: `<your-random-jwt-secret-minimum-32-chars>`
+   - `CLIENT_URL`: `https://your-mise-app.vercel.app` (comma-separated if multiple)
+   - `STRIPE_WEBHOOK_SECRET`: `<your-stripe-webhook-secret>` (when live billing active)
 
 ---
 

@@ -16,6 +16,7 @@ export const Preferences: React.FC = () => {
   const [allergies, setAllergies] = useState<Allergen[]>([]);
   const [equipment, setEquipment] = useState<KitchenEquipment[]>(['Hob Only', 'Oven']);
   const [vibes, setVibes] = useState<MealVibe[]>(['Speedy Meals', 'Family Favs']);
+  const [maxCookTimeMinutes, setMaxCookTimeMinutes] = useState<number>(60);
 
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -30,6 +31,7 @@ export const Preferences: React.FC = () => {
       setAllergies(preferences.allergies || []);
       setEquipment(preferences.equipment || ['Hob Only', 'Oven']);
       setVibes(preferences.vibes || ['Speedy Meals', 'Family Favs']);
+      setMaxCookTimeMinutes(preferences.maxCookTimeMinutes || 60);
     }
   }, [preferences]);
 
@@ -115,6 +117,7 @@ export const Preferences: React.FC = () => {
           allergies,
           equipment,
           vibes,
+          maxCookTimeMinutes,
         },
         autoRegenerate
       );
@@ -260,6 +263,41 @@ export const Preferences: React.FC = () => {
               >
                 <span className="text-lg">{v.emoji}</span>
                 <span className="truncate">{v.name}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Cooking Time Limit */}
+      <div className="bg-white rounded-[24px] p-5 shadow-[0_4px_16px_rgba(42,42,42,0.06)] border border-[#2a2a2a]/6 space-y-3">
+        <div>
+          <label className="block font-sans font-black text-base text-[#2a2a2a]">
+            Max cooking time limit
+          </label>
+          <p className="text-xs text-[#6b6b6b]">Only suggest recipes that can be made within this timeframe</p>
+        </div>
+
+        <div className="grid grid-cols-4 gap-2">
+          {[
+            { label: '15 mins', val: 15 },
+            { label: '30 mins', val: 30 },
+            { label: '45 mins', val: 45 },
+            { label: '60 mins', val: 60 },
+          ].map((t) => {
+            const isSelected = maxCookTimeMinutes === t.val;
+            return (
+              <button
+                key={t.val}
+                type="button"
+                onClick={() => setMaxCookTimeMinutes(t.val)}
+                className={`py-2.5 rounded-xl border text-xs font-bold text-center transition-all cursor-pointer ${
+                  isSelected
+                    ? 'border-[#9ed034] bg-[#9ed034]/20 text-[#1f2a06] ring-2 ring-[#9ed034]'
+                    : 'border-gray-200 text-[#2a2a2a] hover:border-gray-300'
+                }`}
+              >
+                {t.label}
               </button>
             );
           })}

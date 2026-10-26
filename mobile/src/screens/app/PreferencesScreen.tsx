@@ -46,20 +46,18 @@ const DIETARY: DietaryNeed[] = [
   'None',
   'Vegetarian',
   'Vegan',
-  'Gluten-Free',
-  'Dairy-Free',
   'Pescatarian',
 ];
 
 const ALLERGENS: Allergen[] = [
+  'Gluten',
+  'Dairy',
   'Peanuts',
   'Tree Nuts',
-  'Dairy',
   'Eggs',
-  'Wheat',
-  'Soy',
   'Fish',
   'Shellfish',
+  'Soy',
   'Sesame',
 ];
 
@@ -73,11 +71,13 @@ const EQUIPMENT: KitchenEquipment[] = [
 
 const VIBES: MealVibe[] = [
   'Speedy Meals',
+  'Low Calorie',
   'Family Favs',
-  'Budget Friendly',
-  'Healthy & Fresh',
-  'Comfort Food',
-  'One Pot Wonders',
+  'Healthy Comfort',
+  'Fakeaway',
+  'Gut Friendly',
+  'Protein Packed',
+  'British Staples',
 ];
 
 export const PreferencesScreen: React.FC = () => {

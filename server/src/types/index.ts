@@ -108,4 +108,114 @@ export interface IUserPreferences {
   allergies: Allergen[];
   equipment: KitchenEquipment[];
   vibes: MealVibe[];
+  maxCookTimeMinutes?: number;
+}
+
+export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack';
+
+export interface IMealSlot {
+  id?: string;
+  day: DayOfWeek;
+  mealType: MealType;
+  recipe: any;
+  servings?: number;
+  isCooked: boolean;
+}
+
+export interface IDinnerSlot {
+  day: DayOfWeek;
+  recipe: any;
+  isCooked: boolean;
+}
+
+export interface IMealPlan {
+  _id?: string;
+  user: string;
+  weekStartDate: Date | string;
+  dinners: IDinnerSlot[];
+  meals?: IMealSlot[];
+  householdSize: number;
+  estimatedCost: number;
+  budgetLimit: number;
+  isArchived?: boolean;
+}
+
+export interface IShoppingItem {
+  id: string;
+  name: string;
+  totalQuantity: number;
+  unit: string;
+  aisle: SupermarketAisle;
+  estimatedCost: number;
+  isBought: boolean;
+  recipeTitles: string[];
+  icon?: string;
+  isCustom?: boolean;
+  pantryNote?: string;
+}
+
+export interface IPantryItem {
+  _id?: string;
+  id?: string;
+  user?: string;
+  name: string;
+  quantity: number;
+  unit: string;
+  category: SupermarketAisle;
+  expiryDate?: Date | string;
+  icon?: string;
+  notes?: string;
+  isExpired?: boolean;
+  isExpiringSoon?: boolean;
+  daysUntilExpiry?: number;
+}
+
+export type HouseholdMemberRole = 'owner' | 'admin' | 'member';
+
+export interface IHouseholdMemberInfo {
+  user: any;
+  role: HouseholdMemberRole;
+  joinedAt: Date | string;
+}
+
+export interface IHousehold {
+  _id?: string;
+  name: string;
+  owner: any;
+  members: IHouseholdMemberInfo[];
+  shareMealPlan: boolean;
+  shareGroceryList: boolean;
+  sharePantry: boolean;
+}
+
+export interface IHouseholdInvitation {
+  _id?: string;
+  household: any;
+  invitedBy: any;
+  inviteeEmail: string;
+  inviteToken: string;
+  role: 'admin' | 'member';
+  status: 'pending' | 'accepted' | 'rejected' | 'revoked' | 'expired';
+  expiresAt: Date | string;
+}
+
+export interface IPantryRecipeMatch {
+  recipe: any;
+  matchPercentage: number;
+  availableIngredients: {
+    name: string;
+    quantity: number;
+    unit: string;
+    pantryQuantity: number;
+    pantryUnit: string;
+  }[];
+  missingIngredients: {
+    name: string;
+    quantity: number;
+    unit: string;
+    deficitQuantity: number;
+    aisle: SupermarketAisle;
+    estimatedCost: number;
+  }[];
+  canCookFully: boolean;
 }

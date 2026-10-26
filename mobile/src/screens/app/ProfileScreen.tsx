@@ -67,17 +67,62 @@ export const ProfileScreen: React.FC = () => {
         <Text style={styles.sectionTitle}>Subscription & Membership</Text>
         <Text style={styles.sectionDesc}>
           {isPro
-            ? 'You have unlimited weekly planning, priority meal swaps, and real-time supermarket sync.'
-            : 'Upgrade to Mise Pro for unlimited dinner swaps, automated multi-store comparisons, and advanced macro tracking.'}
+            ? 'Your Pro Chef membership unlocks unlimited recipe generation, unlimited pantry staples, and 10-member household sharing.'
+            : 'Upgrade to Mise Pro for unlimited dinner planning, unlimited pantry tracking, and family sharing.'}
         </Text>
 
-        <Button
-          title={isPro ? 'Downgrade to Free Tier' : '★ Upgrade to Pro ($4.99/mo)'}
-          onPress={handleToggleSubscription}
-          loading={upgrading}
-          variant={isPro ? 'secondary' : 'primary'}
-          style={styles.subBtn}
-        />
+        {!isPro ? (
+          <View style={styles.upgradeChoices}>
+            <Button
+              title="Upgrade Monthly ($4.99/mo)"
+              onPress={async () => {
+                setUpgrading(true);
+                try {
+                  const res = await mobileApi.upgradeSubscription('mise_pro_monthly');
+                  await refreshUser();
+                  Alert.alert('Subscribed!', res.message || 'You are now on Mise Pro Monthly!');
+                } catch (err: any) {
+                  Alert.alert('Error', err.message);
+                } finally {
+                  setUpgrading(false);
+                }
+              }}
+              loading={upgrading}
+              variant="primary"
+              style={styles.subBtn}
+            />
+            <Button
+              title="Upgrade Annual ($49.99/yr — Save 17%)"
+              onPress={async () => {
+                setUpgrading(true);
+                try {
+                  const res = await mobileApi.upgradeSubscription('mise_pro_yearly');
+                  await refreshUser();
+                  Alert.alert('Subscribed!', res.message || 'You are now on Mise Pro Annual!');
+                } catch (err: any) {
+                  Alert.alert('Error', err.message);
+                } finally {
+                  setUpgrading(false);
+                }
+              }}
+              loading={upgrading}
+              variant="secondary"
+              style={styles.subBtn}
+            />
+          </View>
+        ) : (
+          <Button
+            title="Downgrade to Free Tier"
+            onPress={handleToggleSubscription}
+            loading={upgrading}
+            variant="secondary"
+            style={styles.subBtn}
+          />
+        )}
+
+        <Text style={styles.testModeNotice}>
+          ℹ️ Payments are in test/provider-independent mode. Live payment processing ready pending production Stripe API keys.
+        </Text>
       </View>
 
       {/* Cross-Device Sync Card */}
@@ -203,6 +248,16 @@ const styles = StyleSheet.create({
   },
   subBtn: {
     marginTop: 4,
+  },
+  upgradeChoices: {
+    gap: 8,
+  },
+  testModeNotice: {
+    fontSize: 11,
+    color: '#9CA3AF',
+    fontStyle: 'italic',
+    marginTop: 10,
+    lineHeight: 15,
   },
   syncRow: {
     flexDirection: 'row',

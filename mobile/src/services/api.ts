@@ -7,6 +7,10 @@ import {
   IRecipe,
   IMealPlan,
   IShoppingList,
+  IPantryItem,
+  IHousehold,
+  IHouseholdInvitation,
+  IPantryRecipeMatch,
 } from '../types';
 
 interface ApiResponse<T> {
@@ -109,6 +113,9 @@ export const mobileApi = {
   getRecipeById: (id: string) =>
     request<ApiResponse<IRecipe>>(`/recipes/${id}`),
 
+  getFavorites: () =>
+    request<{ success: boolean; data: IRecipe[] }>('/recipes/favorites'),
+
   toggleFavorite: (id: string) =>
     request<{ success: boolean; isFavorited: boolean; favorites: string[] }>(`/recipes/${id}/favorite`, {
       method: 'POST',
@@ -124,6 +131,14 @@ export const mobileApi = {
   getCurrentPlan: () =>
     request<ApiResponse<IMealPlan>>('/plan/current'),
 
+  getPlanHistory: () =>
+    request<ApiResponse<IMealPlan[]>>('/plan/history'),
+
+  archivePlan: () =>
+    request<ApiResponse<IMealPlan>>('/plan/archive', {
+      method: 'POST',
+    }),
+
   generatePlan: () =>
     request<ApiResponse<IMealPlan>>('/plan/generate', {
       method: 'POST',
@@ -135,6 +150,29 @@ export const mobileApi = {
       body: JSON.stringify(payload),
     }),
 
+  addMealSlot: (payload: { day: string; mealType: string; recipeId: string; servings?: number }) =>
+    request<ApiResponse<IMealPlan>>('/plan/meals', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+
+  removeMealSlot: (slotId: string) =>
+    request<ApiResponse<IMealPlan>>(`/plan/meals/${slotId}`, {
+      method: 'DELETE',
+    }),
+
+  editMealSlot: (slotId: string, updates: any) =>
+    request<ApiResponse<IMealPlan>>(`/plan/meals/${slotId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(updates),
+    }),
+
+  updateHouseholdSize: (householdSize: number) =>
+    request<ApiResponse<IMealPlan>>('/plan/household-size', {
+      method: 'PATCH',
+      body: JSON.stringify({ householdSize }),
+    }),
+
   toggleDinnerCooked: (day: string) =>
     request<ApiResponse<IMealPlan>>(`/plan/dinners/${day}/cooked`, {
       method: 'PATCH',
@@ -144,14 +182,39 @@ export const mobileApi = {
   getShoppingList: () =>
     request<ApiResponse<IShoppingList>>('/shopping-list'),
 
-  toggleShoppingItem: async (itemId: string): Promise<ApiResponse<IShoppingList>> => {
+  addCustomShoppingItem: (payload: {
+    name: string;
+    totalQuantity?: number;
+    unit?: string;
+    aisle?: string;
+    estimatedCost?: number;
+    icon?: string;
+  }) =>
+    request<ApiResponse<IShoppingList>>('/shopping-list/items', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+
+  editShoppingItem: (itemId: string, updates: any) =>
+    request<ApiResponse<IShoppingList>>(`/shopping-list/items/${itemId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(updates),
+    }),
+
+  deleteShoppingItem: (itemId: string) =>
+    request<ApiResponse<IShoppingList>>(`/shopping-list/items/${itemId}`, {
+      method: 'DELETE',
+    }),
+
+  toggleShoppingItem: async (itemId: string, targetState?: boolean): Promise<ApiResponse<IShoppingList>> => {
     try {
       return await request<ApiResponse<IShoppingList>>(`/shopping-list/item/${itemId}`, {
         method: 'PATCH',
+        body: targetState !== undefined ? JSON.stringify({ isBought: targetState }) : undefined,
       });
     } catch (err) {
-      // If network fails, queue for offline sync
-      offlineSyncQueue.queueItemToggle(itemId);
+      // If network fails, queue for offline sync with intended target state
+      offlineSyncQueue.queueItemToggle(itemId, targetState);
       throw err;
     }
   },
@@ -161,12 +224,13 @@ export const mobileApi = {
       method: 'POST',
     }),
 
-  // Process any pending offline toggle actions
+  // Process any pending offline toggle actions with idempotent target state
   flushOfflineCheckoffs: async () => {
     return await offlineSyncQueue.flush(async (mutation) => {
       try {
         await request(`/shopping-list/item/${mutation.itemId}`, {
           method: 'PATCH',
+          body: mutation.targetState !== undefined ? JSON.stringify({ isBought: mutation.targetState }) : undefined,
         });
         return true;
       } catch {
@@ -179,8 +243,129 @@ export const mobileApi = {
   getSubscriptionStatus: () =>
     request<ApiResponse<any>>('/subscriptions/status'),
 
+  getUsageStats: () =>
+    request<ApiResponse<any>>('/subscriptions/usage'),
+
+  upgradeSubscription: (planId: 'mise_pro_monthly' | 'mise_pro_yearly') =>
+    request<ApiResponse<any>>('/subscriptions/upgrade', {
+      method: 'POST',
+      body: JSON.stringify({ planId }),
+    }),
+
+  cancelSubscription: () =>
+    request<ApiResponse<any>>('/subscriptions/cancel', {
+      method: 'POST',
+    }),
+
+  reactivateSubscription: () =>
+    request<ApiResponse<any>>('/subscriptions/reactivate', {
+      method: 'POST',
+    }),
+
+  getInvoices: () =>
+    request<ApiResponse<any[]>>('/subscriptions/invoices'),
+
   mockUpgradeSubscription: () =>
     request<ApiResponse<any>>('/subscriptions/mock-upgrade', {
+      method: 'POST',
+    }),
+
+  // 7. Pantry Endpoints
+  getPantryItems: (params?: { search?: string; category?: string; status?: string }) => {
+    const qs = params ? new URLSearchParams(params as any).toString() : '';
+    return request<ApiResponse<IPantryItem[]>>(`/pantry${qs ? `?${qs}` : ''}`);
+  },
+
+  addPantryItem: (payload: {
+    name: string;
+    quantity: number;
+    unit?: string;
+    category?: string;
+    expiryDate?: string | null;
+    icon?: string;
+    notes?: string;
+  }) =>
+    request<ApiResponse<IPantryItem>>('/pantry', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+
+  updatePantryItem: (id: string, updates: any) =>
+    request<ApiResponse<IPantryItem>>(`/pantry/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(updates),
+    }),
+
+  deletePantryItem: (id: string) =>
+    request<ApiResponse<void>>(`/pantry/${id}`, {
+      method: 'DELETE',
+    }),
+
+  consumePantryItem: (id: string, amount: number) =>
+    request<ApiResponse<any>>(`/pantry/${id}/consume`, {
+      method: 'POST',
+      body: JSON.stringify({ amount }),
+    }),
+
+  getPantryRecipeSuggestions: (params?: {
+    maxMissing?: number;
+    cuisine?: string;
+    dietary?: string;
+    limit?: number;
+  }) => {
+    const qs = params ? new URLSearchParams(params as any).toString() : '';
+    return request<ApiResponse<IPantryRecipeMatch[]>>(`/pantry/recipes${qs ? `?${qs}` : ''}`);
+  },
+
+  addMissingIngredientsToGrocery: (recipeId: string) =>
+    request<ApiResponse<{ addedCount: number; shoppingList: IShoppingList }>>(
+      `/pantry/recipes/${recipeId}/add-missing-to-grocery`,
+      { method: 'POST' }
+    ),
+
+  // 8. Household Endpoints
+  getMyHousehold: () =>
+    request<ApiResponse<IHousehold>>('/household'),
+
+  createHousehold: (name: string) =>
+    request<ApiResponse<IHousehold>>('/household', {
+      method: 'POST',
+      body: JSON.stringify({ name }),
+    }),
+
+  inviteHouseholdMember: (payload: { email: string; role?: 'admin' | 'member' }) =>
+    request<ApiResponse<IHouseholdInvitation> & { inviteLink: string }>('/household/invitations', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+
+  getPendingHouseholdInvitations: () =>
+    request<ApiResponse<IHouseholdInvitation[]>>('/household/invitations/pending'),
+
+  acceptHouseholdInvitation: (token: string) =>
+    request<ApiResponse<IHousehold>>('/household/invitations/accept', {
+      method: 'POST',
+      body: JSON.stringify({ token }),
+    }),
+
+  rejectHouseholdInvitation: (token: string) =>
+    request<ApiResponse<void>>('/household/invitations/reject', {
+      method: 'POST',
+      body: JSON.stringify({ token }),
+    }),
+
+  revokeHouseholdInvitation: (id: string) =>
+    request<ApiResponse<void>>(`/household/invitations/${id}`, {
+      method: 'DELETE',
+    }),
+
+  removeHouseholdMember: (memberId: string) =>
+    request<ApiResponse<IHousehold>>(`/household/members/${memberId}`, {
+      method: 'DELETE',
+    }),
+
+  leaveHousehold: () =>
+    request<ApiResponse<void>>('/household/leave', {
       method: 'POST',
     }),
 };

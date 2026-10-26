@@ -73,16 +73,42 @@ export const secureStorage = {
     }
   },
 
+  async getQueue(): Promise<any[]> {
+    try {
+      const raw = Platform.OS === 'web' ? memoryStorage.get('mise_offline_queue') : await SecureStore.getItemAsync('mise_offline_queue');
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      const raw = memoryStorage.get('mise_offline_queue');
+      return raw ? JSON.parse(raw) : [];
+    }
+  },
+
+  async setQueue(queue: any[]): Promise<void> {
+    try {
+      const serialized = JSON.stringify(queue);
+      if (Platform.OS === 'web') {
+        memoryStorage.set('mise_offline_queue', serialized);
+      } else {
+        await SecureStore.setItemAsync('mise_offline_queue', serialized);
+      }
+    } catch {
+      memoryStorage.set('mise_offline_queue', JSON.stringify(queue));
+    }
+  },
+
   async clearAll(): Promise<void> {
     await this.removeToken();
     try {
       if (Platform.OS === 'web') {
         memoryStorage.delete(USER_KEY);
+        memoryStorage.delete('mise_offline_queue');
       } else {
         await SecureStore.deleteItemAsync(USER_KEY);
+        await SecureStore.deleteItemAsync('mise_offline_queue');
       }
     } catch {
       memoryStorage.delete(USER_KEY);
+      memoryStorage.delete('mise_offline_queue');
     }
   },
 };

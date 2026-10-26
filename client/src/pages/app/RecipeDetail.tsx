@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../../services/api.js';
 import { useAuth } from '../../context/AuthContext.js';
 import { usePlan } from '../../context/PlanContext.js';
-import { IRecipe, DayOfWeek } from '../../types/index.js';
+import { IRecipe, DayOfWeek, MealType } from '../../types/index.js';
 import { AllergyBanner } from '../../components/common/AllergyBanner.js';
 import { Button } from '../../components/common/Button.js';
 import { ArrowLeft, Heart, ThumbsUp, ThumbsDown, CheckCircle, Plus } from 'lucide-react';
@@ -12,14 +12,18 @@ export const RecipeDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user, toggleFavoriteInState } = useAuth();
-  const { swapMeal, plan } = usePlan();
+  const { swapMeal, addMealSlot, plan } = usePlan();
 
   const [recipe, setRecipe] = useState<IRecipe | null>(null);
   const [servingsMultiplier, setServingsMultiplier] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [reaction, setReaction] = useState<'up' | 'down' | null>(null);
-  const [showDaySelector, setShowDaySelector] = useState(false);
-  const [addedToast, setAddedToast] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [selectedDay, setSelectedDay] = useState<DayOfWeek>('Monday');
+  const [selectedMealType, setSelectedMealType] = useState<MealType>('dinner');
+  const [selectedServings, setSelectedServings] = useState<number>(2);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [addedToast, setAddedToast] = useState<string | null>(null);
 
   const isFavorited = user?.favorites?.includes(recipe?._id || '') || false;
 
@@ -59,15 +63,39 @@ export const RecipeDetail: React.FC = () => {
     }
   };
 
+  const daysOfWeek: DayOfWeek[] = [
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+    'Sunday',
+  ];
+
+  const handleAddToPlan = async () => {
+    if (!recipe) return;
+    setActionError(null);
+    try {
+      await addMealSlot(selectedDay, selectedMealType, recipe._id, selectedServings);
+      setShowAddModal(false);
+      setAddedToast(`Added to ${selectedDay} ${selectedMealType}!`);
+      setTimeout(() => setAddedToast(null), 3500);
+    } catch (err: any) {
+      setActionError(err.message || 'Failed to add recipe to plan');
+    }
+  };
+
   const handleSwapIntoDay = async (day: DayOfWeek) => {
     if (!recipe) return;
+    setActionError(null);
     try {
       await swapMeal(day, recipe._id);
-      setShowDaySelector(false);
-      setAddedToast(true);
-      setTimeout(() => setAddedToast(false), 3000);
+      setShowAddModal(false);
+      setAddedToast(`Swapped dinner for ${day}!`);
+      setTimeout(() => setAddedToast(null), 3500);
     } catch (err: any) {
-      alert(err.message || 'Failed to add recipe to plan');
+      setActionError(err.message || 'Failed to swap meal');
     }
   };
 
@@ -85,7 +113,7 @@ export const RecipeDetail: React.FC = () => {
   }
 
   const baseServings = recipe.servings || 2;
-  const currentServings = baseServings * servingsMultiplier;
+  const currentServings = Math.round(baseServings * servingsMultiplier);
 
   return (
     <div className="animate-fadeIn pb-10 -mx-5 sm:-mx-6 -mt-2">
@@ -93,7 +121,7 @@ export const RecipeDetail: React.FC = () => {
       {addedToast && (
         <div className="fixed top-12 left-1/2 -translate-x-1/2 z-50 bg-[#1f2a06] text-white px-5 py-3 rounded-full shadow-lg flex items-center gap-2 text-sm font-bold animate-fadeIn">
           <CheckCircle className="w-4 h-4 text-[#9ed034]" />
-          <span>Swapped into your weekly meal plan!</span>
+          <span>{addedToast}</span>
         </div>
       )}
 
@@ -241,41 +269,155 @@ export const RecipeDetail: React.FC = () => {
         {/* Mandatory Allergy Notice */}
         <AllergyBanner compact={true} />
 
+        {/* Allergens & Equipment Badges */}
+        <div className="flex flex-wrap gap-2 pt-1">
+          {recipe.allergens && recipe.allergens.length > 0 ? (
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-amber-700">
+                Allergens:
+              </span>
+              {recipe.allergens.map((a) => (
+                <span
+                  key={a}
+                  className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200"
+                >
+                  {a}
+                </span>
+              ))}
+            </div>
+          ) : (
+            <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
+              No Major Common Allergens
+            </span>
+          )}
+
+          {recipe.equipmentNeeded && recipe.equipmentNeeded.length > 0 && (
+            <div className="flex items-center gap-1.5 flex-wrap ml-auto">
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#888]">
+                Equipment:
+              </span>
+              {recipe.equipmentNeeded.map((eq) => (
+                <span
+                  key={eq}
+                  className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-700"
+                >
+                  {eq}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+
         {/* Action: Add to Plan Button */}
         <div>
-          {!showDaySelector ? (
-            <Button
-              onClick={() => setShowDaySelector(true)}
-              className="w-full"
-              icon={<Plus className="w-4 h-4" />}
-            >
-              Swap Into Weekly Plan
-            </Button>
+          {!showAddModal ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <Button
+                onClick={() => {
+                  setActionError(null);
+                  setShowAddModal(true);
+                }}
+                className="w-full"
+                icon={<Plus className="w-4 h-4" />}
+              >
+                Add to Meal Plan
+              </Button>
+
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setActionError(null);
+                  setShowAddModal(true);
+                }}
+                className="w-full"
+              >
+                Swap Into Weekly Plan
+              </Button>
+            </div>
           ) : (
-            <div className="bg-white p-4 rounded-2xl border border-[#9ed034] space-y-3">
+            <div className="bg-white p-5 rounded-[24px] border border-[#9ed034] shadow-md space-y-4">
               <div className="flex justify-between items-center">
-                <span className="text-xs font-bold uppercase tracking-wider text-[#2a2a2a]">
-                  Choose day to replace:
-                </span>
+                <h4 className="font-serif font-bold text-lg text-[#2a2a2a]">
+                  Add to Weekly Plan
+                </h4>
                 <button
                   type="button"
-                  onClick={() => setShowDaySelector(false)}
-                  className="text-xs font-semibold text-gray-400"
+                  onClick={() => setShowAddModal(false)}
+                  className="text-xs font-semibold text-gray-400 hover:text-black cursor-pointer"
                 >
                   Cancel
                 </button>
               </div>
-              <div className="grid grid-cols-4 sm:grid-cols-7 gap-1.5">
-                {plan?.dinners?.map((slot) => (
-                  <button
-                    key={slot.day}
-                    type="button"
-                    onClick={() => handleSwapIntoDay(slot.day)}
-                    className="p-2 text-xs font-bold rounded-xl border border-gray-200 hover:border-[#9ed034] hover:bg-[#9ed034]/20 text-[#2a2a2a] transition-all"
+
+              {actionError && (
+                <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl font-medium">
+                  {actionError}
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-[10px] font-extrabold uppercase text-[#6b6b6b] mb-1">
+                    Select Day
+                  </label>
+                  <select
+                    value={selectedDay}
+                    onChange={(e) => setSelectedDay(e.target.value as DayOfWeek)}
+                    className="w-full bg-white border border-gray-200 rounded-xl px-2.5 py-2 text-xs font-semibold"
                   >
-                    {slot.day.slice(0, 3)}
-                  </button>
-                ))}
+                    {daysOfWeek.map((d) => (
+                      <option key={d} value={d}>
+                        {d}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-extrabold uppercase text-[#6b6b6b] mb-1">
+                    Meal Type
+                  </label>
+                  <select
+                    value={selectedMealType}
+                    onChange={(e) => setSelectedMealType(e.target.value as MealType)}
+                    className="w-full bg-white border border-gray-200 rounded-xl px-2.5 py-2 text-xs font-semibold capitalize"
+                  >
+                    {(['breakfast', 'lunch', 'dinner', 'snack'] as const).map((t) => (
+                      <option key={t} value={t}>
+                        {t}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-extrabold uppercase text-[#6b6b6b] mb-1">
+                    Servings
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="12"
+                    value={selectedServings}
+                    onChange={(e) => setSelectedServings(parseInt(e.target.value, 10) || 2)}
+                    className="w-full bg-white border border-gray-200 rounded-xl px-2.5 py-2 text-xs font-semibold"
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                <Button onClick={handleAddToPlan} className="flex-1">
+                  Confirm & Add
+                </Button>
+                {selectedMealType === 'dinner' && (
+                  <Button
+                    variant="outline"
+                    onClick={() => handleSwapIntoDay(selectedDay)}
+                    className="flex-1"
+                  >
+                    Swap Dinner
+                  </Button>
+                )}
               </div>
             </div>
           )}

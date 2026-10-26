@@ -11,16 +11,19 @@ import { Terms } from './pages/marketing/Terms.js';
 // Auth pages
 import { Login } from './pages/auth/Login.js';
 import { Register } from './pages/auth/Register.js';
+import { ForgotPassword } from './pages/auth/ForgotPassword.js';
 
 // App pages
 import { AppShell } from './components/app/AppShell.js';
 import { PlanOverview } from './pages/app/PlanOverview.js';
 import { RecipeDetail } from './pages/app/RecipeDetail.js';
 import { GroceryList } from './pages/app/GroceryList.js';
+import { Pantry } from './pages/app/Pantry.js';
 import { Explore } from './pages/app/Explore.js';
 import { Preferences } from './pages/app/Preferences.js';
 import { Settings } from './pages/app/Settings.js';
 import { Onboarding } from './pages/app/Onboarding.js';
+import { AdminDashboard } from './pages/admin/AdminDashboard.js';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -53,6 +56,8 @@ export const App: React.FC = () => {
       {/* 2. Authentication Routes */}
       <Route path="/auth/login" element={<Login />} />
       <Route path="/auth/register" element={<Register />} />
+      <Route path="/auth/forgot-password" element={<ForgotPassword />} />
+      <Route path="/auth/reset-password" element={<ForgotPassword defaultMode="reset" />} />
 
       {/* 3. Onboarding Wizard */}
       <Route
@@ -75,11 +80,13 @@ export const App: React.FC = () => {
       >
         <Route index element={<Navigate to="/app/plan" replace />} />
         <Route path="plan" element={<PlanOverview />} />
+        <Route path="pantry" element={<Pantry />} />
         <Route path="recipes/:id" element={<RecipeDetail />} />
         <Route path="grocery-list" element={<GroceryList />} />
         <Route path="explore" element={<Explore />} />
         <Route path="preferences" element={<Preferences />} />
         <Route path="settings" element={<Settings />} />
+        <Route path="admin" element={<AdminDashboard />} />
       </Route>
 
       {/* Catch-all fallback */}

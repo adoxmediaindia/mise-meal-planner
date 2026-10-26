@@ -2,6 +2,7 @@ import mongoose, { Schema, Document } from 'mongoose';
 import {
   Cuisine,
   MealVibe,
+  MealType,
   DietaryNeed,
   Allergen,
   KitchenEquipment,
@@ -24,6 +25,7 @@ export interface IRecipeDoc extends Document {
   image: string;
   cuisine: Cuisine;
   vibes: MealVibe[];
+  mealTypes?: MealType[];
   prepTimeMinutes: number;
   cookTimeMinutes: number;
   servings: number;
@@ -79,6 +81,7 @@ const RecipeSchema = new Schema<IRecipeDoc>(
       enum: ['Italian', 'Asian', 'Mexican', 'Indian', 'Mediterranean', 'British'],
     },
     vibes: { type: [String], index: true, default: [] },
+    mealTypes: { type: [String], index: true, default: ['dinner'] },
     prepTimeMinutes: { type: Number, required: true, default: 15 },
     cookTimeMinutes: { type: Number, required: true, default: 20 },
     servings: { type: Number, required: true, default: 2 },

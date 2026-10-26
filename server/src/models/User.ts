@@ -5,8 +5,14 @@ export interface IUser extends Document {
   name: string;
   email: string;
   password: string;
+  role: 'user' | 'admin';
   subscriptionTier: 'free' | 'pro';
   subscriptionStatus: 'active' | 'trial' | 'cancelled';
+  billingCycle?: 'monthly' | 'yearly';
+  subscriptionExpiresAt?: Date;
+  stripeCustomerId?: string;
+  planGenerationsThisWeek?: number;
+  lastPlanGenerationAt?: Date;
   favorites: mongoose.Types.ObjectId[];
   resetPasswordToken?: string;
   resetPasswordExpires?: Date;
@@ -27,12 +33,18 @@ const UserSchema = new Schema<IUser>(
       index: true,
     },
     password: { type: String, required: true, minlength: 6 },
-    subscriptionTier: { type: String, enum: ['free', 'pro'], default: 'free' },
+    role: { type: String, enum: ['user', 'admin'], default: 'user', index: true },
+    subscriptionTier: { type: String, enum: ['free', 'pro'], default: 'free', index: true },
     subscriptionStatus: {
       type: String,
       enum: ['active', 'trial', 'cancelled'],
       default: 'trial',
     },
+    billingCycle: { type: String, enum: ['monthly', 'yearly'] },
+    subscriptionExpiresAt: { type: Date },
+    stripeCustomerId: { type: String },
+    planGenerationsThisWeek: { type: Number, default: 0 },
+    lastPlanGenerationAt: { type: Date },
     favorites: [{ type: Schema.Types.ObjectId, ref: 'Recipe' }],
     resetPasswordToken: { type: String },
     resetPasswordExpires: { type: Date },
