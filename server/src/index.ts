@@ -17,43 +17,77 @@ const PORT = process.env.PORT || 5000;
 app.use(
   helmet({
     contentSecurityPolicy: false, // Allow inline assets and vite dev
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
   })
 );
 
-// Explicit CORS origin validation:
-// Restricts access to explicitly configured trusted origins (CLIENT_URL)
-// and strictly validated local development origins (localhost / 127.0.0.1).
-// Arbitrary *.vercel.app origins are strictly disallowed.
-const allowedOrigins = new Set([
+// Normalize origin by trimming whitespace and removing trailing slashes
+export const normalizeOrigin = (origin: string): string => {
+  return origin.trim().replace(/\/+$/, '');
+};
+
+// Default allowed origins: production Vercel frontend and local development
+const DEFAULT_ALLOWED_ORIGINS = [
+  'https://mise-meal-planner-pi.vercel.app',
   'http://localhost:5173',
   'http://127.0.0.1:5173',
-  ...(process.env.CLIENT_URL ? process.env.CLIENT_URL.split(',').map((url) => url.trim()) : []),
-]);
+];
 
+// Dynamically construct allowed origins from defaults, CLIENT_URL, and FRONTEND_URL
+export const getAllowedOrigins = (): Set<string> => {
+  const origins = new Set<string>(DEFAULT_ALLOWED_ORIGINS.map(normalizeOrigin));
+
+  const envOrigins = [
+    ...(process.env.CLIENT_URL ? process.env.CLIENT_URL.split(',') : []),
+    ...(process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',') : []),
+  ];
+
+  for (const raw of envOrigins) {
+    const cleaned = normalizeOrigin(raw);
+    if (cleaned) {
+      origins.add(cleaned);
+    }
+  }
+
+  return origins;
+};
+
+// Strict CORS origin validator:
+// Permits explicitly allowed production origins (defaults, CLIENT_URL, FRONTEND_URL)
+// and strictly validated localhost / 127.0.0.1 origins in non-production.
+// Arbitrary *.vercel.app origins and attacker domains are strictly disallowed.
 export const isOriginAllowed = (origin: string): boolean => {
-  if (allowedOrigins.has(origin)) {
+  const normalized = normalizeOrigin(origin);
+  const allowed = getAllowedOrigins();
+
+  if (allowed.has(normalized)) {
     return true;
   }
   // Allow local development on localhost or 127.0.0.1 on any port in non-production
   if (process.env.NODE_ENV !== 'production') {
-    return /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
+    return /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(normalized);
   }
   return false;
 };
 
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      // Allow requests with no origin header (native mobile clients, server-to-server, curl)
-      if (!origin) return callback(null, true);
-      if (isOriginAllowed(origin)) {
-        return callback(null, true);
-      }
-      return callback(null, false);
-    },
-    credentials: true,
-  })
-);
+export const corsOptions: cors.CorsOptions = {
+  origin: (origin, callback) => {
+    // Allow requests with no origin header (native mobile clients, server-to-server, curl)
+    if (!origin) return callback(null, true);
+    if (isOriginAllowed(origin)) {
+      return callback(null, true);
+    }
+    return callback(null, false);
+  },
+  credentials: true,
+  methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
+  exposedHeaders: ['Set-Cookie'],
+  optionsSuccessStatus: 204,
+};
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 
 app.use(cookieParser());
 app.use(

@@ -159,6 +159,52 @@ describe('Phase 7.2 — Security & Audit Fixes Verification Suite', () => {
       expect(res.headers['access-control-allow-credentials']).toBe('true');
     });
 
+    it('allows production frontend origin https://mise-meal-planner-pi.vercel.app with credentials', async () => {
+      const res = await request(app)
+        .get('/api/health')
+        .set('Origin', 'https://mise-meal-planner-pi.vercel.app');
+
+      expect(res.status).toBe(200);
+      expect(res.headers['access-control-allow-origin']).toBe('https://mise-meal-planner-pi.vercel.app');
+      expect(res.headers['access-control-allow-credentials']).toBe('true');
+      expect(res.headers['cross-origin-resource-policy']).toBe('cross-origin');
+    });
+
+    it('successfully handles CORS OPTIONS preflight requests from production origin', async () => {
+      const res = await request(app)
+        .options('/api/v1/auth/register')
+        .set('Origin', 'https://mise-meal-planner-pi.vercel.app')
+        .set('Access-Control-Request-Method', 'POST')
+        .set('Access-Control-Request-Headers', 'Content-Type, Authorization');
+
+      expect(res.status).toBe(204);
+      expect(res.headers['access-control-allow-origin']).toBe('https://mise-meal-planner-pi.vercel.app');
+      expect(res.headers['access-control-allow-credentials']).toBe('true');
+      expect(res.headers['access-control-allow-methods']).toContain('POST');
+      expect(res.headers['access-control-allow-headers']).toContain('Content-Type');
+    });
+
+    it('supports FRONTEND_URL and strips trailing slashes', () => {
+      const prevFrontend = process.env.FRONTEND_URL;
+      try {
+        process.env.FRONTEND_URL = 'https://custom-domain.com/, https://preview-app.vercel.app/ ';
+        expect(isOriginAllowed('https://custom-domain.com')).toBe(true);
+        expect(isOriginAllowed('https://preview-app.vercel.app')).toBe(true);
+      } finally {
+        if (prevFrontend) process.env.FRONTEND_URL = prevFrontend;
+        else delete process.env.FRONTEND_URL;
+      }
+    });
+
+    it('blocks arbitrary unapproved Vercel origins (*.vercel.app) during preflight', async () => {
+      const res = await request(app)
+        .options('/api/v1/auth/register')
+        .set('Origin', 'https://unauthorized-fork.vercel.app')
+        .set('Access-Control-Request-Method', 'POST');
+
+      expect(res.headers['access-control-allow-origin']).toBeUndefined();
+    });
+
     it('blocks arbitrary unapproved Vercel origins (*.vercel.app)', async () => {
       const res = await request(app)
         .get('/api/health')
@@ -189,6 +235,10 @@ describe('Phase 7.2 — Security & Audit Fixes Verification Suite', () => {
       expect(isOriginAllowed('http://localhost:5173')).toBe(true);
       expect(isOriginAllowed('http://localhost:3000')).toBe(true);
       expect(isOriginAllowed('http://127.0.0.1:5173')).toBe(true);
+
+      // Allowed production frontend
+      expect(isOriginAllowed('https://mise-meal-planner-pi.vercel.app')).toBe(true);
+      expect(isOriginAllowed('https://mise-meal-planner-pi.vercel.app/')).toBe(true);
 
       // Malicious or unapproved origins
       expect(isOriginAllowed('https://evil-site.vercel.app')).toBe(false);
