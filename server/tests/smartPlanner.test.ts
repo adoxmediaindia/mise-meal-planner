@@ -355,4 +355,64 @@ describe('Phase 3: Smart Meal Planning & Personalized Grocery Engine', () => {
     expect(favsRes.body.data.length).toBeGreaterThanOrEqual(1);
     expect(favsRes.body.data[0]._id.toString()).toBe(safeRecipe1._id.toString());
   });
+
+  it('10. Gracefully handles GET /api/v1/plan/current when user has no plan and cannot auto-generate (returns data: null without 500 error)', async () => {
+    // Register a new user with no existing plan
+    const regRes = await request(app)
+      .post('/api/v1/auth/register')
+      .send({
+        name: 'Empty Plan User',
+        email: 'emptyplan@smartplanner-test.com',
+        password: 'Password123!',
+      });
+    expect(regRes.status).toBe(201);
+    const newCookie = regRes.headers['set-cookie'][0];
+    const newUserId = regRes.body.data.id;
+
+    // Delete any plan created during registration
+    await MealPlan.deleteMany({ user: newUserId });
+
+    // Set impossible filter (e.g. maxCookTimeMinutes: 1) so auto-generation finds 0 recipes
+    await Preference.findOneAndUpdate(
+      { user: newUserId },
+      { $set: { maxCookTimeMinutes: 1, allergies: ['Gluten', 'Dairy', 'Peanuts', 'Soy', 'Sesame', 'Eggs', 'Fish', 'Shellfish', 'Tree Nuts'] } }
+    );
+
+    // GET /api/v1/plan/current should gracefully return 200 with data: null (NOT 500!)
+    const currentRes = await request(app)
+      .get('/api/v1/plan/current')
+      .set('Cookie', newCookie);
+
+    expect(currentRes.status).toBe(200);
+    expect(currentRes.body.success).toBe(true);
+    expect(currentRes.body.data).toBeNull();
+  });
+
+  it('11. Returns 422 with NO_RECIPES_FOUND on POST /api/v1/plan/generate when filters yield 0 matching recipes (NOT 500!)', async () => {
+    const regRes = await request(app)
+      .post('/api/v1/auth/register')
+      .send({
+        name: 'Filter Test User',
+        email: 'filteruser@smartplanner-test.com',
+        password: 'Password123!',
+      });
+    const filterCookie = regRes.headers['set-cookie'][0];
+    const filterUserId = regRes.body.data.id;
+
+    // Set impossible filters (e.g. maxCookTimeMinutes: 1)
+    await Preference.findOneAndUpdate(
+      { user: filterUserId },
+      { $set: { maxCookTimeMinutes: 1, allergies: ['Gluten', 'Dairy', 'Peanuts', 'Soy', 'Sesame', 'Eggs', 'Fish', 'Shellfish', 'Tree Nuts'] } }
+    );
+
+    // POST /api/v1/plan/generate should return 422 Unprocessable Entity
+    const genRes = await request(app)
+      .post('/api/v1/plan/generate')
+      .set('Cookie', filterCookie);
+
+    expect(genRes.status).toBe(422);
+    expect(genRes.body.success).toBe(false);
+    expect(genRes.body.code).toBe('NO_RECIPES_FOUND');
+    expect(genRes.body.error).toContain('No recipes found matching your active dietary preferences');
+  });
 });

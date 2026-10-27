@@ -4,7 +4,7 @@ import { MealPlan } from '../models/MealPlan.js';
 import { Preference } from '../models/Preference.js';
 import { User } from '../models/User.js';
 import { AuthRequest } from '../middleware/auth.js';
-import { PlannerService } from '../services/plannerService.js';
+import { PlannerService, NoRecipesFoundError } from '../services/plannerService.js';
 import { ShoppingListService } from '../services/shoppingListService.js';
 import { EntitlementService, EntitlementError } from '../services/entitlementService.js';
 import { DayOfWeek } from '../types/index.js';
@@ -53,11 +53,19 @@ export const getCurrentPlan = async (req: AuthRequest, res: Response): Promise<v
           vibes: ['Speedy Meals', 'Family Favs'],
         });
       }
-      const createdPlan = await PlannerService.generateWeeklyPlan(userId, pref);
-      await ShoppingListService.generateOrUpdateShoppingList(userId, (createdPlan._id as any).toString());
-      plan = await MealPlan.findById(createdPlan._id)
-        .populate('dinners.recipe')
-        .populate('meals.recipe');
+      try {
+        const createdPlan = await PlannerService.generateWeeklyPlan(userId, pref);
+        await ShoppingListService.generateOrUpdateShoppingList(userId, (createdPlan._id as any).toString());
+        plan = await MealPlan.findById(createdPlan._id)
+          .populate('dinners.recipe')
+          .populate('meals.recipe');
+      } catch (genErr) {
+        // If initial plan generation cannot be completed (e.g. no recipes found or catalog empty),
+        // gracefully return data: null so the user can configure preferences in Onboarding without a 500 error.
+        console.warn(`[getCurrentPlan] Initial plan generation deferred: ${(genErr as Error).message}`);
+        res.json({ success: true, data: null });
+        return;
+      }
     }
 
     res.json({ success: true, data: plan });
@@ -110,6 +118,14 @@ export const generatePlan = async (req: AuthRequest, res: Response): Promise<voi
       });
       return;
     }
+    if (err instanceof NoRecipesFoundError || err.code === 'NO_RECIPES_FOUND') {
+      res.status(422).json({
+        success: false,
+        error: err.message,
+        code: 'NO_RECIPES_FOUND',
+      });
+      return;
+    }
     res.status(500).json({ success: false, error: err.message });
   }
 };
@@ -133,6 +149,14 @@ export const swapMeal = async (req: AuthRequest, res: Response): Promise<void> =
       .populate('meals.recipe');
     res.json({ success: true, data: populated, message: `Dinner for ${day} swapped!` });
   } catch (err: any) {
+    if (err instanceof NoRecipesFoundError || err.code === 'NO_RECIPES_FOUND') {
+      res.status(422).json({
+        success: false,
+        error: err.message,
+        code: 'NO_RECIPES_FOUND',
+      });
+      return;
+    }
     res.status(500).json({ success: false, error: err.message });
   }
 };

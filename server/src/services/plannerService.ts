@@ -20,6 +20,18 @@ export const SUPERMARKET_PRICE_MULTIPLIERS: Record<Supermarket, number> = {
   Sprouts: 1.15,
 };
 
+export class NoRecipesFoundError extends Error {
+  public statusCode = 422;
+  public code = 'NO_RECIPES_FOUND';
+
+  constructor(
+    message = 'No recipes found matching your active dietary preferences and allergen exclusions. Try relaxing one allergy filter.'
+  ) {
+    super(message);
+    this.name = 'NoRecipesFoundError';
+  }
+}
+
 export class PlannerService {
   /**
    * Builds the MongoDB query filter strictly enforcing dietary needs and allergen exclusions.
@@ -77,7 +89,7 @@ export class PlannerService {
     const candidateRecipes: IRecipeDoc[] = await Recipe.find(baseQuery);
 
     if (candidateRecipes.length === 0) {
-      throw new Error(
+      throw new NoRecipesFoundError(
         'No recipes found matching your active dietary preferences and allergen exclusions. Try relaxing one allergy filter.'
       );
     }

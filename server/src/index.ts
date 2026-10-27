@@ -121,7 +121,28 @@ app.use(errorHandler);
 
 // Connect to MongoDB and start server
 if (process.env.NODE_ENV !== 'test') {
-  connectDB().then(() => {
+  connectDB().then(async () => {
+    // Auto-seed default recipes if catalogue is empty
+    try {
+      const { Recipe } = await import('./models/Recipe.js');
+      const count = await Recipe.countDocuments();
+      if (count === 0) {
+        console.log('[Mise API] Empty recipe catalogue detected. Auto-seeding default recipes...');
+        const { SEED_RECIPES } = await import('./seeds/recipeData.js');
+        for (const recipe of SEED_RECIPES) {
+          await Recipe.findOneAndUpdate(
+            { slug: recipe.slug },
+            { $set: recipe },
+            { upsert: true, new: true, setDefaultsOnInsert: true }
+          );
+        }
+        const seededCount = await Recipe.countDocuments();
+        console.log(`[Mise API] Successfully seeded ${seededCount} default recipes.`);
+      }
+    } catch (seedErr) {
+      console.warn('[Mise API] Warning: Recipe auto-seed failed:', seedErr);
+    }
+
     const server = app.listen(PORT, () => {
       console.log(`[Mise API] Server running on http://localhost:${PORT}`);
     });

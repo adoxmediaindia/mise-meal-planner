@@ -9,6 +9,9 @@ import { PlannerService } from '../services/plannerService.js';
 import { ShoppingListService } from '../services/shoppingListService.js';
 
 dotenv.config();
+if (!process.env.MONGODB_URI) {
+  dotenv.config({ path: 'server/.env' });
+}
 
 export const seedDatabase = async (): Promise<void> => {
   try {
