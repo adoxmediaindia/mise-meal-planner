@@ -205,7 +205,7 @@ export class PlannerService {
         if (targetRecipeId) {
           replacementRecipe = await Recipe.findOne({ _id: targetRecipeId, ...baseQuery });
           if (!replacementRecipe) {
-            throw new Error('Selected replacement recipe does not satisfy active allergy/diet filters.');
+            throw new NoRecipesFoundError('Selected replacement recipe does not satisfy active allergy/diet filters.');
           }
         } else {
           // Find a random alternative not currently in the plan
@@ -227,7 +227,7 @@ export class PlannerService {
         }
 
         if (!replacementRecipe) {
-          throw new Error('No safe alternative recipes found matching your filters.');
+          throw new NoRecipesFoundError('No safe alternative recipes found matching your filters.');
         }
 
         dinnerSlot.recipe = replacementRecipe._id as any;

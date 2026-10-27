@@ -415,4 +415,44 @@ describe('Phase 3: Smart Meal Planning & Personalized Grocery Engine', () => {
     expect(genRes.body.code).toBe('NO_RECIPES_FOUND');
     expect(genRes.body.error).toContain('No recipes found matching your active dietary preferences');
   });
+
+  it('12. Returns 422 with NO_RECIPES_FOUND on PUT /api/v1/plan/swap-meal when no alternative safe recipe matches (NOT 500!)', async () => {
+    const regRes = await request(app)
+      .post('/api/v1/auth/register')
+      .send({
+        name: 'Swap Error User',
+        email: 'swaperror@smartplanner-test.com',
+        password: 'Password123!',
+      });
+    const swapCookie = regRes.headers['set-cookie'][0];
+    const swapUserId = regRes.body.data.id;
+
+    // Set preference
+    await Preference.findOneAndUpdate(
+      { user: swapUserId },
+      { $set: { cookingDays: ['Monday'], dietaryNeeds: ['None'], allergies: [] } }
+    );
+
+    // Generate initial plan
+    const genRes = await request(app)
+      .post('/api/v1/plan/generate')
+      .set('Cookie', swapCookie);
+    expect(genRes.status).toBe(200);
+
+    // Now set impossible preference filter
+    await Preference.findOneAndUpdate(
+      { user: swapUserId },
+      { $set: { maxCookTimeMinutes: 1, allergies: ['Gluten', 'Dairy', 'Peanuts', 'Soy', 'Sesame', 'Eggs', 'Fish', 'Shellfish', 'Tree Nuts'] } }
+    );
+
+    // Attempting swap should return 422 (NOT 500!)
+    const swapRes = await request(app)
+      .put('/api/v1/plan/swap-meal')
+      .set('Cookie', swapCookie)
+      .send({ day: 'Monday' });
+
+    expect(swapRes.status).toBe(422);
+    expect(swapRes.body.success).toBe(false);
+    expect(swapRes.body.code).toBe('NO_RECIPES_FOUND');
+  });
 });

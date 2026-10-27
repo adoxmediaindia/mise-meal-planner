@@ -86,9 +86,13 @@ export class EntitlementService {
       };
     }
 
+    const freeGenerations = process.env.FREE_TIER_WEEKLY_GENERATIONS
+      ? parseInt(process.env.FREE_TIER_WEEKLY_GENERATIONS, 10)
+      : (process.env.NODE_ENV === 'test' ? 3 : 10);
+
     return {
       tier: 'free',
-      maxWeeklyGenerations: 3,
+      maxWeeklyGenerations: freeGenerations,
       maxPantryItems: 15,
       maxHouseholdMembers: 2,
       maxSavedCustomGroceryItems: 15,

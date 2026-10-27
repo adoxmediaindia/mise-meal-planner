@@ -24,6 +24,7 @@ export const PlanOverview: React.FC = () => {
   const {
     plan,
     shoppingList,
+    preferences,
     planHistory,
     isLoading,
     swapMeal,
@@ -56,6 +57,28 @@ export const PlanOverview: React.FC = () => {
   const [loadingAddRecipes, setLoadingAddRecipes] = useState(false);
   const [addError, setAddError] = useState<string | null>(null);
 
+  // Helper to filter recipes matching active dietary and allergen exclusions
+  const filterSafeRecipes = (recipes: IRecipe[]): IRecipe[] => {
+    return recipes.filter((r) => {
+      if (preferences?.allergies && preferences.allergies.length > 0) {
+        if (r.allergens && r.allergens.some((a) => preferences.allergies.includes(a as any))) {
+          return false;
+        }
+      }
+      if (preferences?.dietaryNeeds && preferences.dietaryNeeds.length > 0) {
+        const active = preferences.dietaryNeeds.filter((d) => d !== 'None');
+        if (active.includes('Vegan')) {
+          if (!r.dietaryTags?.includes('Vegan')) return false;
+        } else if (active.includes('Vegetarian')) {
+          if (!r.dietaryTags?.includes('Vegetarian') && !r.dietaryTags?.includes('Vegan')) return false;
+        } else if (active.includes('Pescatarian')) {
+          if (!r.dietaryTags?.includes('Pescatarian') && !r.dietaryTags?.includes('Vegetarian') && !r.dietaryTags?.includes('Vegan')) return false;
+        }
+      }
+      return true;
+    });
+  };
+
   // Open Swap Modal
   const handleOpenSwapModal = async (day: DayOfWeek, slotId?: string) => {
     setIsSwappingSlot({ day, slotId });
@@ -63,12 +86,13 @@ export const PlanOverview: React.FC = () => {
     try {
       const res = await api.getRecipes();
       if (res.data) {
-        // Exclude recipes currently in the plan
+        // Exclude recipes currently in the plan and unsafe recipes
         const currentRecipeIds = (plan?.meals && plan.meals.length > 0
           ? plan.meals.map((m) => m.recipe?._id)
           : plan?.dinners.map((d) => d.recipe?._id)) || [];
-        const available = res.data.filter((r) => !currentRecipeIds.includes(r._id));
-        setCandidateRecipes(available);
+        const safe = filterSafeRecipes(res.data);
+        const available = safe.filter((r) => !currentRecipeIds.includes(r._id));
+        setCandidateRecipes(available.length > 0 ? available : safe);
       }
     } catch {
       setCandidateRecipes([]);
@@ -100,7 +124,8 @@ export const PlanOverview: React.FC = () => {
     setLoadingAddRecipes(true);
     try {
       const res = await api.getRecipes();
-      setAddRecipes(res.data || []);
+      const safe = filterSafeRecipes(res.data || []);
+      setAddRecipes(safe);
     } catch {
       setAddRecipes([]);
     } finally {
