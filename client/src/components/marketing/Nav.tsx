@@ -155,12 +155,12 @@ export const Nav: React.FC = () => {
               Open Plan ({user?.name.split(' ')[0]})
             </Link>
           ) : (
-            <a
-              href="#download"
+            <Link
+              to="/auth/login"
               className="btn btn--primary"
             >
               {t('nav.getApp', 'Get the app')}
-            </a>
+            </Link>
           )}
 
           {/* Mobile hamburger button */}

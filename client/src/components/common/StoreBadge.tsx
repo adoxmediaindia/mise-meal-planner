@@ -8,19 +8,25 @@ interface StoreBadgeProps {
   className?: string;
 }
 
+const APPLE_STORE_URL = 'https://apps.apple.com/app/id6777471316';
+const GOOGLE_PLAY_URL = 'https://play.google.com/store/apps/details?id=com.gregorytaylor.shopping';
+
 export const StoreBadge: React.FC<StoreBadgeProps> = ({
   platform,
-  href = '#download',
+  href = platform === 'apple' ? APPLE_STORE_URL : GOOGLE_PLAY_URL,
   onClick,
   className = '',
 }) => {
   const { t } = useLanguage();
+  const isExternal = href.startsWith('http://') || href.startsWith('https://');
 
   if (platform === 'apple') {
     return (
       <a
         href={href}
         onClick={onClick}
+        target={isExternal ? '_blank' : undefined}
+        rel={isExternal ? 'noreferrer' : undefined}
         className={`store-badge ${className}`}
         aria-label="Download on the App Store"
       >
@@ -39,6 +45,8 @@ export const StoreBadge: React.FC<StoreBadgeProps> = ({
     <a
       href={href}
       onClick={onClick}
+      target={isExternal ? '_blank' : undefined}
+      rel={isExternal ? 'noreferrer' : undefined}
       className={`store-badge ${className}`}
       aria-label="Get it on Google Play"
     >

@@ -8,6 +8,7 @@ import { PlanProvider } from '../context/PlanContext.js';
 import { AllergyBanner } from '../components/common/AllergyBanner.js';
 import { Button } from '../components/common/Button.js';
 import { StoreBadge } from '../components/common/StoreBadge.js';
+import { Nav } from '../components/marketing/Nav.js';
 import { StatsSection } from '../components/marketing/StatsSection.js';
 import { ForgotPassword } from '../pages/auth/ForgotPassword.js';
 import { Login } from '../pages/auth/Login.js';
@@ -40,7 +41,27 @@ describe('Mise Client UI Components', () => {
     );
 
     expect(screen.getByLabelText(/Download on the App Store/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Download on the App Store/i)).toHaveAttribute('href', expect.stringContaining('apps.apple.com'));
     expect(screen.getByLabelText(/Get it on Google Play/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Get it on Google Play/i)).toHaveAttribute('href', expect.stringContaining('play.google.com'));
+  });
+
+  it('renders Nav with "Get the app" linking to /auth/login for unauthenticated users', () => {
+    render(
+      <BrowserRouter>
+        <LanguageProvider>
+          <AuthProvider>
+            <Nav />
+          </AuthProvider>
+        </LanguageProvider>
+      </BrowserRouter>
+    );
+
+    const getAppLinks = screen.getAllByRole('link', { name: /Get the app/i });
+    expect(getAppLinks.length).toBeGreaterThan(0);
+    getAppLinks.forEach((link) => {
+      expect(link).toHaveAttribute('href', '/auth/login');
+    });
   });
 
   it('renders StatsSection with 4 metric cards', () => {
