@@ -32,7 +32,7 @@ export const getGeminiTimeoutMs = (): number => {
     const parsed = parseInt(process.env.GEMINI_TIMEOUT_MS, 10);
     if (!isNaN(parsed) && parsed > 0) return parsed;
   }
-  return 15000; // 15 seconds default timeout
+  return 30000; // 30 seconds default timeout
 };
 
 export const getGeminiClient = (): GoogleGenAI => {

@@ -568,11 +568,9 @@ Respond ONLY with a JSON object matching this schema:
   ): Promise<any> {
     const candidateModels = [
       primaryModel,
-      'gemini-2.5-flash',
-      'gemini-flash-latest',
       'gemini-2.5-flash-lite',
-      'gemini-2.0-flash',
-      'gemini-1.5-flash',
+      'gemini-flash-latest',
+      'gemini-2.5-flash',
     ].filter((m, i, arr) => m && arr.indexOf(m) === i);
 
     let lastError: any = null;
@@ -593,9 +591,9 @@ Respond ONLY with a JSON object matching this schema:
       } catch (err: any) {
         lastError = err;
         const msg = (err.message || '').toLowerCase();
-        // If the model is not found, unsupported, or 404 in this project/tier, try next model candidate
-        if (msg.includes('not found') || msg.includes('not supported') || msg.includes('404')) {
-          console.warn(`[AiService] Gemini model "${m}" unavailable: ${err.message}. Trying next candidate model.`);
+        // If the model is not found, unsupported, 404, or times out, try next candidate model
+        if (msg.includes('not found') || msg.includes('not supported') || msg.includes('404') || msg.includes('timed out')) {
+          console.warn(`[AiService] Gemini model "${m}" unavailable/slow: ${err.message}. Trying next candidate model.`);
           continue;
         }
         // Non-model errors (e.g., invalid key, quota exhausted) should throw immediately
