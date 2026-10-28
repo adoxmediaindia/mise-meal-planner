@@ -332,6 +332,9 @@ Respond ONLY with a valid JSON object matching this schema:
             responseMimeType: 'application/json',
             temperature: 0.7,
             maxOutputTokens: 900,
+            thinkingConfig: {
+              thinkingBudget: 0,
+            },
           },
         },
         timeoutMs
@@ -507,6 +510,9 @@ Respond ONLY with a JSON object matching this schema:
             responseMimeType: 'application/json',
             temperature: 0.5,
             maxOutputTokens: 800,
+            thinkingConfig: {
+              thinkingBudget: 0,
+            },
           },
         },
         timeoutMs
