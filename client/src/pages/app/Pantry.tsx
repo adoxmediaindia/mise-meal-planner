@@ -41,6 +41,8 @@ export const Pantry: React.FC = () => {
   // Inventory State
   const [items, setItems] = useState<IPantryItem[]>([]);
   const [isLoadingItems, setIsLoadingItems] = useState(true);
+  const [itemsError, setItemsError] = useState<string | null>(null);
+  const [itemSuccessMessage, setItemSuccessMessage] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'expired' | 'expiring_soon' | 'fresh'>('all');
@@ -136,15 +138,17 @@ export const Pantry: React.FC = () => {
   // Load Inventory
   const fetchInventory = async () => {
     setIsLoadingItems(true);
+    setItemsError(null);
     try {
       const res = await api.getPantryItems({
         search: searchQuery || undefined,
         category: selectedCategory !== 'all' ? selectedCategory : undefined,
         status: statusFilter !== 'all' ? statusFilter : undefined,
       });
-      setItems(res.data);
+      setItems(res.data || []);
     } catch (err: any) {
       console.error('Failed to load pantry items:', err);
+      setItemsError(err.message || 'Failed to load pantry items. Please check your connection.');
     } finally {
       setIsLoadingItems(false);
     }
@@ -217,27 +221,39 @@ export const Pantry: React.FC = () => {
     setModalError(null);
 
     try {
+      const savedName = modalName.trim();
       if (editingItem) {
         const id = editingItem._id || editingItem.id!;
-        await api.updatePantryItem(id, {
-          name: modalName.trim(),
+        const res = await api.updatePantryItem(id, {
+          name: savedName,
           quantity: Number(modalQuantity),
           unit: modalUnit.trim(),
           category: modalCategory,
           expiryDate: modalExpiry ? new Date(modalExpiry).toISOString() : null,
           notes: modalNotes.trim() || undefined,
         });
+        setItemSuccessMessage(res.message || `Updated ${savedName}.`);
       } else {
-        await api.addPantryItem({
-          name: modalName.trim(),
+        const res = await api.addPantryItem({
+          name: savedName,
           quantity: Number(modalQuantity),
           unit: modalUnit.trim(),
           category: modalCategory,
           expiryDate: modalExpiry ? new Date(modalExpiry).toISOString() : null,
           notes: modalNotes.trim() || undefined,
         });
+        setItemSuccessMessage(res.message || `Added ${savedName} to pantry.`);
       }
       setIsModalOpen(false);
+      // Reset filter so newly added item is guaranteed to be in view
+      if (searchQuery) setSearchQuery('');
+      if (selectedCategory !== 'all' && selectedCategory !== modalCategory) {
+        setSelectedCategory('all');
+      }
+      if (statusFilter !== 'all') {
+        setStatusFilter('all');
+      }
+      setTimeout(() => setItemSuccessMessage(null), 4000);
       await fetchInventory();
     } catch (err: any) {
       setModalError(err.message || 'Failed to save item');
@@ -396,6 +412,29 @@ export const Pantry: React.FC = () => {
             <span>View Grocery List</span>
             <ExternalLink className="w-3 h-3" />
           </Link>
+        </div>
+      )}
+
+      {itemSuccessMessage && (
+        <div className="p-3 bg-[#9ed034]/20 border border-[#9ed034] rounded-2xl text-xs font-bold text-[#1f2a06] flex items-center gap-2 animate-fadeIn">
+          <CheckCircle className="w-4 h-4 text-[#8bc020] flex-shrink-0" />
+          <span>{itemSuccessMessage}</span>
+        </div>
+      )}
+
+      {itemsError && (
+        <div className="p-3 bg-red-50 border border-red-200 rounded-2xl text-xs font-bold text-red-700 flex items-center justify-between gap-2 animate-fadeIn">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-red-600 flex-shrink-0" />
+            <span>{itemsError}</span>
+          </div>
+          <button
+            type="button"
+            onClick={fetchInventory}
+            className="px-2.5 py-1 bg-red-100 hover:bg-red-200 text-red-800 rounded-lg text-xs font-bold cursor-pointer"
+          >
+            Retry
+          </button>
         </div>
       )}
 

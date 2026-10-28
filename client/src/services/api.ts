@@ -1,22 +1,57 @@
 const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 const API_BASE = `${API_URL}/api/v1`;
 
+const TOKEN_KEY = 'mise_token';
+
+export const getStoredToken = (): string | null => {
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      return localStorage.getItem(TOKEN_KEY);
+    }
+  } catch {
+    // localStorage may be unavailable or restricted
+  }
+  return null;
+};
+
+export const setStoredToken = (token: string | null): void => {
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      if (token) {
+        localStorage.setItem(TOKEN_KEY, token);
+      } else {
+        localStorage.removeItem(TOKEN_KEY);
+      }
+    }
+  } catch {
+    // ignore
+  }
+};
+
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const url = `${API_BASE}${endpoint}`;
-  const headers = {
+  const token = getStoredToken();
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...(options.headers || {}),
+    ...((options.headers as Record<string, string>) || {}),
   };
+
+  if (token && !headers['Authorization']) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
 
   const response = await fetch(url, {
     ...options,
     headers,
-    credentials: 'include', // sends HTTP-only auth cookies
+    credentials: 'include', // sends HTTP-only auth cookies where supported
   });
 
   const data = await response.json();
 
   if (!response.ok || data.success === false) {
+    if (response.status === 401) {
+      setStoredToken(null);
+    }
     const errorMsg = data.error || (data.details ? data.details.map((d: any) => d.message).join(', ') : 'Request failed');
     throw new Error(errorMsg);
   }

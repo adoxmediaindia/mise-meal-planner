@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { IUser } from '../types/index.js';
-import { api } from '../services/api.js';
+import { api, setStoredToken } from '../services/api.js';
 
 interface AuthContextType {
   user: IUser | null;
@@ -46,6 +46,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string) => {
     const res = await api.login({ email, password });
     if (res.data) {
+      if (res.data.token) {
+        setStoredToken(res.data.token);
+      }
       setUser({
         id: res.data.id || res.data._id,
         name: res.data.name,
@@ -60,6 +63,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const register = async (name: string, email: string, password: string) => {
     const res = await api.register({ name, email, password });
     if (res.data) {
+      if (res.data.token) {
+        setStoredToken(res.data.token);
+      }
       setUser({
         id: res.data.id || res.data._id,
         name: res.data.name,
@@ -75,6 +81,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       await api.logout();
     } finally {
+      setStoredToken(null);
       setUser(null);
     }
   };

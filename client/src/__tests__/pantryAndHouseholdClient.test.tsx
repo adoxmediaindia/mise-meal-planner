@@ -118,4 +118,50 @@ describe('Pantry Web UI Component', () => {
     expect(screen.getByPlaceholderText(/e\.g\., Olive Oil, Brown Rice, Eggs/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Add to Pantry/i })).toBeInTheDocument();
   });
+
+  it('submits Add Pantry Item modal without unit and triggers inventory refresh', async () => {
+    render(
+      <BrowserRouter>
+        <Pantry />
+      </BrowserRouter>
+    );
+
+    const addBtn = screen.getByRole('button', { name: /Add Item/i });
+    fireEvent.click(addBtn);
+
+    const nameInput = screen.getByPlaceholderText(/e\.g\., Olive Oil, Brown Rice, Eggs/i);
+    const unitInput = screen.getByPlaceholderText(/e\.g\. g, ml, cup, can/i);
+    const submitBtn = screen.getByRole('button', { name: /Add to Pantry/i });
+
+    fireEvent.change(nameInput, { target: { value: 'Honey' } });
+    // Leave unitInput blank
+    expect(unitInput).toHaveValue('');
+
+    fireEvent.click(submitBtn);
+
+    await waitFor(() => {
+      expect(api.addPantryItem).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: 'Honey',
+          quantity: 1,
+          unit: '',
+        })
+      );
+    });
+  });
+
+  it('displays itemsError banner with Retry button when inventory fetch fails', async () => {
+    vi.mocked(api.getPantryItems).mockRejectedValueOnce(new Error('Network error or unauthenticated'));
+
+    render(
+      <BrowserRouter>
+        <Pantry />
+      </BrowserRouter>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText(/Network error or unauthenticated/i)).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Retry/i })).toBeInTheDocument();
+    });
+  });
 });

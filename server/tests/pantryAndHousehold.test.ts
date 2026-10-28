@@ -349,6 +349,62 @@ describe('Phase 4: Pantry Inventory, Recipe Matching & Household Sharing', () =>
         .delete(`/api/v1/pantry/${itemId}`)
         .set('Cookie', user1Cookie);
     });
+
+    it('Correctly retrieves items when category=all or category=All is requested without returning 0 items', async () => {
+      // 1. Fetch with lowercase category=all
+      const resLower = await request(app)
+        .get('/api/v1/pantry?category=all')
+        .set('Cookie', user1Cookie);
+
+      expect(resLower.status).toBe(200);
+      expect(resLower.body.data.length).toBeGreaterThanOrEqual(1);
+
+      // 2. Fetch with uppercase category=All
+      const resUpper = await request(app)
+        .get('/api/v1/pantry?category=All')
+        .set('Cookie', user1Cookie);
+
+      expect(resUpper.status).toBe(200);
+      expect(resUpper.body.data.length).toBe(resLower.body.data.length);
+    });
+
+    it('Authenticates and performs pantry operations with Bearer token header', async () => {
+      // Register or login a test user to get a Bearer token
+      const regRes = await request(app)
+        .post('/api/v1/auth/login')
+        .send({ email: user1Email, password: 'Password123!' });
+
+      const bearerToken = regRes.body.data.token;
+      expect(bearerToken).toBeDefined();
+
+      // Create item via Bearer header
+      const addRes = await request(app)
+        .post('/api/v1/pantry')
+        .set('Authorization', `Bearer ${bearerToken}`)
+        .send({
+          name: 'Ginger',
+          quantity: 50,
+          unit: 'g',
+          category: 'Fresh Produce',
+        });
+
+      expect(addRes.status).toBe(201);
+      expect(addRes.body.data.name).toBe('Ginger');
+
+      // Fetch via Bearer header
+      const getRes = await request(app)
+        .get('/api/v1/pantry')
+        .set('Authorization', `Bearer ${bearerToken}`);
+
+      expect(getRes.status).toBe(200);
+      const ginger = getRes.body.data.find((i: any) => i.name === 'Ginger');
+      expect(ginger).toBeDefined();
+
+      // Clean up
+      await request(app)
+        .delete(`/api/v1/pantry/${ginger.id}`)
+        .set('Authorization', `Bearer ${bearerToken}`);
+    });
   });
 
   // ==========================================

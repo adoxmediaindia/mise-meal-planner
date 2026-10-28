@@ -31,7 +31,7 @@ export class PantryService {
 
     return {
       ...plain,
-      id: plain._id.toString(),
+      id: plain._id ? plain._id.toString() : (plain.id || '').toString(),
       isExpired,
       isExpiringSoon,
       daysUntilExpiry,
@@ -51,7 +51,7 @@ export class PantryService {
   ): Promise<IPantryItem[]> {
     const query: Record<string, any> = { user: userId };
 
-    if (options.category && options.category !== 'All') {
+    if (options.category && options.category.toLowerCase() !== 'all') {
       query.category = options.category;
     }
 
