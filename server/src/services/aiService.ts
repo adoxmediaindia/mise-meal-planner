@@ -597,9 +597,19 @@ Respond ONLY with a JSON object matching this schema:
       } catch (err: any) {
         lastError = err;
         const msg = (err.message || '').toLowerCase();
-        // If the model is not found, unsupported, 404, or times out, try next candidate model
-        if (msg.includes('not found') || msg.includes('not supported') || msg.includes('404') || msg.includes('timed out')) {
-          console.warn(`[AiService] Gemini model "${m}" unavailable/slow: ${err.message}. Trying next candidate model.`);
+        // If the model is not found, unsupported, 404, timed out, or overloaded (503 / high demand), try next candidate model
+        if (
+          msg.includes('not found') ||
+          msg.includes('not supported') ||
+          msg.includes('404') ||
+          msg.includes('timed out') ||
+          msg.includes('503') ||
+          msg.includes('high demand') ||
+          msg.includes('capacity') ||
+          msg.includes('unavailable') ||
+          err.status === 503
+        ) {
+          console.warn(`[AiService] Gemini model "${m}" unavailable/busy: ${err.message}. Trying next candidate model.`);
           continue;
         }
         // Non-model errors (e.g., invalid key, quota exhausted) should throw immediately
