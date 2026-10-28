@@ -331,10 +331,7 @@ Respond ONLY with a valid JSON object matching this schema:
             systemInstruction: systemPrompt,
             responseMimeType: 'application/json',
             temperature: 0.7,
-            maxOutputTokens: 900,
-            thinkingConfig: {
-              thinkingBudget: 0,
-            },
+            maxOutputTokens: 2500,
           },
         },
         timeoutMs
@@ -509,10 +506,7 @@ Respond ONLY with a JSON object matching this schema:
             systemInstruction: systemPrompt,
             responseMimeType: 'application/json',
             temperature: 0.5,
-            maxOutputTokens: 800,
-            thinkingConfig: {
-              thinkingBudget: 0,
-            },
+            maxOutputTokens: 1200,
           },
         },
         timeoutMs
@@ -574,11 +568,10 @@ Respond ONLY with a JSON object matching this schema:
   ): Promise<any> {
     const candidateModels = [
       primaryModel,
-      'gemini-2.5-flash-lite',
       'gemini-flash-lite-latest',
+      'gemini-3.5-flash-lite',
+      'gemini-3.5-flash',
       'gemini-flash-latest',
-      'gemini-2.5-flash',
-      'gemini-3.1-flash-lite',
     ].filter((m, i, arr) => m && arr.indexOf(m) === i);
 
     let lastError: any = null;
