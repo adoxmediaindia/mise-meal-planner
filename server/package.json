@@ -11,6 +11,7 @@
     "test": "vitest run --fileParallelism=false"
   },
   "dependencies": {
+    "@google/genai": "^2.31.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/cookie-parser": "^1.4.9",
     "@types/cors": "^2.8.19",
@@ -26,7 +27,6 @@
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^8.14.0",
-    "openai": "^7.45.1",
     "resend": "^6.34.1",
     "typescript": "^5.8.2",
     "zod": "^3.24.4"

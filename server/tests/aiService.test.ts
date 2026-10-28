@@ -8,8 +8,9 @@ import { Preference } from '../src/models/Preference.js';
 import { MealPlan } from '../src/models/MealPlan.js';
 import { AiService } from '../src/services/aiService.js';
 import { EntitlementService, EntitlementError } from '../src/services/entitlementService.js';
+import * as geminiConfig from '../src/config/gemini.js';
 
-describe('Phase 2: Minimal OpenAI Integration & Allergen Safety Guardrails', () => {
+describe('Google Gemini AI Integration & Allergen Safety Guardrails', () => {
   let authCookie: string;
   let testUserId: string;
 
@@ -287,6 +288,174 @@ describe('Phase 2: Minimal OpenAI Integration & Allergen Safety Guardrails', () 
       const user = await User.findById(testUserId);
       expect(user?.aiUsageTimestamps?.length || 0).toBe(0);
       expect(user?.aiGenerationsThisWeek || 0).toBe(0);
+    });
+  });
+
+  describe('4. Google Gemini SDK Integration, Streaming & Failures', () => {
+    it('cleanJson helper strips markdown code fences correctly', () => {
+      const fenced = '```json\n{"title": "Gemini Curry"}\n```';
+      expect(AiService.cleanJson(fenced)).toBe('{"title": "Gemini Curry"}');
+
+      const plainFenced = '```\n{"title": "Gemini Curry"}\n```';
+      expect(AiService.cleanJson(plainFenced)).toBe('{"title": "Gemini Curry"}');
+
+      const raw = '{"title": "Gemini Curry"}';
+      expect(AiService.cleanJson(raw)).toBe('{"title": "Gemini Curry"}');
+    });
+
+    it('returns isAiGenerated=true and commits quota when Gemini returns a valid safe recipe', async () => {
+      const mockRecipe = {
+        title: 'Gemini Vegetable Fried Rice',
+        description: 'A fragrant vegetarian fried rice with greens',
+        cuisine: 'Asian',
+        vibes: ['Speedy Meals'],
+        prepTimeMinutes: 10,
+        cookTimeMinutes: 15,
+        servings: 2,
+        calories: 380,
+        carbsGrams: 55,
+        proteinGrams: 14,
+        fatGrams: 8,
+        ingredients: [
+          { name: 'Jasmine Rice', quantity: 200, unit: 'g', aisle: 'Pantry & Grains', estimatedCost: 0.8 },
+          { name: 'Baby Spinach', quantity: 100, unit: 'g', aisle: 'Fresh Produce', estimatedCost: 1.2 },
+        ],
+        instructions: ['Cook rice', 'Stir-fry with spinach and olive oil'],
+        dietaryTags: ['Vegetarian'],
+        allergens: [],
+        equipmentNeeded: ['Hob Only'],
+      };
+
+      const isEnabledSpy = vi.spyOn(geminiConfig, 'isAIFeatureEnabled').mockReturnValue(true);
+      const getClientSpy = vi.spyOn(geminiConfig, 'getGeminiClient').mockReturnValue({
+        models: {
+          generateContent: vi.fn().mockResolvedValue({
+            text: JSON.stringify(mockRecipe),
+          }),
+        },
+      } as any);
+
+      await User.findByIdAndUpdate(testUserId, {
+        $set: { aiGenerationsThisWeek: 0, aiUsageTimestamps: [] },
+      });
+
+      const res = await request(app)
+        .post('/api/v1/ai/leftover-recipe')
+        .set('Cookie', authCookie)
+        .send({
+          ingredients: ['Rice', 'Spinach'],
+        });
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.title).toBe('Gemini Vegetable Fried Rice');
+      expect(res.body.isAiGenerated).toBe(true);
+      expect(res.body.fallback).toBe(false);
+
+      // Verify quota was committed
+      const user = await User.findById(testUserId);
+      expect(user?.aiUsageTimestamps?.length).toBe(1);
+
+      isEnabledSpy.mockRestore();
+      getClientSpy.mockRestore();
+    });
+
+    it('handles malformed Gemini JSON by rolling back quota and returning safe database fallback', async () => {
+      const isEnabledSpy = vi.spyOn(geminiConfig, 'isAIFeatureEnabled').mockReturnValue(true);
+      const getClientSpy = vi.spyOn(geminiConfig, 'getGeminiClient').mockReturnValue({
+        models: {
+          generateContent: vi.fn().mockResolvedValue({
+            text: 'I cannot generate JSON right now.',
+          }),
+        },
+      } as any);
+
+      await User.findByIdAndUpdate(testUserId, {
+        $set: { aiGenerationsThisWeek: 0, aiUsageTimestamps: [] },
+      });
+
+      const res = await request(app)
+        .post('/api/v1/ai/leftover-recipe')
+        .set('Cookie', authCookie)
+        .send({
+          ingredients: ['Spinach', 'Chickpeas'],
+        });
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.fallback).toBe(true);
+      expect(res.body.data).toBeDefined();
+
+      // Verify quota was refunded
+      const user = await User.findById(testUserId);
+      expect(user?.aiUsageTimestamps?.length || 0).toBe(0);
+
+      isEnabledSpy.mockRestore();
+      getClientSpy.mockRestore();
+    });
+
+    it('handles Gemini timeout by rolling back quota and returning safe database fallback', async () => {
+      const isEnabledSpy = vi.spyOn(geminiConfig, 'isAIFeatureEnabled').mockReturnValue(true);
+      const getClientSpy = vi.spyOn(geminiConfig, 'getGeminiClient').mockReturnValue({
+        models: {
+          generateContent: vi.fn().mockImplementation(() => new Promise((_, reject) => setTimeout(() => reject(new Error('Gemini request timed out after 15000ms')), 50))),
+        },
+      } as any);
+
+      await User.findByIdAndUpdate(testUserId, {
+        $set: { aiGenerationsThisWeek: 0, aiUsageTimestamps: [] },
+      });
+
+      const res = await request(app)
+        .post('/api/v1/ai/leftover-recipe')
+        .set('Cookie', authCookie)
+        .send({
+          ingredients: ['Spinach', 'Chickpeas'],
+        });
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.fallback).toBe(true);
+
+      const user = await User.findById(testUserId);
+      expect(user?.aiUsageTimestamps?.length || 0).toBe(0);
+
+      isEnabledSpy.mockRestore();
+      getClientSpy.mockRestore();
+    });
+
+    it('parses plan intent with Gemini and updates weekly meal plan', async () => {
+      const isEnabledSpy = vi.spyOn(geminiConfig, 'isAIFeatureEnabled').mockReturnValue(true);
+      const getClientSpy = vi.spyOn(geminiConfig, 'getGeminiClient').mockReturnValue({
+        models: {
+          generateContent: vi.fn().mockResolvedValue({
+            text: JSON.stringify({
+              summary: 'Healthy Asian vibes tailored for early week',
+              preferredVibes: ['Speedy Meals'],
+              dayOverrides: {
+                Monday: { vibe: 'Speedy Meals', cuisine: 'Asian' },
+              },
+            }),
+          }),
+        },
+      } as any);
+
+      const res = await request(app)
+        .post('/api/v1/ai/plan-intent')
+        .set('Cookie', authCookie)
+        .send({
+          prompt: 'I want quick speedy Asian dinners this week',
+        });
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.isAiGenerated).toBe(true);
+      expect(res.body.fallback).toBe(false);
+      expect(res.body.summary).toBe('Healthy Asian vibes tailored for early week');
+      expect(res.body.data.dinners.length).toBeGreaterThanOrEqual(1);
+
+      isEnabledSpy.mockRestore();
+      getClientSpy.mockRestore();
     });
   });
 });

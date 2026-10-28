@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { getOpenAIClient, isAIFeatureEnabled, getOpenAIModel } from '../config/openai.js';
+import { getGeminiClient, isAIFeatureEnabled, getGeminiModel, getGeminiTimeoutMs } from '../config/gemini.js';
 import { Preference, IPreference } from '../models/Preference.js';
 import { Recipe, IRecipeDoc } from '../models/Recipe.js';
 import { MealPlan, IMealPlanDoc, IDinnerSlot, IMealSlotDoc } from '../models/MealPlan.js';
@@ -84,7 +84,7 @@ const SEAFOOD_KEYWORDS = [
   'squid',
 ];
 
-// Zod Schema for Validating OpenAI Recipe Output
+// Zod Schema for Validating Gemini Recipe Output
 export const GeneratedRecipeSchema = z.object({
   title: z.string().min(3).max(100),
   description: z.string().min(10).max(300),
@@ -141,8 +141,25 @@ export interface PlanIntentResult {
 
 export class AiService {
   /**
-   * Deterministically verifies that a recipe contains no excluded allergens or dietary violations.
-   * Checks both explicit tags and all ingredient names against keyword boundaries.
+   * Safely strips markdown code blocks (e.g. ```json ... ```) from model text output
+   */
+  public static cleanJson(raw: string): string {
+    const trimmed = raw.trim();
+    if (trimmed.startsWith('```json')) {
+      return trimmed.replace(/^```json\s*/i, '').replace(/\s*```$/, '').trim();
+    }
+    if (trimmed.startsWith('```')) {
+      return trimmed.replace(/^```\s*/, '').replace(/\s*```$/, '').trim();
+    }
+    return trimmed;
+  }
+
+  /**
+   * Server-side heuristic safety audit for AI-generated recipes.
+   * Checks explicit tags and ingredient names against known allergen/dietary keywords.
+   * Note: Automated keyword and tag checks act as an aggressive heuristic filter, but cannot
+   * guarantee total biochemical allergen safety. Any unverifiable or failing recipe is rejected
+   * and immediately substituted with a verified database catalog recipe.
    */
   public static auditRecipeSafety(
     recipe: z.infer<typeof GeneratedRecipeSchema>,
@@ -218,7 +235,7 @@ export class AiService {
   }
 
   /**
-   * Generates a creative recipe from leftover pantry ingredients using OpenAI,
+   * Generates a creative recipe from leftover pantry ingredients using Google Gemini,
    * with strict allergen pre-injection, deterministic post-validation, and safe database fallback.
    */
   public static async generateLeftoverRecipe(
@@ -252,8 +269,9 @@ export class AiService {
     }
 
     try {
-      const client = getOpenAIClient();
-      const model = getOpenAIModel();
+      const client = getGeminiClient();
+      const model = getGeminiModel();
+      const timeoutMs = getGeminiTimeoutMs();
 
       const allergenPrompt =
         excludedAllergens.length > 0
@@ -304,26 +322,28 @@ Respond ONLY with a valid JSON object matching this schema:
   "equipmentNeeded": ("Air Fryer" | "Slow Cooker" | "Hob Only" | "Oven" | "Blender" | "Instant Pot")[]
 }`;
 
-      const response = await client.chat.completions.create({
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error(`Gemini request timed out after ${timeoutMs}ms`)), timeoutMs)
+      );
+
+      const callPromise = client.models.generateContent({
         model,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          {
-            role: 'user',
-            content: `Create a recipe utilizing these ingredients: ${ingredients.join(', ')}. Feel free to add common pantry staples (oil, salt, pepper, garlic).`,
-          },
-        ],
-        response_format: { type: 'json_object' },
-        max_tokens: 1000,
-        temperature: 0.7,
+        contents: `Create a recipe utilizing these ingredients: ${ingredients.join(', ')}. Feel free to add common pantry staples (oil, salt, pepper, garlic).`,
+        config: {
+          systemInstruction: systemPrompt,
+          responseMimeType: 'application/json',
+          temperature: 0.7,
+          maxOutputTokens: 1500,
+        },
       });
 
-      const content = response.choices[0]?.message?.content;
+      const response = await Promise.race([callPromise, timeoutPromise]);
+      const content = response.text;
       if (!content) {
-        throw new Error('OpenAI returned an empty response.');
+        throw new Error('Gemini returned an empty response.');
       }
 
-      const parsedJson = JSON.parse(content);
+      const parsedJson = JSON.parse(AiService.cleanJson(content));
       const validatedRecipe = GeneratedRecipeSchema.parse(parsedJson);
 
       // Deterministic Server-Side Safety Audit
@@ -363,13 +383,13 @@ Respond ONLY with a valid JSON object matching this schema:
         fallback: false,
       };
     } catch (err: any) {
-      console.warn(`[AiService] OpenAI leftover generation failed: ${err.message}. Falling back to verified catalog.`);
+      console.warn(`[AiService] Gemini leftover generation failed: ${err.message}. Falling back to verified catalog.`);
       await reservation.rollback();
       return this.fallbackToDeterministicRecipe(
         userId,
         preference,
         ingredients,
-        'OpenAI unavailable. Showing a verified matching database recipe.'
+        'Gemini unavailable. Showing a verified matching database recipe.'
       );
     }
   }
@@ -420,7 +440,7 @@ Respond ONLY with a valid JSON object matching this schema:
   }
 
   /**
-   * Parses natural language plan intent with OpenAI to parameterize the deterministic weekly meal planner.
+   * Parses natural language plan intent with Google Gemini to parameterize the deterministic weekly meal planner.
    */
   public static async customizePlanWithIntent(
     userId: string,
@@ -455,17 +475,13 @@ Respond ONLY with a valid JSON object matching this schema:
     }
 
     try {
-      const client = getOpenAIClient();
-      const model = getOpenAIModel();
+      const client = getGeminiClient();
+      const model = getGeminiModel();
+      const timeoutMs = getGeminiTimeoutMs();
 
       const daysList = preference.cookingDays?.join(', ') || 'Monday, Tuesday, Wednesday, Thursday, Friday';
 
-      const response = await client.chat.completions.create({
-        model,
-        messages: [
-          {
-            role: 'system',
-            content: `You are the meal plan intent parser for Mise Meal Planner.
+      const systemPrompt = `You are the meal plan intent parser for Mise Meal Planner.
 Given the user's natural language request, extract desired meal vibes and cuisines per day for these active cooking days: ${daysList}.
 Supported Meal Vibes: "Speedy Meals", "Low Calorie", "Family Favs", "Healthy Comfort", "Fakeaway", "Gut Friendly", "Protein Packed", "British Staples".
 Supported Cuisines: "Italian", "Asian", "Mexican", "Indian", "Mediterranean", "British".
@@ -480,19 +496,28 @@ Respond ONLY with a JSON object matching this schema:
       "cuisine": string
     }
   }
-}`,
-          },
-          { role: 'user', content: userPrompt },
-        ],
-        response_format: { type: 'json_object' },
-        max_tokens: 500,
-        temperature: 0.5,
+}`;
+
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error(`Gemini request timed out after ${timeoutMs}ms`)), timeoutMs)
+      );
+
+      const callPromise = client.models.generateContent({
+        model,
+        contents: userPrompt,
+        config: {
+          systemInstruction: systemPrompt,
+          responseMimeType: 'application/json',
+          temperature: 0.5,
+          maxOutputTokens: 800,
+        },
       });
 
-      const content = response.choices[0]?.message?.content;
-      if (!content) throw new Error('OpenAI returned empty plan intent.');
+      const response = await Promise.race([callPromise, timeoutPromise]);
+      const content = response.text;
+      if (!content) throw new Error('Gemini returned empty plan intent.');
 
-      const parsed = JSON.parse(content);
+      const parsed = JSON.parse(AiService.cleanJson(content));
       const summary = parsed.summary || 'Custom plan generated based on your notes.';
 
       // Apply interpreted vibes to a temporary preference object without destroying user defaults
@@ -516,7 +541,7 @@ Respond ONLY with a JSON object matching this schema:
         fallback: false,
       };
     } catch (err: any) {
-      console.warn(`[AiService] OpenAI plan intent parsing failed: ${err.message}. Generating default plan.`);
+      console.warn(`[AiService] Gemini plan intent parsing failed: ${err.message}. Generating default plan.`);
       await reservation.rollback();
       const plan = await PlannerService.generateWeeklyPlan(userId, preference);
       await ShoppingListService.generateOrUpdateShoppingList(userId, plan._id.toString());

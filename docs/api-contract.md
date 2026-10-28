@@ -456,7 +456,7 @@
 
 ---
 
-## 7. AI Endpoints (Phase 2 OpenAI Integration)
+## 7. AI Endpoints (Google Gemini Integration)
 
 ### 7.1 Leftover Recipe Generator
 - **Endpoint**: `POST /ai/leftover-recipe`
