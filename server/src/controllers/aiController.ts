@@ -91,3 +91,26 @@ export const customizePlanWithIntent = async (req: AuthRequest, res: Response): 
     res.status(500).json({ success: false, error: err.message });
   }
 };
+
+export const listAvailableModels = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { isAIFeatureEnabled, getGeminiClient } = await import('../config/gemini.js');
+    if (!isAIFeatureEnabled()) {
+      res.json({ success: true, enabled: false, models: [] });
+      return;
+    }
+    const client = getGeminiClient();
+    const pager = await client.models.list();
+    const models: any[] = [];
+    for await (const m of pager) {
+      models.push({
+        name: m.name,
+        displayName: m.displayName,
+        supportedMethods: (m as any).supportedGenerationMethods || (m as any).supportedActions || [],
+      });
+    }
+    res.json({ success: true, enabled: true, count: models.length, models });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};

@@ -108,5 +108,6 @@ router.post(
   validate(aiCtrl.planIntentSchema),
   aiCtrl.customizePlanWithIntent
 );
+router.get('/ai/models', authenticate, aiCtrl.listAvailableModels);
 
 export default router;
