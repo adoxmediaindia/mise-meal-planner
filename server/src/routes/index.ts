@@ -109,5 +109,6 @@ router.post(
   aiCtrl.customizePlanWithIntent
 );
 router.get('/ai/models', authenticate, aiCtrl.listAvailableModels);
+router.get('/ai/probe-models', authenticate, aiCtrl.testModelGeneration);
 
 export default router;

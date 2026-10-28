@@ -560,7 +560,7 @@ Respond ONLY with a JSON object matching this schema:
   }
 
   /**
-   * Dispatches generation to Gemini with intelligent model fallback (primary -> gemini-2.0-flash -> gemini-1.5-flash)
+   * Dispatches generation to Gemini with intelligent model fallback
    * to ensure resilience across different API keys, project quotas, and region availabilities.
    */
   public static async callGeminiWithFallback(
@@ -575,45 +575,96 @@ Respond ONLY with a JSON object matching this schema:
     const candidateModels = [
       primaryModel,
       'gemini-2.5-flash-lite',
+      'gemini-flash-lite-latest',
       'gemini-flash-latest',
       'gemini-2.5-flash',
+      'gemini-3.1-flash-lite',
     ].filter((m, i, arr) => m && arr.indexOf(m) === i);
 
     let lastError: any = null;
 
     for (const m of candidateModels) {
-      try {
-        const timeoutPromise = new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error(`Gemini request timed out after ${timeoutMs}ms`)), timeoutMs)
-        );
+      // Attempt up to 2 tries per model (1 initial + 1 bounded backoff retry for transient 503)
+      for (let attempt = 1; attempt <= 2; attempt++) {
+        try {
+          const timeoutPromise = new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error(`Gemini request timed out after ${timeoutMs}ms`)), timeoutMs)
+          );
 
-        const callPromise = client.models.generateContent({
-          ...params,
-          model: m,
-        });
+          const callPromise = client.models.generateContent({
+            ...params,
+            model: m,
+          });
 
-        const response = await Promise.race([callPromise, timeoutPromise]);
-        return response;
-      } catch (err: any) {
-        lastError = err;
-        const msg = (err.message || '').toLowerCase();
-        // If the model is not found, unsupported, 404, timed out, or overloaded (503 / high demand), try next candidate model
-        if (
-          msg.includes('not found') ||
-          msg.includes('not supported') ||
-          msg.includes('404') ||
-          msg.includes('timed out') ||
-          msg.includes('503') ||
-          msg.includes('high demand') ||
-          msg.includes('capacity') ||
-          msg.includes('unavailable') ||
-          err.status === 503
-        ) {
-          console.warn(`[AiService] Gemini model "${m}" unavailable/busy: ${err.message}. Trying next candidate model.`);
-          continue;
+          const response = await Promise.race([callPromise, timeoutPromise]);
+          return response;
+        } catch (err: any) {
+          lastError = err;
+          const msg = (err.message || '').toLowerCase();
+          const is503 =
+            msg.includes('503') ||
+            msg.includes('high demand') ||
+            msg.includes('capacity') ||
+            msg.includes('unavailable') ||
+            err.status === 503;
+
+          // Rate limit (429) or Authentication (401/403): do NOT repeatedly retry, fail fast
+          if (
+            err.status === 429 ||
+            err.status === 401 ||
+            err.status === 403 ||
+            msg.includes('quota') ||
+            msg.includes('rate limit') ||
+            msg.includes('api_key')
+          ) {
+            throw err;
+          }
+
+          // If thinkingConfig is unsupported or rejected on this model, retry immediately without thinkingConfig
+          if (
+            params.config?.thinkingConfig &&
+            (msg.includes('thinking') || msg.includes('unknown field') || msg.includes('invalid argument'))
+          ) {
+            try {
+              const strippedConfig = { ...params.config };
+              delete strippedConfig.thinkingConfig;
+              const strippedCall = client.models.generateContent({
+                ...params,
+                config: strippedConfig,
+                model: m,
+              });
+              const timeoutPromise = new Promise<never>((_, reject) =>
+                setTimeout(() => reject(new Error(`Gemini request timed out after ${timeoutMs}ms`)), timeoutMs)
+              );
+              const response = await Promise.race([strippedCall, timeoutPromise]);
+              return response;
+            } catch (strippedErr) {
+              // fallback to regular candidate loop
+            }
+          }
+
+          // If 503 high demand spike on attempt 1, wait 1000ms before retrying once
+          if (is503 && attempt === 1) {
+            console.warn(`[AiService] Gemini model "${m}" returned 503 on attempt 1. Retrying in 1000ms...`);
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+            continue;
+          }
+
+          // If 503, timeout, not found, or unsupported, break out of retry loop to try next model
+          if (
+            is503 ||
+            msg.includes('not found') ||
+            msg.includes('not supported') ||
+            msg.includes('404') ||
+            msg.includes('timed out')
+          ) {
+            console.warn(`[AiService] Gemini model "${m}" unavailable (${err.message}). Trying next candidate model.`);
+            break;
+          }
+
+          // Any other fatal error, throw immediately
+          throw err;
         }
-        // Non-model errors (e.g., invalid key, quota exhausted) should throw immediately
-        throw err;
       }
     }
 

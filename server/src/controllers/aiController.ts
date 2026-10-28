@@ -94,9 +94,9 @@ export const customizePlanWithIntent = async (req: AuthRequest, res: Response): 
 
 export const listAvailableModels = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { isAIFeatureEnabled, getGeminiClient } = await import('../config/gemini.js');
+    const { isAIFeatureEnabled, getGeminiClient, getGeminiModel } = await import('../config/gemini.js');
     if (!isAIFeatureEnabled()) {
-      res.json({ success: true, enabled: false, models: [] });
+      res.json({ success: true, enabled: false, configuredModel: getGeminiModel(), models: [] });
       return;
     }
     const client = getGeminiClient();
@@ -109,7 +109,95 @@ export const listAvailableModels = async (req: AuthRequest, res: Response): Prom
         supportedMethods: (m as any).supportedGenerationMethods || (m as any).supportedActions || [],
       });
     }
-    res.json({ success: true, enabled: true, count: models.length, models });
+    res.json({ success: true, enabled: true, configuredModel: getGeminiModel(), count: models.length, models });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+export const testModelGeneration = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { isAIFeatureEnabled, getGeminiClient, getGeminiModel } = await import('../config/gemini.js');
+    if (!isAIFeatureEnabled()) {
+      res.json({ success: false, error: 'AI not configured' });
+      return;
+    }
+    const client = getGeminiClient();
+    const testModels = [
+      'gemini-2.5-flash-lite',
+      'gemini-flash-lite-latest',
+      'gemini-2.5-flash',
+      'gemini-flash-latest',
+      'gemini-3.1-flash-lite',
+      'gemini-3.5-flash-lite',
+      'gemini-2.5-pro',
+    ];
+
+    const results: any[] = [];
+    for (const m of testModels) {
+      // 1. Without thinkingConfig
+      try {
+        const respWithout = await client.models.generateContent({
+          model: m,
+          contents: 'Generate valid JSON: {"status": "ok", "message": "hello"}',
+          config: {
+            responseMimeType: 'application/json',
+            temperature: 0.1,
+            maxOutputTokens: 60,
+          },
+        });
+        results.push({
+          model: m,
+          withThinking: false,
+          success: true,
+          text: (respWithout.text || '').trim(),
+        });
+      } catch (errWithout: any) {
+        results.push({
+          model: m,
+          withThinking: false,
+          success: false,
+          error: (errWithout.message || '').replace(/AIza[0-9A-Za-z-_]{35}/g, '[REDACTED]'),
+          status: errWithout.status,
+          code: errWithout.code,
+        });
+      }
+
+      // 2. With thinkingBudget: 0
+      try {
+        const respWith = await client.models.generateContent({
+          model: m,
+          contents: 'Generate valid JSON: {"status": "ok", "message": "hello"}',
+          config: {
+            responseMimeType: 'application/json',
+            temperature: 0.1,
+            maxOutputTokens: 60,
+            thinkingConfig: { thinkingBudget: 0 },
+          },
+        });
+        results.push({
+          model: m,
+          withThinking: true,
+          success: true,
+          text: (respWith.text || '').trim(),
+        });
+      } catch (errWith: any) {
+        results.push({
+          model: m,
+          withThinking: true,
+          success: false,
+          error: (errWith.message || '').replace(/AIza[0-9A-Za-z-_]{35}/g, '[REDACTED]'),
+          status: errWith.status,
+          code: errWith.code,
+        });
+      }
+    }
+
+    res.json({
+      success: true,
+      configuredModel: getGeminiModel(),
+      results,
+    });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message });
   }
