@@ -51,23 +51,30 @@ export class PantryService {
   ): Promise<IPantryItem[]> {
     const query: Record<string, any> = { user: userId };
 
-    if (options.category && options.category.toLowerCase() !== 'all') {
-      query.category = options.category;
+    if (options.category) {
+      const cleanCat = options.category.trim();
+      if (cleanCat.toLowerCase() !== 'all' && cleanCat !== 'undefined' && cleanCat !== 'null') {
+        query.category = cleanCat;
+      }
     }
 
-    if (options.search && options.search.trim()) {
-      query.name = { $regex: options.search.trim(), $options: 'i' };
+    if (options.search) {
+      const cleanSearch = options.search.trim();
+      if (cleanSearch && cleanSearch !== 'undefined' && cleanSearch !== 'null') {
+        query.name = { $regex: cleanSearch, $options: 'i' };
+      }
     }
 
     const items = await PantryItem.find(query).sort({ expiryDate: 1, name: 1 });
     let enriched = items.map((i) => this.enrichExpiryInfo(i));
 
-    if (options.status && options.status !== 'all') {
-      if (options.status === 'expired') {
+    const rawStatus = (options.status as string) || '';
+    if (rawStatus && rawStatus !== 'all' && rawStatus !== 'undefined' && rawStatus !== 'null') {
+      if (rawStatus === 'expired') {
         enriched = enriched.filter((i) => i.isExpired);
-      } else if (options.status === 'expiring_soon') {
+      } else if (rawStatus === 'expiring_soon') {
         enriched = enriched.filter((i) => i.isExpiringSoon && !i.isExpired);
-      } else if (options.status === 'fresh') {
+      } else if (rawStatus === 'fresh') {
         enriched = enriched.filter((i) => !i.isExpired && !i.isExpiringSoon);
       }
     }

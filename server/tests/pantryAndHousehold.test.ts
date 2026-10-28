@@ -233,6 +233,27 @@ describe('Phase 4: Pantry Inventory, Recipe Matching & Household Sharing', () =>
       expect(res.body.data.quantity).toBe(600);
     });
 
+    it('Safely handles and sanitizes undefined/null query strings without returning empty list', async () => {
+      const res = await request(app)
+        .get('/api/v1/pantry?search=undefined&category=undefined&status=undefined')
+        .set('Cookie', user1Cookie);
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.count).toBeGreaterThanOrEqual(1);
+      expect(res.body.data.some((i: any) => i.id === createdItemId || i._id === createdItemId)).toBe(true);
+    });
+
+    it('Correctly retrieves pantry items with category=all', async () => {
+      const res = await request(app)
+        .get('/api/v1/pantry?category=all')
+        .set('Cookie', user1Cookie);
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.count).toBeGreaterThanOrEqual(1);
+    });
+
     it('Allows adding pantry item without unit field (unit is optional)', async () => {
       const res = await request(app)
         .post('/api/v1/pantry')

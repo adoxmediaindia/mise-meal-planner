@@ -142,14 +142,18 @@ export const Pantry: React.FC = () => {
   };
 
   // Load Inventory
-  const fetchInventory = async () => {
+  const fetchInventory = async (overrides?: { search?: string; category?: string; status?: string }) => {
     setIsLoadingItems(true);
     setItemsError(null);
     try {
+      const activeSearch = overrides?.search !== undefined ? overrides.search : searchQuery;
+      const activeCategory = overrides?.category !== undefined ? overrides.category : selectedCategory;
+      const activeStatus = overrides?.status !== undefined ? overrides.status : statusFilter;
+
       const res = await api.getPantryItems({
-        search: searchQuery || undefined,
-        category: selectedCategory !== 'all' ? selectedCategory : undefined,
-        status: statusFilter !== 'all' ? statusFilter : undefined,
+        search: activeSearch.trim() || undefined,
+        category: activeCategory !== 'all' ? activeCategory : undefined,
+        status: activeStatus !== 'all' ? activeStatus : undefined,
       });
       setItems(res.data || []);
     } catch (err: any) {
@@ -257,16 +261,21 @@ export const Pantry: React.FC = () => {
         setItemSuccessMessage(res.message || `Added ${savedName} to pantry.`);
       }
       setIsModalOpen(false);
-      // Reset filter so newly added item is guaranteed to be in view
-      if (searchQuery) setSearchQuery('');
-      if (selectedCategory !== 'all' && selectedCategory !== modalCategory) {
-        setSelectedCategory('all');
-      }
-      if (statusFilter !== 'all') {
-        setStatusFilter('all');
-      }
+      // Reset filter states so newly added item is guaranteed to be in view
+      setSearchQuery('');
+      setSelectedCategory('all');
+      setStatusFilter('all');
       setTimeout(() => setItemSuccessMessage(null), 4000);
-      await fetchInventory();
+
+      // Re-fetch fresh inventory from backend explicitly with clean 'all' filters
+      try {
+        const freshRes = await api.getPantryItems();
+        if (freshRes && Array.isArray(freshRes.data)) {
+          setItems(freshRes.data);
+        }
+      } catch (refreshErr) {
+        console.warn('Silent refresh of pantry after save failed:', refreshErr);
+      }
     } catch (err: any) {
       setModalError(err.message || 'Failed to save item');
     } finally {
@@ -451,7 +460,7 @@ export const Pantry: React.FC = () => {
           </div>
           <button
             type="button"
-            onClick={fetchInventory}
+            onClick={() => fetchInventory()}
             className="px-2.5 py-1 bg-red-100 hover:bg-red-200 text-red-800 rounded-lg text-xs font-bold cursor-pointer"
           >
             Retry
@@ -665,23 +674,34 @@ export const Pantry: React.FC = () => {
           ) : (
             <div className="bg-white rounded-[24px] p-8 text-center border border-[#2a2a2a]/6 space-y-3">
               <div className="w-14 h-14 mx-auto rounded-full bg-[#9ed034]/20 flex items-center justify-center text-2xl">
-                🥫
+                {itemsError ? '⚠️' : '🥫'}
               </div>
               <h3 className="font-serif font-bold text-lg text-[#2a2a2a]">
-                {searchQuery || selectedCategory !== 'all' || statusFilter !== 'all'
+                {itemsError
+                  ? 'Unable to load pantry items'
+                  : searchQuery || selectedCategory !== 'all' || statusFilter !== 'all'
                   ? 'No matching pantry items'
                   : 'Your pantry is currently empty'}
               </h3>
               <p className="text-xs text-[#6b6b6b] max-w-sm mx-auto">
-                {searchQuery || selectedCategory !== 'all' || statusFilter !== 'all'
+                {itemsError
+                  ? itemsError
+                  : searchQuery || selectedCategory !== 'all' || statusFilter !== 'all'
                   ? 'Try adjusting your search query or category filters.'
                   : 'Add ingredients you have at home (pasta, olive oil, garlic, spices) to get smart recipe suggestions and auto-deduct from your grocery list.'}
               </p>
               <div>
-                <Button onClick={handleOpenAddModal}>
-                  <Plus className="w-4 h-4 mr-1.5" />
-                  Add First Pantry Item
-                </Button>
+                {itemsError ? (
+                  <Button onClick={() => fetchInventory({ search: '', category: 'all', status: 'all' })}>
+                    <RefreshCw className="w-4 h-4 mr-1.5" />
+                    Retry Loading Inventory
+                  </Button>
+                ) : (
+                  <Button onClick={handleOpenAddModal}>
+                    <Plus className="w-4 h-4 mr-1.5" />
+                    Add First Pantry Item
+                  </Button>
+                )}
               </div>
             </div>
           )}

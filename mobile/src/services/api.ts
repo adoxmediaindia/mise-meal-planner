@@ -20,6 +20,18 @@ interface ApiResponse<T> {
   error?: string;
 }
 
+export function toQueryString(params?: Record<string, any>): string {
+  if (!params) return '';
+  const searchParams = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined && value !== null && value !== '' && value !== 'undefined' && value !== 'null') {
+      searchParams.set(key, String(value));
+    }
+  }
+  const qs = searchParams.toString();
+  return qs ? `?${qs}` : '';
+}
+
 async function request<T>(
   endpoint: string,
   options: RequestInit = {}
@@ -106,8 +118,8 @@ export const mobileApi = {
 
   // 3. Recipes Endpoints
   getRecipes: (params?: Record<string, string>) => {
-    const qs = params ? new URLSearchParams(params).toString() : '';
-    return request<{ success: boolean; count: number; data: IRecipe[] }>(`/recipes${qs ? `?${qs}` : ''}`);
+    const qs = toQueryString(params);
+    return request<{ success: boolean; count: number; data: IRecipe[] }>(`/recipes${qs}`);
   },
 
   getRecipeById: (id: string) =>
@@ -272,8 +284,8 @@ export const mobileApi = {
 
   // 7. Pantry Endpoints
   getPantryItems: (params?: { search?: string; category?: string; status?: string }) => {
-    const qs = params ? new URLSearchParams(params as any).toString() : '';
-    return request<ApiResponse<IPantryItem[]>>(`/pantry${qs ? `?${qs}` : ''}`);
+    const qs = toQueryString(params);
+    return request<ApiResponse<IPantryItem[]>>(`/pantry${qs}`);
   },
 
   addPantryItem: (payload: {
@@ -313,8 +325,8 @@ export const mobileApi = {
     dietary?: string;
     limit?: number;
   }) => {
-    const qs = params ? new URLSearchParams(params as any).toString() : '';
-    return request<ApiResponse<IPantryRecipeMatch[]>>(`/pantry/recipes${qs ? `?${qs}` : ''}`);
+    const qs = toQueryString(params);
+    return request<ApiResponse<IPantryRecipeMatch[]>>(`/pantry/recipes${qs}`);
   },
 
   addMissingIngredientsToGrocery: (recipeId: string) =>

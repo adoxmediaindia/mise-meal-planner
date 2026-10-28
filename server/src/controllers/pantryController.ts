@@ -57,15 +57,25 @@ export const consumePantryItemSchema = z.object({
   amount: z.number().min(0.01, 'Amount must be greater than 0'),
 });
 
+const sanitizeQueryParam = (val: unknown): string | undefined => {
+  if (typeof val !== 'string') return undefined;
+  const trimmed = val.trim();
+  if (!trimmed || trimmed === 'undefined' || trimmed === 'null') return undefined;
+  return trimmed;
+};
+
 export const getPantryItems = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const userId = req.user!.id;
-    const { search, category, status } = req.query;
+    const search = sanitizeQueryParam(req.query.search);
+    const category = sanitizeQueryParam(req.query.category);
+    const rawStatus = sanitizeQueryParam(req.query.status);
+    const status = (rawStatus as any) || 'all';
 
     const items = await PantryService.getPantryItems(userId, {
-      search: typeof search === 'string' ? search : undefined,
-      category: typeof category === 'string' ? category : undefined,
-      status: (status as any) || 'all',
+      search,
+      category,
+      status,
     });
 
     res.json({ success: true, count: items.length, data: items });

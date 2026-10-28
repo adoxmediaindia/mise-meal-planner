@@ -28,6 +28,18 @@ export const setStoredToken = (token: string | null): void => {
   }
 };
 
+export function toQueryString(params?: Record<string, any>): string {
+  if (!params) return '';
+  const searchParams = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined && value !== null && value !== '' && value !== 'undefined' && value !== 'null') {
+      searchParams.set(key, String(value));
+    }
+  }
+  const qs = searchParams.toString();
+  return qs ? `?${qs}` : '';
+}
+
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const url = `${API_BASE}${endpoint}`;
   const token = getStoredToken();
@@ -105,8 +117,8 @@ export const api = {
 
   // Recipes
   getRecipes: (params?: Record<string, string>) => {
-    const qs = params ? new URLSearchParams(params).toString() : '';
-    return request<{ success: boolean; count: number; data: any[] }>(`/recipes${qs ? `?${qs}` : ''}`);
+    const qs = toQueryString(params);
+    return request<{ success: boolean; count: number; data: any[] }>(`/recipes${qs}`);
   },
 
   getRecipeById: (id: string) =>
@@ -259,8 +271,8 @@ export const api = {
 
   // Pantry
   getPantryItems: (params?: { search?: string; category?: string; status?: string }) => {
-    const qs = params ? new URLSearchParams(params as any).toString() : '';
-    return request<{ success: boolean; count: number; data: any[] }>(`/pantry${qs ? `?${qs}` : ''}`);
+    const qs = toQueryString(params);
+    return request<{ success: boolean; count: number; data: any[] }>(`/pantry${qs}`);
   },
 
   addPantryItem: (payload: {
@@ -311,8 +323,8 @@ export const api = {
     dietary?: string;
     limit?: number;
   }) => {
-    const qs = params ? new URLSearchParams(params as any).toString() : '';
-    return request<{ success: boolean; count: number; data: any[] }>(`/pantry/recipes${qs ? `?${qs}` : ''}`);
+    const qs = toQueryString(params);
+    return request<{ success: boolean; count: number; data: any[] }>(`/pantry/recipes${qs}`);
   },
 
   addMissingIngredientsToGrocery: (recipeId: string) =>
@@ -377,8 +389,8 @@ export const api = {
     request<{ success: boolean; data: any }>('/admin/metrics'),
 
   getAdminUsers: (params?: { search?: string; page?: number; limit?: number; tier?: string }) => {
-    const qs = params ? new URLSearchParams(params as any).toString() : '';
-    return request<{ success: boolean; data: any[]; pagination: any }>(`/admin/users${qs ? `?${qs}` : ''}`);
+    const qs = toQueryString(params);
+    return request<{ success: boolean; data: any[]; pagination: any }>(`/admin/users${qs}`);
   },
 
   getAdminUserDetails: (id: string) =>
@@ -391,8 +403,8 @@ export const api = {
     }),
 
   getAdminRecipes: (params?: { search?: string; page?: number; limit?: number }) => {
-    const qs = params ? new URLSearchParams(params as any).toString() : '';
-    return request<{ success: boolean; data: any[]; pagination: any }>(`/admin/recipes${qs ? `?${qs}` : ''}`);
+    const qs = toQueryString(params);
+    return request<{ success: boolean; data: any[]; pagination: any }>(`/admin/recipes${qs}`);
   },
 
   createAdminRecipe: (recipeData: any) =>
