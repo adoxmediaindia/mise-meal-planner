@@ -566,8 +566,14 @@ Respond ONLY with a JSON object matching this schema:
     },
     timeoutMs: number
   ): Promise<any> {
-    const candidateModels = [primaryModel, 'gemini-2.0-flash', 'gemini-1.5-flash']
-      .filter((m, i, arr) => m && arr.indexOf(m) === i);
+    const candidateModels = [
+      primaryModel,
+      'gemini-2.5-flash',
+      'gemini-flash-latest',
+      'gemini-2.5-flash-lite',
+      'gemini-2.0-flash',
+      'gemini-1.5-flash',
+    ].filter((m, i, arr) => m && arr.indexOf(m) === i);
 
     let lastError: any = null;
 
