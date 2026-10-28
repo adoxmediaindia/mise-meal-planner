@@ -8,7 +8,11 @@ import { EntitlementService, EntitlementError } from '../services/entitlementSer
 export const addPantryItemSchema = z.object({
   name: z.string().min(1, 'Item name is required'),
   quantity: z.number().min(0.01, 'Quantity must be greater than 0'),
-  unit: z.string().optional().default(''),
+  unit: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((v) => (v || '').trim()),
   category: z
     .enum([
       'Fresh Produce',
@@ -28,7 +32,11 @@ export const addPantryItemSchema = z.object({
 export const updatePantryItemSchema = z.object({
   name: z.string().min(1).optional(),
   quantity: z.number().min(0.01).optional(),
-  unit: z.string().optional(),
+  unit: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((v) => (v === undefined ? undefined : (v || '').trim())),
   category: z
     .enum([
       'Fresh Produce',

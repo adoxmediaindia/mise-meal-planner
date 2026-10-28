@@ -145,7 +145,7 @@ export class PantryService {
 
     if (updates.name !== undefined) item.name = updates.name.trim();
     if (updates.quantity !== undefined) item.quantity = Math.max(0.01, updates.quantity);
-    if (updates.unit !== undefined) item.unit = updates.unit.trim();
+    if (updates.unit !== undefined) item.unit = (updates.unit || '').trim();
     if (updates.category !== undefined) item.category = updates.category;
     if (updates.expiryDate !== undefined) {
       item.expiryDate = updates.expiryDate ? new Date(updates.expiryDate) : undefined;

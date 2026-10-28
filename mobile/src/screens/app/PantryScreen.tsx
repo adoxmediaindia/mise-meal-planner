@@ -322,7 +322,7 @@ export const PantryScreen: React.FC<PantryScreenProps> = ({ onSelectRecipe }) =>
                         </View>
 
                         <Text style={styles.itemQuantity}>
-                          {item.quantity} {item.unit} • {item.category}
+                          {item.quantity}{item.unit ? ` ${item.unit}` : ''} • {item.category}
                         </Text>
                         {item.notes ? (
                           <Text style={styles.itemNotes} numberOfLines={1}>
@@ -419,7 +419,7 @@ export const PantryScreen: React.FC<PantryScreenProps> = ({ onSelectRecipe }) =>
                         <Text style={styles.ingredientsListText}>
                           {match.availableIngredients.length > 0
                             ? match.availableIngredients
-                                .map((i) => `${i.name} (${i.quantity} ${i.unit})`)
+                                .map((i) => `${i.name} (${i.quantity}${i.unit ? ` ${i.unit}` : ''})`)
                                 .join(', ')
                             : 'None'}
                         </Text>
@@ -431,7 +431,7 @@ export const PantryScreen: React.FC<PantryScreenProps> = ({ onSelectRecipe }) =>
                             </Text>
                             <Text style={styles.missingListText}>
                               {match.missingIngredients
-                                .map((i) => `${i.name} (${i.deficitQuantity} ${i.unit})`)
+                                .map((i) => `${i.name} (${i.deficitQuantity}${i.unit ? ` ${i.unit}` : ''})`)
                                 .join(', ')}
                             </Text>
                           </>
@@ -557,7 +557,7 @@ export const PantryScreen: React.FC<PantryScreenProps> = ({ onSelectRecipe }) =>
             <View style={styles.modalContent}>
               <Text style={styles.modalTitle}>Use {consumingItem.name}</Text>
               <Text style={styles.modalSubtitle}>
-                Have: {consumingItem.quantity} {consumingItem.unit}. Enter amount used:
+                Have: {consumingItem.quantity}{consumingItem.unit ? ` ${consumingItem.unit}` : ''}. Enter amount used:
               </Text>
 
               <TextInput

@@ -554,7 +554,7 @@ export const Pantry: React.FC = () => {
                         {/* Quantity & Notes */}
                         <div className="flex items-center gap-2 mt-0.5 text-xs text-[#6b6b6b]">
                           <span className="font-bold text-[#1f2a06]">
-                            {item.quantity} {item.unit}
+                            {item.quantity}{item.unit ? ` ${item.unit}` : ''}
                           </span>
                           {item.notes && (
                             <>
@@ -747,7 +747,7 @@ export const Pantry: React.FC = () => {
                           <ul className="space-y-1 text-gray-600 pl-5 list-disc text-[11px]">
                             {match.availableIngredients.slice(0, 4).map((ing, idx) => (
                               <li key={idx} className="truncate">
-                                {ing.name} ({ing.quantity} {ing.unit})
+                                {ing.name} ({ing.quantity}{ing.unit ? ` ${ing.unit}` : ''})
                               </li>
                             ))}
                             {match.availableIngredients.length > 4 && (
@@ -772,7 +772,7 @@ export const Pantry: React.FC = () => {
                             {match.missingIngredients.slice(0, 4).map((ing, idx) => (
                               <li key={idx} className="truncate">
                                 <span className="font-semibold text-gray-800">{ing.name}</span>{' '}
-                                ({ing.deficitQuantity} {ing.unit})
+                                ({ing.deficitQuantity}{ing.unit ? ` ${ing.unit}` : ''})
                                 {ing.estimatedCost > 0 && (
                                   <span className="text-gray-400"> ~${ing.estimatedCost.toFixed(2)}</span>
                                 )}
@@ -1006,7 +1006,7 @@ export const Pantry: React.FC = () => {
             </div>
 
             <p className="text-xs text-[#6b6b6b]">
-              Currently have: <strong>{consumingItem.quantity} {consumingItem.unit}</strong>.
+              Currently have: <strong>{consumingItem.quantity}{consumingItem.unit ? ` ${consumingItem.unit}` : ''}</strong>.
               Enter how much you used:
             </p>
 
@@ -1020,7 +1020,7 @@ export const Pantry: React.FC = () => {
                 onChange={(e) => setConsumeAmount(parseFloat(e.target.value) || 0)}
                 className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm text-[#2a2a2a] focus:outline-none focus:border-[#9ed034]"
               />
-              <span className="text-xs font-bold text-gray-500">{consumingItem.unit}</span>
+              {consumingItem.unit ? <span className="text-xs font-bold text-gray-500">{consumingItem.unit}</span> : null}
             </div>
 
             <div className="flex items-center justify-end gap-2 pt-2">
@@ -1277,7 +1277,7 @@ export const Pantry: React.FC = () => {
                     {generatedRecipeResult.recipe.ingredients.map((ing: any, idx: number) => (
                       <li key={idx} className="flex justify-between text-gray-700">
                         <span>• {ing.name}</span>
-                        <span className="font-medium text-gray-500">{ing.quantity} {ing.unit}</span>
+                        <span className="font-medium text-gray-500">{ing.quantity}{ing.unit ? ` ${ing.unit}` : ''}</span>
                       </li>
                     ))}
                   </ul>

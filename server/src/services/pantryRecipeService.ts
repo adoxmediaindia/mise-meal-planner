@@ -65,7 +65,7 @@ export class PantryRecipeService {
           const converted = UnitConverter.convert(pItem.quantity, pItem.unit, reqIng.unit);
           if (converted !== null) {
             totalAvailableInReqUnit += converted;
-            bestPantryUnit = pItem.unit;
+            bestPantryUnit = pItem.unit || '';
           }
         }
 

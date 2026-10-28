@@ -19,7 +19,7 @@ const PantryItemSchema = new Schema<IPantryItemDoc>(
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
     name: { type: String, required: true, trim: true },
     quantity: { type: Number, required: true, min: 0.01 },
-    unit: { type: String, required: true, trim: true, default: '' },
+    unit: { type: String, required: false, trim: true, default: '' },
     category: {
       type: String,
       required: true,

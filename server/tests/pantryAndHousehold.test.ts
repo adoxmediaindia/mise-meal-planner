@@ -232,6 +232,123 @@ describe('Phase 4: Pantry Inventory, Recipe Matching & Household Sharing', () =>
       expect(res.status).toBe(200);
       expect(res.body.data.quantity).toBe(600);
     });
+
+    it('Allows adding pantry item without unit field (unit is optional)', async () => {
+      const res = await request(app)
+        .post('/api/v1/pantry')
+        .set('Cookie', user1Cookie)
+        .send({
+          name: 'Apples',
+          quantity: 4,
+          category: 'Fresh Produce',
+        });
+
+      expect(res.status).toBe(201);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.name).toBe('Apples');
+      expect(res.body.data.quantity).toBe(4);
+      expect(res.body.data.unit).toBe('');
+
+      // Clean up item so downstream tests for specific recipes are not affected
+      await request(app)
+        .delete(`/api/v1/pantry/${res.body.data.id}`)
+        .set('Cookie', user1Cookie);
+    });
+
+    it('Allows adding pantry item with explicit empty string unit', async () => {
+      const res = await request(app)
+        .post('/api/v1/pantry')
+        .set('Cookie', user1Cookie)
+        .send({
+          name: 'Avocados',
+          quantity: 2,
+          unit: '',
+          category: 'Fresh Produce',
+        });
+
+      expect(res.status).toBe(201);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.name).toBe('Avocados');
+      expect(res.body.data.quantity).toBe(2);
+      expect(res.body.data.unit).toBe('');
+
+      await request(app)
+        .delete(`/api/v1/pantry/${res.body.data.id}`)
+        .set('Cookie', user1Cookie);
+    });
+
+    it('Correctly merges quantity when adding another unitless item of same name', async () => {
+      // 1. Add first item
+      const res1 = await request(app)
+        .post('/api/v1/pantry')
+        .set('Cookie', user1Cookie)
+        .send({
+          name: 'Pears',
+          quantity: 3,
+        });
+
+      expect(res1.status).toBe(201);
+      expect(res1.body.data.quantity).toBe(3);
+      expect(res1.body.data.unit).toBe('');
+
+      // 2. Add second item with same name and empty unit
+      const res2 = await request(app)
+        .post('/api/v1/pantry')
+        .set('Cookie', user1Cookie)
+        .send({
+          name: 'Pears',
+          quantity: 4,
+          unit: '',
+        });
+
+      expect(res2.status).toBe(201);
+      expect(res2.body.data.quantity).toBe(7);
+      expect(res2.body.data.unit).toBe('');
+
+      await request(app)
+        .delete(`/api/v1/pantry/${res2.body.data.id}`)
+        .set('Cookie', user1Cookie);
+    });
+
+    it('Allows updating pantry item unit to empty string or leaving unit unchanged', async () => {
+      // Create a dedicated item with unit 'cans'
+      const itemRes = await request(app)
+        .post('/api/v1/pantry')
+        .set('Cookie', user1Cookie)
+        .send({
+          name: 'Chickpeas',
+          quantity: 2,
+          unit: 'cans',
+          category: 'Pantry & Grains',
+        });
+
+      expect(itemRes.status).toBe(201);
+      const itemId = itemRes.body.data.id;
+
+      // 1. Update unit to empty string
+      const resEmpty = await request(app)
+        .patch(`/api/v1/pantry/${itemId}`)
+        .set('Cookie', user1Cookie)
+        .send({ unit: '' });
+
+      expect(resEmpty.status).toBe(200);
+      expect(resEmpty.body.data.unit).toBe('');
+
+      // 2. Update quantity without specifying unit (unit remains empty)
+      const resQtyOnly = await request(app)
+        .patch(`/api/v1/pantry/${itemId}`)
+        .set('Cookie', user1Cookie)
+        .send({ quantity: 5 });
+
+      expect(resQtyOnly.status).toBe(200);
+      expect(resQtyOnly.body.data.quantity).toBe(5);
+      expect(resQtyOnly.body.data.unit).toBe('');
+
+      // Clean up item
+      await request(app)
+        .delete(`/api/v1/pantry/${itemId}`)
+        .set('Cookie', user1Cookie);
+    });
   });
 
   // ==========================================
