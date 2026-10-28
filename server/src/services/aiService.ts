@@ -322,22 +322,20 @@ Respond ONLY with a valid JSON object matching this schema:
   "equipmentNeeded": ("Air Fryer" | "Slow Cooker" | "Hob Only" | "Oven" | "Blender" | "Instant Pot")[]
 }`;
 
-      const timeoutPromise = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error(`Gemini request timed out after ${timeoutMs}ms`)), timeoutMs)
-      );
-
-      const callPromise = client.models.generateContent({
+      const response = await AiService.callGeminiWithFallback(
+        client,
         model,
-        contents: `Create a recipe utilizing these ingredients: ${ingredients.join(', ')}. Feel free to add common pantry staples (oil, salt, pepper, garlic).`,
-        config: {
-          systemInstruction: systemPrompt,
-          responseMimeType: 'application/json',
-          temperature: 0.7,
-          maxOutputTokens: 1500,
+        {
+          contents: `Create a recipe utilizing these ingredients: ${ingredients.join(', ')}. Feel free to add common pantry staples (oil, salt, pepper, garlic).`,
+          config: {
+            systemInstruction: systemPrompt,
+            responseMimeType: 'application/json',
+            temperature: 0.7,
+            maxOutputTokens: 1500,
+          },
         },
-      });
-
-      const response = await Promise.race([callPromise, timeoutPromise]);
+        timeoutMs
+      );
       const content = response.text;
       if (!content) {
         throw new Error('Gemini returned an empty response.');
@@ -385,11 +383,12 @@ Respond ONLY with a valid JSON object matching this schema:
     } catch (err: any) {
       console.warn(`[AiService] Gemini leftover generation failed: ${err.message}. Falling back to verified catalog.`);
       await reservation.rollback();
+      const safeReason = err.message ? err.message.replace(/AIza[0-9A-Za-z-_]{35}/g, '[REDACTED]').slice(0, 150) : undefined;
       return this.fallbackToDeterministicRecipe(
         userId,
         preference,
         ingredients,
-        'Gemini unavailable. Showing a verified matching database recipe.'
+        `Gemini unavailable (${safeReason || 'offline'}). Showing a verified matching database recipe.`
       );
     }
   }
@@ -498,22 +497,20 @@ Respond ONLY with a JSON object matching this schema:
   }
 }`;
 
-      const timeoutPromise = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error(`Gemini request timed out after ${timeoutMs}ms`)), timeoutMs)
-      );
-
-      const callPromise = client.models.generateContent({
+      const response = await AiService.callGeminiWithFallback(
+        client,
         model,
-        contents: userPrompt,
-        config: {
-          systemInstruction: systemPrompt,
-          responseMimeType: 'application/json',
-          temperature: 0.5,
-          maxOutputTokens: 800,
+        {
+          contents: userPrompt,
+          config: {
+            systemInstruction: systemPrompt,
+            responseMimeType: 'application/json',
+            temperature: 0.5,
+            maxOutputTokens: 800,
+          },
         },
-      });
-
-      const response = await Promise.race([callPromise, timeoutPromise]);
+        timeoutMs
+      );
       const content = response.text;
       if (!content) throw new Error('Gemini returned empty plan intent.');
 
@@ -546,12 +543,60 @@ Respond ONLY with a JSON object matching this schema:
       const plan = await PlannerService.generateWeeklyPlan(userId, preference);
       await ShoppingListService.generateOrUpdateShoppingList(userId, plan._id.toString());
       const populated = await MealPlan.findById(plan._id).populate('dinners.recipe').populate('meals.recipe');
+      const safeReason = err.message ? err.message.replace(/AIza[0-9A-Za-z-_]{35}/g, '[REDACTED]').slice(0, 150) : undefined;
       return {
         plan: populated!,
-        summary: 'Generated plan using your default saved preferences (AI unavailable).',
+        summary: `Generated plan using your default saved preferences (AI: ${safeReason || 'unavailable'}).`,
         isAiGenerated: false,
         fallback: true,
       };
     }
+  }
+
+  /**
+   * Dispatches generation to Gemini with intelligent model fallback (primary -> gemini-2.0-flash -> gemini-1.5-flash)
+   * to ensure resilience across different API keys, project quotas, and region availabilities.
+   */
+  public static async callGeminiWithFallback(
+    client: any,
+    primaryModel: string,
+    params: {
+      contents: any;
+      config: any;
+    },
+    timeoutMs: number
+  ): Promise<any> {
+    const candidateModels = [primaryModel, 'gemini-2.0-flash', 'gemini-1.5-flash']
+      .filter((m, i, arr) => m && arr.indexOf(m) === i);
+
+    let lastError: any = null;
+
+    for (const m of candidateModels) {
+      try {
+        const timeoutPromise = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error(`Gemini request timed out after ${timeoutMs}ms`)), timeoutMs)
+        );
+
+        const callPromise = client.models.generateContent({
+          ...params,
+          model: m,
+        });
+
+        const response = await Promise.race([callPromise, timeoutPromise]);
+        return response;
+      } catch (err: any) {
+        lastError = err;
+        const msg = (err.message || '').toLowerCase();
+        // If the model is not found, unsupported, or 404 in this project/tier, try next model candidate
+        if (msg.includes('not found') || msg.includes('not supported') || msg.includes('404')) {
+          console.warn(`[AiService] Gemini model "${m}" unavailable: ${err.message}. Trying next candidate model.`);
+          continue;
+        }
+        // Non-model errors (e.g., invalid key, quota exhausted) should throw immediately
+        throw err;
+      }
+    }
+
+    throw lastError;
   }
 }

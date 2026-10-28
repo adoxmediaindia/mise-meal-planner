@@ -309,14 +309,15 @@ export const PlanProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setError(null);
     try {
       const res = await api.customizePlanWithIntent(prompt);
-      if (res.data?.plan) {
-        setPlan(res.data.plan);
+      const newPlan = res.data?.plan || res.data;
+      if (newPlan) {
+        setPlan(newPlan);
       }
       const shopRes = await api.getShoppingList();
       if (shopRes.data) {
         setShoppingList(shopRes.data);
       }
-      return res.data;
+      return res;
     } catch (err: any) {
       setError(err.message || 'Failed to customize plan with AI');
       throw err;

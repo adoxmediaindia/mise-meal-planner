@@ -122,7 +122,13 @@ export const Pantry: React.FC = () => {
         maxCookTimeMinutes: leftoverMaxTime,
         additionalNotes: leftoverNotes || undefined,
       });
-      setGeneratedRecipeResult(res.data);
+      const recipeData = res.data?.recipe || res.data;
+      setGeneratedRecipeResult({
+        recipe: recipeData,
+        isAiGenerated: res.isAiGenerated ?? res.data?.isAiGenerated ?? false,
+        fallback: res.fallback ?? res.data?.fallback ?? true,
+        note: res.note || res.data?.note,
+      });
     } catch (err: any) {
       if (err.status === 403 || err.response?.data?.code === 'UPGRADE_REQUIRED') {
         setIsLeftoverUpgradeRequired(true);
@@ -232,6 +238,9 @@ export const Pantry: React.FC = () => {
           expiryDate: modalExpiry ? new Date(modalExpiry).toISOString() : null,
           notes: modalNotes.trim() || undefined,
         });
+        if (res.data) {
+          setItems((prev) => prev.map((i) => ((i._id || i.id) === id ? res.data : i)));
+        }
         setItemSuccessMessage(res.message || `Updated ${savedName}.`);
       } else {
         const res = await api.addPantryItem({
@@ -242,6 +251,9 @@ export const Pantry: React.FC = () => {
           expiryDate: modalExpiry ? new Date(modalExpiry).toISOString() : null,
           notes: modalNotes.trim() || undefined,
         });
+        if (res.data) {
+          setItems((prev) => [res.data, ...prev.filter((i) => (i._id || i.id) !== (res.data._id || res.data.id))]);
+        }
         setItemSuccessMessage(res.message || `Added ${savedName} to pantry.`);
       }
       setIsModalOpen(false);
@@ -267,10 +279,12 @@ export const Pantry: React.FC = () => {
     const id = item._id || item.id!;
     if (confirm(`Remove "${item.name}" from your pantry?`)) {
       try {
+        setItems((prev) => prev.filter((i) => (i._id || i.id) !== id));
         await api.deletePantryItem(id);
         await fetchInventory();
       } catch (err: any) {
         alert(err.message || 'Failed to delete item');
+        await fetchInventory();
       }
     }
   };
@@ -287,7 +301,14 @@ export const Pantry: React.FC = () => {
     const id = consumingItem._id || consumingItem.id!;
     setIsConsuming(true);
     try {
-      await api.consumePantryItem(id, consumeAmount);
+      const res = await api.consumePantryItem(id, consumeAmount);
+      if (res.data) {
+        setItems((prev) =>
+          prev
+            .map((i) => ((i._id || i.id) === id ? res.data : i))
+            .filter((i) => i.quantity > 0)
+        );
+      }
       setConsumingItem(null);
       await fetchInventory();
     } catch (err: any) {
@@ -1285,6 +1306,11 @@ export const Pantry: React.FC = () => {
                   <p className="text-xs text-gray-600 mt-1">
                     {generatedRecipeResult.recipe.description}
                   </p>
+                  {generatedRecipeResult.note && (
+                    <p className="text-[11px] text-amber-700 bg-amber-50 px-2.5 py-1.5 rounded-lg border border-amber-200 mt-2">
+                      {generatedRecipeResult.note}
+                    </p>
+                  )}
                 </div>
 
                 {/* Macro Summary */}
