@@ -16,6 +16,8 @@ import {
   Calendar,
   History,
   Archive,
+  Sparkles,
+  AlertCircle,
 } from 'lucide-react';
 import { DayOfWeek, IRecipe, MealType, IMealSlot } from '../../types/index.js';
 import { api } from '../../services/api.js';
@@ -36,6 +38,7 @@ export const PlanOverview: React.FC = () => {
     fetchPlanHistory,
     generatePlan,
     toggleDinnerCooked,
+    customizePlanWithIntent,
   } = usePlan();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -46,6 +49,39 @@ export const PlanOverview: React.FC = () => {
   const [loadingCandidates, setLoadingCandidates] = useState(false);
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+
+  // AI Plan Intent State
+  const [isAiCustomizeOpen, setIsAiCustomizeOpen] = useState(false);
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [isSubmittingAiPrompt, setIsSubmittingAiPrompt] = useState(false);
+  const [aiSummary, setAiSummary] = useState<string | null>(null);
+  const [aiError, setAiError] = useState<string | null>(null);
+  const [isUpgradeRequired, setIsUpgradeRequired] = useState(false);
+
+  const handleAiCustomizeSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!aiPrompt.trim() || aiPrompt.trim().length < 5) {
+      setAiError('Please enter at least 5 characters describing your weekly plan preferences.');
+      return;
+    }
+    setAiError(null);
+    setIsUpgradeRequired(false);
+    setIsSubmittingAiPrompt(true);
+    try {
+      const res = await customizePlanWithIntent(aiPrompt.trim());
+      setAiSummary(res?.summary || 'Plan updated with your preferences!');
+      setAiPrompt('');
+    } catch (err: any) {
+      if (err.status === 403 || err.response?.data?.code === 'UPGRADE_REQUIRED') {
+        setIsUpgradeRequired(true);
+        setAiError(err.response?.data?.error || 'Weekly AI generation quota reached. Upgrade to Pro for 50 AI queries/week.');
+      } else {
+        setAiError(err.message || 'Failed to customize plan with AI.');
+      }
+    } finally {
+      setIsSubmittingAiPrompt(false);
+    }
+  };
 
   // Add Meal Modal state
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -241,6 +277,16 @@ export const PlanOverview: React.FC = () => {
         <div className="flex items-center gap-2">
           <button
             type="button"
+            onClick={() => setIsAiCustomizeOpen(!isAiCustomizeOpen)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#E0D4FF] border border-[#cfbefb] text-xs font-bold text-[#3c2a68] hover:bg-[#d6c5fe] shadow-xs transition-all cursor-pointer"
+            title="Tailor weekly plan with AI"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-[#633bba]" />
+            <span>AI Customize</span>
+          </button>
+
+          <button
+            type="button"
             onClick={handleOpenHistory}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-gray-200 text-xs font-bold text-[#6b6b6b] hover:text-[#2a2a2a] shadow-xs hover:border-[#8bc020] transition-all cursor-pointer"
             title="View previous weeks"
@@ -260,6 +306,123 @@ export const PlanOverview: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* AI Customize Banner */}
+      {isAiCustomizeOpen && (
+        <div className="bg-gradient-to-r from-[#FAF5FF] to-[#F3E8FF] border border-[#E9D5FF] rounded-[22px] p-5 shadow-sm space-y-3.5 animate-fadeIn">
+          <div className="flex items-start justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-full bg-[#9333EA] text-white flex items-center justify-center shadow-xs">
+                <Sparkles className="w-4 h-4" />
+              </div>
+              <div>
+                <h3 className="font-bold text-sm text-[#4A154B]">Tailor Week with Chef Mise AI</h3>
+                <p className="text-xs text-[#6B21A8]">Describe your week in plain English. We'll pick safe catalog recipes and update your shopping list.</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsAiCustomizeOpen(false)}
+              className="text-gray-400 hover:text-gray-600 p-1 cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Quick preset chips */}
+          <div className="flex flex-wrap gap-1.5 pt-1">
+            <span className="text-[11px] font-bold text-gray-500 self-center">Try:</span>
+            {[
+              'High protein Mediterranean week',
+              'Quick 20-min weeknights',
+              'Healthy comfort food and fakeaway',
+              'Light dinners and low calorie',
+            ].map((preset) => (
+              <button
+                key={preset}
+                type="button"
+                onClick={() => setAiPrompt(preset)}
+                className="px-2.5 py-1 text-xs rounded-full bg-white/80 hover:bg-white text-[#581C87] border border-[#E9D5FF] font-medium transition-colors cursor-pointer"
+              >
+                {preset}
+              </button>
+            ))}
+          </div>
+
+          <form onSubmit={handleAiCustomizeSubmit} className="space-y-3">
+            <textarea
+              value={aiPrompt}
+              onChange={(e) => setAiPrompt(e.target.value)}
+              placeholder="E.g., High protein Mediterranean meals Monday to Wednesday, and quick comfort meals for the rest of the week..."
+              rows={2}
+              className="w-full text-xs sm:text-sm p-3 rounded-xl border border-[#D8B4FE] focus:ring-2 focus:ring-[#9333EA] focus:outline-hidden bg-white resize-none"
+              disabled={isSubmittingAiPrompt}
+            />
+
+            {aiError && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+                <div className="flex-1">
+                  <p className="font-bold">Unable to customize with AI</p>
+                  <p>{aiError}</p>
+                  {isUpgradeRequired && (
+                    <Link
+                      to="/app/account"
+                      className="inline-block mt-2 font-bold text-[#8bc020] hover:underline"
+                    >
+                      Upgrade to Mise Pro for 50 AI queries / week &rarr;
+                    </Link>
+                  )}
+                </div>
+              </div>
+            )}
+
+            <div className="flex items-center justify-between pt-1">
+              <span className="text-[11px] text-gray-500 font-medium">
+                Strict allergy & dietary filters always apply.
+              </span>
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsAiCustomizeOpen(false)}
+                  disabled={isSubmittingAiPrompt}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  size="sm"
+                  className="bg-[#9333EA] hover:bg-[#7E22CE] text-white"
+                  isLoading={isSubmittingAiPrompt}
+                  disabled={!aiPrompt.trim()}
+                >
+                  <Sparkles className="w-3.5 h-3.5 mr-1" />
+                  {isSubmittingAiPrompt ? 'Crafting Plan...' : 'Generate with AI'}
+                </Button>
+              </div>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* AI Interpretation Success Banner */}
+      {aiSummary && (
+        <div className="p-4 bg-[#F5F3FF] border border-[#DDD6FE] rounded-[18px] text-xs text-[#5B21B6] flex items-center justify-between shadow-xs animate-fadeIn">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-[#7C3AED] shrink-0" />
+            <span><strong className="font-bold">Chef Mise AI:</strong> {aiSummary}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setAiSummary(null)}
+            className="text-[#7C3AED] hover:text-[#5B21B6] p-1 font-bold cursor-pointer"
+          >
+            &times;
+          </button>
+        </div>
+      )}
 
       {/* Top Cards Row: Est Cost + Grocery List */}
       <div className="grid grid-cols-2 gap-3.5">

@@ -22,6 +22,7 @@ import {
   X,
   RefreshCw,
   ExternalLink,
+  AlertCircle,
 } from 'lucide-react';
 
 const CATEGORIES: SupermarketAisle[] = [
@@ -67,6 +68,70 @@ export const Pantry: React.FC = () => {
   const [consumingItem, setConsumingItem] = useState<IPantryItem | null>(null);
   const [consumeAmount, setConsumeAmount] = useState<number>(1);
   const [isConsuming, setIsConsuming] = useState(false);
+
+  // Chef Mise AI Leftovers Modal State
+  const [isChefMiseModalOpen, setIsChefMiseModalOpen] = useState(false);
+  const [selectedIngredients, setSelectedIngredients] = useState<string[]>([]);
+  const [customIngredientInput, setCustomIngredientInput] = useState('');
+  const [leftoverMaxTime, setLeftoverMaxTime] = useState<number>(30);
+  const [leftoverNotes, setLeftoverNotes] = useState('');
+  const [isGeneratingLeftover, setIsGeneratingLeftover] = useState(false);
+  const [leftoverError, setLeftoverError] = useState<string | null>(null);
+  const [isLeftoverUpgradeRequired, setIsLeftoverUpgradeRequired] = useState(false);
+  const [generatedRecipeResult, setGeneratedRecipeResult] = useState<any | null>(null);
+
+  const handleOpenChefMiseModal = () => {
+    // Pre-populate with top pantry items
+    const defaultIngredients = items.slice(0, 5).map((i) => i.name);
+    setSelectedIngredients(defaultIngredients);
+    setCustomIngredientInput('');
+    setLeftoverError(null);
+    setIsLeftoverUpgradeRequired(false);
+    setGeneratedRecipeResult(null);
+    setIsChefMiseModalOpen(true);
+  };
+
+  const handleToggleIngredient = (name: string) => {
+    setSelectedIngredients((prev) =>
+      prev.includes(name) ? prev.filter((i) => i !== name) : [...prev, name]
+    );
+  };
+
+  const handleAddCustomIngredient = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const trimmed = customIngredientInput.trim();
+    if (trimmed && !selectedIngredients.includes(trimmed)) {
+      setSelectedIngredients((prev) => [...prev, trimmed]);
+      setCustomIngredientInput('');
+    }
+  };
+
+  const handleGenerateLeftoverRecipe = async () => {
+    if (selectedIngredients.length === 0) {
+      setLeftoverError('Please select or add at least 1 ingredient.');
+      return;
+    }
+    setLeftoverError(null);
+    setIsLeftoverUpgradeRequired(false);
+    setIsGeneratingLeftover(true);
+    try {
+      const res = await api.generateLeftoverRecipe({
+        ingredients: selectedIngredients,
+        maxCookTimeMinutes: leftoverMaxTime,
+        additionalNotes: leftoverNotes || undefined,
+      });
+      setGeneratedRecipeResult(res.data);
+    } catch (err: any) {
+      if (err.status === 403 || err.response?.data?.code === 'UPGRADE_REQUIRED') {
+        setIsLeftoverUpgradeRequired(true);
+        setLeftoverError(err.response?.data?.error || 'Weekly AI generation quota reached. Upgrade to Pro for 50 AI queries/week.');
+      } else {
+        setLeftoverError(err.message || 'Failed to generate leftover recipe.');
+      }
+    } finally {
+      setIsGeneratingLeftover(false);
+    }
+  };
 
   // Load Inventory
   const fetchInventory = async () => {
@@ -256,26 +321,38 @@ export const Pantry: React.FC = () => {
           </h1>
         </div>
 
-        {activeTab === 'inventory' ? (
+        <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={handleOpenAddModal}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-[#1f2a06] text-white text-xs font-bold shadow-xs hover:bg-[#2e3e09] transition-all cursor-pointer"
+            onClick={handleOpenChefMiseModal}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-[#E0D4FF] border border-[#cfbefb] text-[#3c2a68] text-xs font-bold shadow-xs hover:bg-[#d6c5fe] transition-all cursor-pointer"
+            title="Generate recipe from leftover ingredients with AI"
           >
-            <Plus className="w-4 h-4" />
-            <span>Add Item</span>
+            <Sparkles className="w-4 h-4 text-[#633bba]" />
+            <span>Ask Chef Mise AI</span>
           </button>
-        ) : (
-          <button
-            type="button"
-            onClick={fetchSuggestions}
-            disabled={isLoadingSuggestions}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-gray-200 text-xs font-bold text-[#6b6b6b] hover:text-[#2a2a2a] shadow-xs hover:border-[#8bc020] transition-all cursor-pointer"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${isLoadingSuggestions ? 'animate-spin' : ''}`} />
-            <span>Refresh Matches</span>
-          </button>
-        )}
+
+          {activeTab === 'inventory' ? (
+            <button
+              type="button"
+              onClick={handleOpenAddModal}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-[#1f2a06] text-white text-xs font-bold shadow-xs hover:bg-[#2e3e09] transition-all cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Add Item</span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={fetchSuggestions}
+              disabled={isLoadingSuggestions}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-gray-200 text-xs font-bold text-[#6b6b6b] hover:text-[#2a2a2a] shadow-xs hover:border-[#8bc020] transition-all cursor-pointer"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isLoadingSuggestions ? 'animate-spin' : ''}`} />
+              <span>Refresh Matches</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Top Tabs */}
@@ -958,6 +1035,282 @@ export const Pantry: React.FC = () => {
                 Confirm Use
               </Button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ======================================================== */}
+      {/* MODAL: CHEF MISE AI LEFTOVERS GENERATOR                  */}
+      {/* ======================================================== */}
+      {isChefMiseModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-[28px] max-w-xl w-full p-6 shadow-2xl animate-scaleUp space-y-4 my-8 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-[#9333EA] text-white flex items-center justify-center shadow-xs">
+                  <ChefHat className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="font-serif font-bold text-lg text-[#2a2a2a]">
+                    Chef Mise AI Leftovers
+                  </h3>
+                  <p className="text-xs text-gray-500">
+                    Transform what's in your pantry into a fresh dinner
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsChefMiseModalOpen(false)}
+                className="p-1.5 rounded-full text-gray-400 hover:text-gray-700 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {!generatedRecipeResult ? (
+              <div className="space-y-4">
+                {/* Ingredients selector */}
+                <div>
+                  <label className="block text-xs font-bold text-[#2a2a2a] uppercase tracking-wider mb-1.5">
+                    Select Leftover Ingredients
+                  </label>
+                  {items.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto p-2 bg-gray-50 rounded-xl border border-gray-200 mb-2">
+                      {items.map((item) => {
+                        const isSelected = selectedIngredients.includes(item.name);
+                        return (
+                          <button
+                            key={item._id}
+                            type="button"
+                            onClick={() => handleToggleIngredient(item.name)}
+                            className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all cursor-pointer ${
+                              isSelected
+                                ? 'bg-[#9333EA] text-white shadow-xs'
+                                : 'bg-white text-gray-700 border border-gray-200 hover:border-gray-400'
+                            }`}
+                          >
+                            {isSelected ? '✓ ' : '+ '}
+                            {item.name}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {/* Custom ingredient input */}
+                  <form onSubmit={handleAddCustomIngredient} className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Add an extra ingredient (e.g. Garlic, Pasta, Eggs)..."
+                      value={customIngredientInput}
+                      onChange={(e) => setCustomIngredientInput(e.target.value)}
+                      className="flex-1 text-xs bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-[#2a2a2a] focus:outline-none focus:border-[#9333EA]"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleAddCustomIngredient}
+                      className="px-3 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-xs font-bold text-gray-700 cursor-pointer"
+                    >
+                      Add
+                    </button>
+                  </form>
+
+                  {/* Selected ingredients list */}
+                  <div className="flex flex-wrap gap-1.5 pt-2">
+                    <span className="text-[11px] font-bold text-gray-400 self-center">Included:</span>
+                    {selectedIngredients.map((ing) => (
+                      <span
+                        key={ing}
+                        className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#FAF5FF] border border-[#E9D5FF] text-xs font-semibold text-[#6B21A8]"
+                      >
+                        {ing}
+                        <button
+                          type="button"
+                          onClick={() => handleToggleIngredient(ing)}
+                          className="hover:text-red-500 cursor-pointer"
+                        >
+                          &times;
+                        </button>
+                      </span>
+                    ))}
+                    {selectedIngredients.length === 0 && (
+                      <span className="text-xs text-gray-400 italic">No ingredients selected yet</span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Time selector */}
+                <div>
+                  <label className="block text-xs font-bold text-[#2a2a2a] uppercase tracking-wider mb-1.5">
+                    Max Cooking Time
+                  </label>
+                  <div className="grid grid-cols-4 gap-2">
+                    {[15, 30, 45, 60].map((mins) => (
+                      <button
+                        key={mins}
+                        type="button"
+                        onClick={() => setLeftoverMaxTime(mins)}
+                        className={`py-1.5 text-xs font-bold rounded-xl border transition-all cursor-pointer ${
+                          leftoverMaxTime === mins
+                            ? 'bg-[#9333EA] text-white border-[#9333EA] shadow-xs'
+                            : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
+                        }`}
+                      >
+                        {mins} mins
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Special notes */}
+                <div>
+                  <label className="block text-xs font-bold text-[#2a2a2a] uppercase tracking-wider mb-1">
+                    Special Request (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="E.g., kid-friendly, one-pot dinner, spicy..."
+                    value={leftoverNotes}
+                    onChange={(e) => setLeftoverNotes(e.target.value)}
+                    className="w-full text-xs bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-[#2a2a2a] focus:outline-none focus:border-[#9333EA]"
+                  />
+                </div>
+
+                {/* Error Banner */}
+                {leftoverError && (
+                  <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+                    <div className="flex-1">
+                      <p className="font-bold">Generation failed</p>
+                      <p>{leftoverError}</p>
+                      {isLeftoverUpgradeRequired && (
+                        <Link
+                          to="/app/account"
+                          className="inline-block mt-2 font-bold text-[#8bc020] hover:underline"
+                        >
+                          Upgrade to Mise Pro for 50 AI queries / week &rarr;
+                        </Link>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between pt-2">
+                  <span className="text-[11px] text-gray-400">
+                    Your allergy & dietary restrictions are always enforced.
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setIsChefMiseModalOpen(false)}
+                      className="px-3.5 py-2 rounded-xl text-xs font-bold text-gray-500 hover:bg-gray-100 cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                    <Button
+                      onClick={handleGenerateLeftoverRecipe}
+                      isLoading={isGeneratingLeftover}
+                      disabled={selectedIngredients.length === 0}
+                      className="bg-[#9333EA] hover:bg-[#7E22CE] text-white"
+                    >
+                      <Sparkles className="w-4 h-4 mr-1.5" />
+                      {isGeneratingLeftover ? 'Cooking...' : 'Generate Recipe'}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              /* Generated Recipe View */
+              <div className="space-y-4 animate-fadeIn">
+                <div className="flex items-center justify-between">
+                  <span
+                    className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold ${
+                      generatedRecipeResult.isAiGenerated
+                        ? 'bg-purple-100 text-purple-800 border border-purple-200'
+                        : 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                    }`}
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    {generatedRecipeResult.isAiGenerated ? 'Chef Mise AI Recipe' : 'Safe Catalog Match (Fallback)'}
+                  </span>
+                  <span className="text-xs text-gray-500 font-medium">
+                    {generatedRecipeResult.recipe.cuisine} • {generatedRecipeResult.recipe.prepTimeMinutes + generatedRecipeResult.recipe.cookTimeMinutes} mins
+                  </span>
+                </div>
+
+                <div>
+                  <h4 className="font-serif text-xl font-bold text-[#2a2a2a]">
+                    {generatedRecipeResult.recipe.title}
+                  </h4>
+                  <p className="text-xs text-gray-600 mt-1">
+                    {generatedRecipeResult.recipe.description}
+                  </p>
+                </div>
+
+                {/* Macro Summary */}
+                <div className="grid grid-cols-4 gap-2 p-2.5 bg-gray-50 rounded-xl text-center">
+                  <div>
+                    <span className="block text-[10px] uppercase font-bold text-gray-400">Calories</span>
+                    <span className="text-xs font-bold text-[#2a2a2a]">{generatedRecipeResult.recipe.calories}</span>
+                  </div>
+                  <div>
+                    <span className="block text-[10px] uppercase font-bold text-gray-400">Protein</span>
+                    <span className="text-xs font-bold text-[#2a2a2a]">{generatedRecipeResult.recipe.proteinGrams}g</span>
+                  </div>
+                  <div>
+                    <span className="block text-[10px] uppercase font-bold text-gray-400">Carbs</span>
+                    <span className="text-xs font-bold text-[#2a2a2a]">{generatedRecipeResult.recipe.carbsGrams}g</span>
+                  </div>
+                  <div>
+                    <span className="block text-[10px] uppercase font-bold text-gray-400">Fat</span>
+                    <span className="text-xs font-bold text-[#2a2a2a]">{generatedRecipeResult.recipe.fatGrams}g</span>
+                  </div>
+                </div>
+
+                {/* Ingredients */}
+                <div>
+                  <h5 className="text-xs font-bold uppercase tracking-wider text-gray-700 mb-1.5">
+                    Ingredients ({generatedRecipeResult.recipe.ingredients.length})
+                  </h5>
+                  <ul className="text-xs space-y-1 max-h-36 overflow-y-auto p-2.5 bg-gray-50 rounded-xl border border-gray-100">
+                    {generatedRecipeResult.recipe.ingredients.map((ing: any, idx: number) => (
+                      <li key={idx} className="flex justify-between text-gray-700">
+                        <span>• {ing.name}</span>
+                        <span className="font-medium text-gray-500">{ing.quantity} {ing.unit}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Instructions */}
+                <div>
+                  <h5 className="text-xs font-bold uppercase tracking-wider text-gray-700 mb-1.5">
+                    Instructions
+                  </h5>
+                  <ol className="text-xs space-y-1.5 max-h-40 overflow-y-auto p-2.5 bg-gray-50 rounded-xl border border-gray-100 list-decimal list-inside text-gray-700">
+                    {generatedRecipeResult.recipe.instructions.map((step: string, idx: number) => (
+                      <li key={idx} className="leading-relaxed">
+                        <span className="font-medium text-gray-800">{step}</span>
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+
+                <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                  <button
+                    type="button"
+                    onClick={() => setGeneratedRecipeResult(null)}
+                    className="text-xs font-bold text-[#9333EA] hover:underline cursor-pointer"
+                  >
+                    &larr; Create another recipe
+                  </button>
+                  <Button onClick={() => setIsChefMiseModalOpen(false)}>
+                    Done
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

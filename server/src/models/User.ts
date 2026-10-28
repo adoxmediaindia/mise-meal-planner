@@ -13,6 +13,9 @@ export interface IUser extends Document {
   stripeCustomerId?: string;
   planGenerationsThisWeek?: number;
   lastPlanGenerationAt?: Date;
+  aiGenerationsThisWeek?: number;
+  lastAiGenerationAt?: Date;
+  aiUsageTimestamps?: Date[];
   favorites: mongoose.Types.ObjectId[];
   resetPasswordToken?: string;
   resetPasswordExpires?: Date;
@@ -45,6 +48,9 @@ const UserSchema = new Schema<IUser>(
     stripeCustomerId: { type: String },
     planGenerationsThisWeek: { type: Number, default: 0 },
     lastPlanGenerationAt: { type: Date },
+    aiGenerationsThisWeek: { type: Number, default: 0 },
+    lastAiGenerationAt: { type: Date },
+    aiUsageTimestamps: [{ type: Date }],
     favorites: [{ type: Schema.Types.ObjectId, ref: 'Recipe' }],
     resetPasswordToken: { type: String },
     resetPasswordExpires: { type: Date },

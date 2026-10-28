@@ -453,3 +453,97 @@
     "message": "Webhook event processed"
   }
   ```
+
+---
+
+## 7. AI Endpoints (Phase 2 OpenAI Integration)
+
+### 7.1 Leftover Recipe Generator
+- **Endpoint**: `POST /ai/leftover-recipe`
+- **Auth**: Required (`authenticate`)
+- **Rate Limit**: 15 requests / 10 minutes (`aiLimiter`)
+- **Quota**: 5 generations/week for Free tier, 50 generations/week for Pro tier
+- **Request Body**:
+  ```json
+  {
+    "ingredients": ["tomatoes", "garlic", "pasta", "olive oil"],
+    "maxTimeMinutes": 30,
+    "additionalNotes": "Kid-friendly dinner"
+  }
+  ```
+- **Response `200 OK`**:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "recipe": {
+        "title": "Rustic Tomato Garlic Pasta",
+        "slug": "rustic-tomato-garlic-pasta",
+        "description": "A quick and fragrant pasta dinner.",
+        "cuisine": "Italian",
+        "vibes": ["Speedy Meals", "Family Favs"],
+        "prepTimeMinutes": 10,
+        "cookTimeMinutes": 15,
+        "servings": 2,
+        "calories": 420,
+        "carbsGrams": 65,
+        "proteinGrams": 12,
+        "fatGrams": 14,
+        "ingredients": [
+          {
+            "name": "pasta",
+            "quantity": 200,
+            "unit": "g",
+            "aisle": "Pantry & Dry Goods",
+            "estimatedCost": 1.2
+          }
+        ],
+        "instructions": ["Boil pasta...", "Saute garlic and tomatoes..."],
+        "dietaryTags": ["Vegetarian"],
+        "allergens": ["Gluten"],
+        "equipmentNeeded": ["Hob Only"]
+      },
+      "isAiGenerated": true,
+      "fallback": false
+    }
+  }
+  ```
+- **Error Response `403 Forbidden`** (Quota Exceeded):
+  ```json
+  {
+    "success": false,
+    "error": "You have reached your weekly AI generation limit (5/5). Upgrade to Pro for 50 AI generations/week.",
+    "code": "UPGRADE_REQUIRED"
+  }
+  ```
+
+### 7.2 Meal Plan Intent Parser
+- **Endpoint**: `POST /ai/plan-intent`
+- **Auth**: Required (`authenticate`)
+- **Rate Limit**: 15 requests / 10 minutes (`aiLimiter`)
+- **Quota**: 5 generations/week for Free tier, 50 generations/week for Pro tier
+- **Request Body**:
+  ```json
+  {
+    "prompt": "I want high protein Mediterranean dinners from Monday to Wednesday, and quick comfort food on Thursday and Friday"
+  }
+  ```
+- **Response `200 OK`**:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "plan": {
+        "_id": "664fa9c...",
+        "user": "664fa9c...",
+        "householdSize": 2,
+        "estimatedCost": 42.50,
+        "dinners": [...],
+        "meals": [...]
+      },
+      "summary": "Tailored high protein Mediterranean meals early in the week with quick comfort favorites for the weekend.",
+      "isAiGenerated": true,
+      "fallback": false
+    }
+  }
+  ```

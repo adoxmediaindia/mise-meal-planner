@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { authenticate, requireAdmin } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
-import { authLimiter } from '../middleware/rateLimiter.js';
+import { authLimiter, aiLimiter } from '../middleware/rateLimiter.js';
 import * as authCtrl from '../controllers/authController.js';
 import * as prefCtrl from '../controllers/preferencesController.js';
 import * as recipeCtrl from '../controllers/recipesController.js';
@@ -11,6 +11,7 @@ import * as subCtrl from '../controllers/subscriptionController.js';
 import * as pantryCtrl from '../controllers/pantryController.js';
 import * as householdCtrl from '../controllers/householdController.js';
 import * as adminCtrl from '../controllers/adminController.js';
+import * as aiCtrl from '../controllers/aiController.js';
 
 const router = Router();
 
@@ -91,5 +92,21 @@ router.patch('/admin/users/:id/tier', authenticate, requireAdmin, validate(admin
 router.get('/admin/recipes', authenticate, requireAdmin, adminCtrl.getAdminRecipes);
 router.post('/admin/recipes', authenticate, requireAdmin, validate(adminCtrl.createRecipeSchema), adminCtrl.createAdminRecipe);
 router.patch('/admin/recipes/:id', authenticate, requireAdmin, validate(adminCtrl.updateRecipeSchema), adminCtrl.updateAdminRecipe);
+
+// 10. AI Assistant routes (Strict authenticate, aiLimiter, and validation)
+router.post(
+  '/ai/leftover-recipe',
+  authenticate,
+  aiLimiter,
+  validate(aiCtrl.leftoverRecipeSchema),
+  aiCtrl.generateLeftoverRecipe
+);
+router.post(
+  '/ai/plan-intent',
+  authenticate,
+  aiLimiter,
+  validate(aiCtrl.planIntentSchema),
+  aiCtrl.customizePlanWithIntent
+);
 
 export default router;

@@ -26,6 +26,7 @@ interface PlanContextType {
   editShoppingItem: (itemId: string, updates: any) => Promise<void>;
   deleteShoppingItem: (itemId: string) => Promise<void>;
   updatePreferences: (updates: Partial<IUserPreferences>, autoRegenerate?: boolean) => Promise<void>;
+  customizePlanWithIntent: (prompt: string) => Promise<any>;
 }
 
 const PlanContext = createContext<PlanContextType | undefined>(undefined);
@@ -303,6 +304,27 @@ export const PlanProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const customizePlanWithIntent = async (prompt: string) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const res = await api.customizePlanWithIntent(prompt);
+      if (res.data?.plan) {
+        setPlan(res.data.plan);
+      }
+      const shopRes = await api.getShoppingList();
+      if (shopRes.data) {
+        setShoppingList(shopRes.data);
+      }
+      return res.data;
+    } catch (err: any) {
+      setError(err.message || 'Failed to customize plan with AI');
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <PlanContext.Provider
       value={{
@@ -328,6 +350,7 @@ export const PlanProvider: React.FC<{ children: React.ReactNode }> = ({ children
         editShoppingItem,
         deleteShoppingItem,
         updatePreferences,
+        customizePlanWithIntent,
       }}
     >
       {children}

@@ -371,4 +371,30 @@ export const api = {
       method: 'PATCH',
       body: JSON.stringify(updates),
     }),
+
+  // AI Assistant
+  generateLeftoverRecipe: (payload: {
+    ingredients: string[];
+    cuisine?: string;
+    maxCookTimeMinutes?: number;
+    equipment?: string;
+    servings?: number;
+    additionalNotes?: string;
+  }) =>
+    request<{ success: boolean; data: any; isAiGenerated: boolean; fallback: boolean; note?: string }>(
+      '/ai/leftover-recipe',
+      {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      }
+    ),
+
+  customizePlanWithIntent: (prompt: string) =>
+    request<{ success: boolean; data: any; summary: string; isAiGenerated: boolean; fallback: boolean }>(
+      '/ai/plan-intent',
+      {
+        method: 'POST',
+        body: JSON.stringify({ prompt }),
+      }
+    ),
 };

@@ -38,3 +38,31 @@ export const authLimiter = rateLimit({
   },
   message: { success: false, error: 'Too many requests, please try again later.' },
 });
+
+/**
+ * Rate Limiter for AI endpoints (/api/v1/ai/*):
+ * Protects against rapid automated abuse and API credit exhaustion.
+ */
+export const aiLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000, // 10 minutes
+  max: () => {
+    if (process.env.AI_RATE_LIMIT_MAX) {
+      const custom = parseInt(process.env.AI_RATE_LIMIT_MAX, 10);
+      if (!isNaN(custom)) return custom;
+    }
+    return 15;
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => {
+    if (process.env.NODE_ENV === 'test' && req.headers['x-test-client-ip']) {
+      return req.headers['x-test-client-ip'] as string;
+    }
+    return (req as any).user?.id || req.ip || '127.0.0.1';
+  },
+  message: {
+    success: false,
+    error: 'Too many AI requests. Please wait a few minutes before trying again.',
+    code: 'RATE_LIMIT_EXCEEDED',
+  },
+});

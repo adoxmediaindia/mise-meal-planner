@@ -37,7 +37,7 @@ export class PlannerService {
    * Builds the MongoDB query filter strictly enforcing dietary needs and allergen exclusions.
    * ALLERGY EXCLUSIONS ARE MANDATORY AND MUST NEVER BE BYPASSED.
    */
-  public static buildSafetyQuery(preference: IPreference): Record<string, any> {
+  public static buildSafetyQuery(preference: Partial<IPreference>): Record<string, any> {
     const query: Record<string, any> = {};
 
     // 1. ALLERGY EXCLUSION FILTER (Strict $nin)
@@ -83,7 +83,7 @@ export class PlannerService {
    */
   public static async generateWeeklyPlan(
     userId: string,
-    preference: IPreference
+    preference: Partial<IPreference>
   ): Promise<IMealPlanDoc> {
     const baseQuery = this.buildSafetyQuery(preference);
     const candidateRecipes: IRecipeDoc[] = await Recipe.find(baseQuery);
@@ -130,7 +130,7 @@ export class PlannerService {
     }
 
     // Calculate estimated total grocery cost
-    const multiplier = SUPERMARKET_PRICE_MULTIPLIERS[preference.supermarket] || 1.0;
+    const multiplier = SUPERMARKET_PRICE_MULTIPLIERS[preference.supermarket || 'Aldi'] || 1.0;
     const sizeRatio = (preference.householdSize || 2) / 2;
 
     let baseCost = 0;
@@ -149,7 +149,7 @@ export class PlannerService {
       day: d.day,
       mealType: 'dinner',
       recipe: d.recipe,
-      servings: preference.householdSize,
+      servings: preference.householdSize || 2,
       isCooked: false,
     }));
 
@@ -157,9 +157,9 @@ export class PlannerService {
     if (plan) {
       plan.dinners = chosenDinners;
       plan.meals = chosenMeals;
-      plan.householdSize = preference.householdSize;
+      plan.householdSize = preference.householdSize || 2;
       plan.estimatedCost = totalEstimatedCost;
-      plan.budgetLimit = preference.weeklyBudget;
+      plan.budgetLimit = preference.weeklyBudget || 50;
       plan.weekStartDate = new Date();
       await plan.save();
     } else {
@@ -168,9 +168,9 @@ export class PlannerService {
         weekStartDate: new Date(),
         dinners: chosenDinners,
         meals: chosenMeals,
-        householdSize: preference.householdSize,
+        householdSize: preference.householdSize || 2,
         estimatedCost: totalEstimatedCost,
-        budgetLimit: preference.weeklyBudget,
+        budgetLimit: preference.weeklyBudget || 50,
       });
     }
 

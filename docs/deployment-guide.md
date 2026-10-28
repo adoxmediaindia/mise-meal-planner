@@ -27,6 +27,12 @@ flowchart LR
 | `MONGODB_URI` | Yes | `mongodb+srv://<user>:<password>@cluster0.xxxxx.mongodb.net/mise_meal_planner?retryWrites=true&w=majority` | MongoDB Atlas cluster connection string |
 | `JWT_SECRET` | Yes | `generate_with_crypto_random_bytes_64` | Secret key for signing session JWT tokens |
 | `CLIENT_URL` | Yes | `https://your-frontend.vercel.app` | Allowed CORS origin for cross-domain cookie exchange |
+| `OPENAI_API_KEY` | Optional | `sk-proj-...` | OpenAI secret key for AI leftover recipes & natural language planning |
+| `OPENAI_MODEL` | Optional | `gpt-4o-mini` | OpenAI model ID (default `gpt-4o-mini`) |
+| `OPENAI_TIMEOUT_MS` | Optional | `15000` | OpenAI request timeout in milliseconds |
+| `ENABLE_AI_FEATURES` | Optional | `true` | Toggle AI endpoints (defaults to true if key is present; falls back safely if false) |
+| `AI_RATE_LIMIT_MAX` | Optional | `15` | Max AI requests per user/IP per 10-minute window |
+| `FREE_TIER_WEEKLY_AI_QUERIES` | Optional | `5` | Weekly AI quota for free users (Pro tier has 50) |
 
 ### Frontend Application (Vercel)
 
