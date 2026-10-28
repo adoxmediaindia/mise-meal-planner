@@ -331,7 +331,7 @@ Respond ONLY with a valid JSON object matching this schema:
             systemInstruction: systemPrompt,
             responseMimeType: 'application/json',
             temperature: 0.7,
-            maxOutputTokens: 1500,
+            maxOutputTokens: 900,
           },
         },
         timeoutMs
