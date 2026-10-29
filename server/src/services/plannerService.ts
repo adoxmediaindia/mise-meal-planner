@@ -3,7 +3,7 @@ import { IPreference } from '../models/Preference.js';
 import { MealPlan, IMealPlanDoc, IDinnerSlot, IMealSlotDoc } from '../models/MealPlan.js';
 import { User } from '../models/User.js';
 import { EntitlementService } from './entitlementService.js';
-import { DayOfWeek, Supermarket, MealType } from '../types/index.js';
+import { DayOfWeek, Supermarket, MealType, DietaryNeed, Allergen } from '../types/index.js';
 
 // Supermarket cost multiplier based on real market grocery indices
 export const SUPERMARKET_PRICE_MULTIPLIERS: Record<Supermarket, number> = {
@@ -20,6 +20,85 @@ export const SUPERMARKET_PRICE_MULTIPLIERS: Record<Supermarket, number> = {
   Sprouts: 1.15,
 };
 
+// Strict Allergen Keyword Dictionary for Deterministic Server-Side Ingredient Auditing
+export const ALLERGEN_KEYWORDS: Record<Allergen, string[]> = {
+  Peanuts: ['peanut', 'groundnut', 'arachis'],
+  'Tree Nuts': ['almond', 'walnut', 'cashew', 'pecan', 'pistachio', 'hazelnut', 'macadamia', 'brazil nut'],
+  Dairy: [
+    'milk',
+    'cheese',
+    'butter',
+    'cream',
+    'yogurt',
+    'whey',
+    'ghee',
+    'casein',
+    'parmesan',
+    'cheddar',
+    'ricotta',
+    'mozzarella',
+    'paneer',
+    'feta',
+    'gouda',
+    'brie',
+    'halloumi',
+  ],
+  Eggs: ['egg', 'mayonnaise', 'aioli', 'albumin', 'meringue'],
+  Fish: ['fish', 'salmon', 'tuna', 'cod', 'anchovy', 'halibut', 'trout', 'sea bass', 'haddock', 'mackerel', 'sardine', 'fish sauce'],
+  Shellfish: ['shrimp', 'prawn', 'crab', 'lobster', 'clam', 'mussel', 'oyster', 'scallop', 'squid', 'calamari', 'octopus'],
+  Gluten: ['flour', 'wheat', 'bread', 'pasta', 'spaghetti', 'penne', 'barley', 'rye', 'couscous', 'seitan', 'semolina'],
+  Soy: ['soy', 'tofu', 'edamame', 'tempeh', 'miso'],
+  Sesame: ['sesame', 'tahini', 'halva'],
+};
+
+export const MEAT_KEYWORDS = [
+  'beef',
+  'pork',
+  'chicken',
+  'turkey',
+  'lamb',
+  'bacon',
+  'ham',
+  'sausage',
+  'prosciutto',
+  'pancetta',
+  'veal',
+  'duck',
+  'venison',
+  'steak',
+  'mince',
+  'gelatin',
+  'lard',
+  'chorizo',
+  'salami',
+  'pepperoni',
+];
+
+export const SEAFOOD_KEYWORDS = [
+  'fish',
+  'salmon',
+  'tuna',
+  'cod',
+  'shrimp',
+  'prawn',
+  'crab',
+  'lobster',
+  'anchovy',
+  'clam',
+  'mussel',
+  'oyster',
+  'calamari',
+  'squid',
+  'fish sauce',
+  'worcestershire',
+  'haddock',
+  'halibut',
+  'trout',
+  'sea bass',
+  'mackerel',
+  'sardine',
+];
+
 export class NoRecipesFoundError extends Error {
   public statusCode = 422;
   public code = 'NO_RECIPES_FOUND';
@@ -34,7 +113,7 @@ export class NoRecipesFoundError extends Error {
 
 export class PlannerService {
   /**
-   * Builds the MongoDB query filter strictly enforcing dietary needs and allergen exclusions.
+   * Builds the MongoDB query filter strictly enforcing dietary needs, allergen exclusions, and time limits.
    * ALLERGY EXCLUSIONS ARE MANDATORY AND MUST NEVER BE BYPASSED.
    */
   public static buildSafetyQuery(preference: Partial<IPreference>): Record<string, any> {
@@ -69,24 +148,114 @@ export class PlannerService {
    * Strictly validates that a recipe contains none of the user's excluded allergens
    */
   public static validateRecipeAllergySafety(
-    recipe: IRecipeDoc,
+    recipe: IRecipeDoc | any,
     allergies?: string[]
   ): boolean {
     if (!allergies || allergies.length === 0) return true;
     if (!recipe.allergens || recipe.allergens.length === 0) return true;
-    return !recipe.allergens.some((a) => allergies.includes(a));
+    return !recipe.allergens.some((a: string) => allergies.includes(a));
+  }
+
+  /**
+   * Deterministically validates that a recipe satisfies dietary requirements (Vegetarian, Vegan, Pescatarian)
+   * using ACTUAL recipe ingredients and supermarket aisles, not just its title or declared tags.
+   */
+  public static validateRecipeDietarySafety(
+    recipe: IRecipeDoc | any,
+    dietaryNeeds?: DietaryNeed[]
+  ): boolean {
+    if (!dietaryNeeds || dietaryNeeds.length === 0) return true;
+    const active = dietaryNeeds.filter((d) => d && d !== 'None');
+    if (active.length === 0) return true;
+
+    // 1. Check declared tags first
+    if (active.includes('Vegan')) {
+      if (!recipe.dietaryTags || !recipe.dietaryTags.includes('Vegan')) return false;
+    } else if (active.includes('Vegetarian')) {
+      if (
+        !recipe.dietaryTags ||
+        (!recipe.dietaryTags.includes('Vegetarian') && !recipe.dietaryTags.includes('Vegan'))
+      ) {
+        return false;
+      }
+    } else if (active.includes('Pescatarian')) {
+      if (
+        !recipe.dietaryTags ||
+        (!recipe.dietaryTags.includes('Pescatarian') &&
+          !recipe.dietaryTags.includes('Vegetarian') &&
+          !recipe.dietaryTags.includes('Vegan'))
+      ) {
+        return false;
+      }
+    }
+
+    // 2. Audit every single ingredient against meat/seafood keywords and prohibited aisles
+    if (!recipe.ingredients || !Array.isArray(recipe.ingredients)) return true;
+
+    for (const ing of recipe.ingredients) {
+      const lowerName = (ing.name || '').toLowerCase();
+      const aisle = ing.aisle;
+
+      // Vegetarian & Vegan: Absolutely NO meat, poultry, or seafood allowed
+      if (active.includes('Vegetarian') || active.includes('Vegan')) {
+        if (aisle === 'Meat & Seafood') return false;
+        if (MEAT_KEYWORDS.some((kw) => new RegExp(`\\b${kw}\\b`, 'i').test(lowerName))) return false;
+        if (SEAFOOD_KEYWORDS.some((kw) => new RegExp(`\\b${kw}\\b`, 'i').test(lowerName))) return false;
+      } else if (active.includes('Pescatarian')) {
+        // Pescatarian: Land meat prohibited
+        if (MEAT_KEYWORDS.some((kw) => new RegExp(`\\b${kw}\\b`, 'i').test(lowerName))) return false;
+      }
+
+      // Vegan: Dairy and egg ingredients prohibited
+      if (active.includes('Vegan')) {
+        const dairyEggKeywords = [...ALLERGEN_KEYWORDS.Dairy, ...ALLERGEN_KEYWORDS.Eggs];
+        if (dairyEggKeywords.some((kw) => new RegExp(`\\b${kw}\\b`, 'i').test(lowerName))) return false;
+      }
+    }
+
+    return true;
   }
 
   /**
    * Deterministically generates a weekly dinner plan matching the user's cooking days,
-   * vibes, budget, and household size.
+   * vibes, budget, household size, dietary needs, and strict time constraints.
    */
   public static async generateWeeklyPlan(
     userId: string,
-    preference: Partial<IPreference>
+    preference: Partial<IPreference>,
+    options?: {
+      strictMaxCookTimeMinutes?: number;
+      strictDietaryNeeds?: DietaryNeed[];
+      allowFewerMeals?: boolean;
+    }
   ): Promise<IMealPlanDoc> {
-    const baseQuery = this.buildSafetyQuery(preference);
-    const candidateRecipes: IRecipeDoc[] = await Recipe.find(baseQuery);
+    const basePref: any =
+      typeof (preference as any)?.toObject === 'function'
+        ? (preference as any).toObject()
+        : preference;
+
+    const effectiveDietaryNeeds = options?.strictDietaryNeeds || basePref.dietaryNeeds;
+    const effectiveMaxCookTime =
+      options?.strictMaxCookTimeMinutes !== undefined
+        ? options.strictMaxCookTimeMinutes
+        : basePref.maxCookTimeMinutes;
+
+    const effectivePref: Partial<IPreference> = {
+      ...basePref,
+      dietaryNeeds: effectiveDietaryNeeds,
+      maxCookTimeMinutes: effectiveMaxCookTime,
+    };
+
+    const baseQuery = this.buildSafetyQuery(effectivePref);
+    const rawCandidates: IRecipeDoc[] = await Recipe.find(baseQuery);
+
+    // Defense-in-depth: audit candidates strictly against allergen exclusions, ingredient-level dietary rules, and time limits
+    const candidateRecipes = rawCandidates.filter((r) => {
+      if (!this.validateRecipeAllergySafety(r, effectivePref.allergies)) return false;
+      if (!this.validateRecipeDietarySafety(r, effectivePref.dietaryNeeds)) return false;
+      if (effectivePref.maxCookTimeMinutes && r.cookTimeMinutes > effectivePref.maxCookTimeMinutes) return false;
+      return true;
+    });
 
     if (candidateRecipes.length === 0) {
       throw new NoRecipesFoundError(
@@ -97,8 +266,8 @@ export class PlannerService {
     // Score recipes based on matching user's selected vibes
     const scoredRecipes = candidateRecipes.map((recipe) => {
       let score = 0;
-      if (preference.vibes && preference.vibes.length > 0) {
-        for (const vibe of preference.vibes) {
+      if (effectivePref.vibes && effectivePref.vibes.length > 0) {
+        for (const vibe of effectivePref.vibes) {
           if (recipe.vibes.includes(vibe)) score += 3;
         }
       }
@@ -109,15 +278,19 @@ export class PlannerService {
     scoredRecipes.sort((a, b) => b.score - a.score + (Math.random() - 0.5));
 
     const cookingDays: DayOfWeek[] =
-      preference.cookingDays && preference.cookingDays.length > 0
-        ? preference.cookingDays
+      effectivePref.cookingDays && effectivePref.cookingDays.length > 0
+        ? effectivePref.cookingDays
         : ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+
+    // If there are fewer matching recipes than cooking days, offer fewer valid meals rather than silently returning violating meals!
+    const targetDays = candidateRecipes.length < cookingDays.length
+      ? cookingDays.slice(0, candidateRecipes.length)
+      : cookingDays;
 
     const chosenDinners: IDinnerSlot[] = [];
     const usedRecipeIds = new Set<string>();
 
-    for (const day of cookingDays) {
-      // Pick next best available unused recipe
+    for (const day of targetDays) {
       const nextMatch = scoredRecipes.find((item) => !usedRecipeIds.has(item.recipe._id.toString()));
       const selected = nextMatch ? nextMatch.recipe : scoredRecipes[0].recipe;
       usedRecipeIds.add(selected._id.toString());
@@ -127,6 +300,30 @@ export class PlannerService {
         recipe: selected._id as any,
         isCooked: false,
       });
+    }
+
+    // Strict Post-Selection Server-Side Audit:
+    // Verify that every single selected dinner strictly satisfies all constraints before persistence
+    for (const dinner of chosenDinners) {
+      const rec = candidateRecipes.find((r) => r._id.toString() === dinner.recipe.toString());
+      if (!rec) {
+        throw new Error(`Integrity error: selected recipe ${dinner.recipe} was not found among safe candidates.`);
+      }
+      if (effectivePref.maxCookTimeMinutes && rec.cookTimeMinutes > effectivePref.maxCookTimeMinutes) {
+        throw new Error(
+          `Integrity error: recipe "${rec.title}" cook time (${rec.cookTimeMinutes}m) exceeds strict limit of ${effectivePref.maxCookTimeMinutes}m.`
+        );
+      }
+      if (!this.validateRecipeDietarySafety(rec, effectivePref.dietaryNeeds)) {
+        throw new Error(
+          `Integrity error: recipe "${rec.title}" does not satisfy dietary restrictions (${effectivePref.dietaryNeeds}).`
+        );
+      }
+      if (!this.validateRecipeAllergySafety(rec, effectivePref.allergies)) {
+        throw new Error(
+          `Integrity error: recipe "${rec.title}" contains excluded allergens.`
+        );
+      }
     }
 
     // Calculate estimated total grocery cost
@@ -203,10 +400,16 @@ export class PlannerService {
 
         let replacementRecipe: IRecipeDoc | null = null;
         if (targetRecipeId) {
-          replacementRecipe = await Recipe.findOne({ _id: targetRecipeId, ...baseQuery });
-          if (!replacementRecipe) {
-            throw new NoRecipesFoundError('Selected replacement recipe does not satisfy active allergy/diet filters.');
+          const target = await Recipe.findOne({ _id: targetRecipeId, ...baseQuery });
+          if (
+            !target ||
+            !this.validateRecipeAllergySafety(target, preference.allergies) ||
+            !this.validateRecipeDietarySafety(target, preference.dietaryNeeds) ||
+            (preference.maxCookTimeMinutes && target.cookTimeMinutes > preference.maxCookTimeMinutes)
+          ) {
+            throw new NoRecipesFoundError('Selected replacement recipe does not satisfy active allergy/diet/time filters.');
           }
+          replacementRecipe = target;
         } else {
           // Find a random alternative not currently in the plan
           const currentRecipeIds = plan.dinners.map((d) => d.recipe.toString());
@@ -215,14 +418,30 @@ export class PlannerService {
             ...baseQuery,
           });
 
-          if (alternatives.length > 0) {
-            replacementRecipe = alternatives[Math.floor(Math.random() * alternatives.length)];
+          const safeAlternatives = alternatives.filter(
+            (r) =>
+              this.validateRecipeAllergySafety(r, preference.allergies) &&
+              this.validateRecipeDietarySafety(r, preference.dietaryNeeds) &&
+              (!preference.maxCookTimeMinutes || r.cookTimeMinutes <= preference.maxCookTimeMinutes)
+          );
+
+          if (safeAlternatives.length > 0) {
+            replacementRecipe = safeAlternatives[Math.floor(Math.random() * safeAlternatives.length)];
           } else {
             // Fallback: pick any compliant recipe different from the current one
-            replacementRecipe = await Recipe.findOne({
+            const remainingCandidates = await Recipe.find({
               _id: { $ne: dinnerSlot.recipe },
               ...baseQuery,
             });
+            const safeRemaining = remainingCandidates.filter(
+              (r) =>
+                this.validateRecipeAllergySafety(r, preference.allergies) &&
+                this.validateRecipeDietarySafety(r, preference.dietaryNeeds) &&
+                (!preference.maxCookTimeMinutes || r.cookTimeMinutes <= preference.maxCookTimeMinutes)
+            );
+            if (safeRemaining.length > 0) {
+              replacementRecipe = safeRemaining[0];
+            }
           }
         }
 
@@ -319,12 +538,19 @@ export class PlannerService {
     const recipe = await Recipe.findById(data.recipeId);
     if (!recipe) throw new Error('Recipe not found.');
 
-    // Strictly validate allergy safety
+    // Strictly validate allergy & dietary safety
     if (!this.validateRecipeAllergySafety(recipe, preference.allergies)) {
       throw new Error(
         `Cannot add recipe "${recipe.title}". It contains allergens (${recipe.allergens.join(
           ', '
         )}) excluded by your profile.`
+      );
+    }
+    if (!this.validateRecipeDietarySafety(recipe, preference.dietaryNeeds)) {
+      throw new Error(
+        `Cannot add recipe "${recipe.title}". It does not satisfy your dietary preferences (${preference.dietaryNeeds.join(
+          ', '
+        )}).`
       );
     }
 
@@ -338,9 +564,7 @@ export class PlannerService {
       isCooked: false,
     };
 
-    plan.meals.push(newSlot);
-
-    // If adding a dinner, sync with dinners array if no dinner for that day exists or replace it
+    // If adding a dinner, sync with dinners array and meals array
     if (data.mealType === 'dinner') {
       const existingDinner = plan.dinners.find((d) => d.day === data.day);
       if (existingDinner) {
@@ -353,6 +577,19 @@ export class PlannerService {
           isCooked: false,
         });
       }
+
+      const existingMealDinner = plan.meals.find(
+        (m) => m.day === data.day && m.mealType === 'dinner'
+      );
+      if (existingMealDinner) {
+        existingMealDinner.recipe = recipe._id as any;
+        existingMealDinner.servings = data.servings || plan.householdSize || 2;
+        existingMealDinner.isCooked = false;
+      } else {
+        plan.meals.push(newSlot);
+      }
+    } else {
+      plan.meals.push(newSlot);
     }
 
     await plan.populate('meals.recipe');

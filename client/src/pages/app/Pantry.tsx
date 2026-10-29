@@ -4,6 +4,7 @@ import { api } from '../../services/api.js';
 import { IPantryItem, IPantryRecipeMatch, SupermarketAisle } from '../../types/index.js';
 import { Button } from '../../components/common/Button.js';
 import { AllergyBanner } from '../../components/common/AllergyBanner.js';
+import { RecipeImage } from '../../components/common/RecipeImage.js';
 import {
   Package,
   Plus,
@@ -771,7 +772,7 @@ export const Pantry: React.FC = () => {
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-3 min-w-0">
                         {recipe.image && (
-                          <img
+                          <RecipeImage
                             src={recipe.image}
                             alt={recipe.title}
                             className="w-16 h-16 rounded-2xl object-cover flex-shrink-0 border border-gray-100"

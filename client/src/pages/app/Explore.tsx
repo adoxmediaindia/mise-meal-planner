@@ -4,6 +4,7 @@ import { api } from '../../services/api.js';
 import { useAuth } from '../../context/AuthContext.js';
 import { IRecipe, Cuisine, MealVibe, DietaryNeed } from '../../types/index.js';
 import { Search, Clock, Flame, Heart } from 'lucide-react';
+import { RecipeImage } from '../../components/common/RecipeImage.js';
 
 export const Explore: React.FC = () => {
   const { user, toggleFavoriteInState } = useAuth();
@@ -285,7 +286,7 @@ export const Explore: React.FC = () => {
                   className="bg-white rounded-[22px] p-3 border border-gray-100 shadow-[0_4px_16px_rgba(42,42,42,0.05)] hover:shadow-md transition-all flex flex-col justify-between group relative"
                 >
                   <div className="relative w-full h-32 rounded-[16px] overflow-hidden bg-gray-100 mb-2.5">
-                    <img
+                    <RecipeImage
                       src={r.image}
                       alt={r.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform"

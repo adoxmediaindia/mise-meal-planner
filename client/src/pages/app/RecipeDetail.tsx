@@ -6,6 +6,7 @@ import { usePlan } from '../../context/PlanContext.js';
 import { IRecipe, DayOfWeek, MealType } from '../../types/index.js';
 import { AllergyBanner } from '../../components/common/AllergyBanner.js';
 import { Button } from '../../components/common/Button.js';
+import { RecipeImage } from '../../components/common/RecipeImage.js';
 import { ArrowLeft, Heart, ThumbsUp, ThumbsDown, CheckCircle, Plus } from 'lucide-react';
 
 export const RecipeDetail: React.FC = () => {
@@ -127,7 +128,7 @@ export const RecipeDetail: React.FC = () => {
 
       {/* Hero Banner with floating buttons & title overlay */}
       <div className="relative w-full h-[320px] sm:h-[360px] overflow-hidden rounded-b-[36px] bg-gray-900 shadow-md">
-        <img
+        <RecipeImage
           src={recipe.image}
           alt={recipe.title}
           className="w-full h-full object-cover opacity-90"

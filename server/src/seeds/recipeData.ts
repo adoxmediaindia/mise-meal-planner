@@ -572,7 +572,7 @@ export const SEED_RECIPES: IRecipe[] = [
     title: 'Mediterranean Falafel Pitta Pockets',
     slug: 'mediterranean-falafel-pitta-pockets',
     description: 'Crispy herb falafels nestled in wholemeal pitta with crisp cucumber, tomatoes, and tahini drizzle.',
-    image: 'https://images.unsplash.com/photo-1593001874117-c99c800e3eb7?auto=format&fit=crop&w=800&q=80',
+    image: 'https://images.unsplash.com/photo-1529006557810-274b9b2fc783?auto=format&fit=crop&w=800&q=80',
     cuisine: 'Mediterranean',
     vibes: ['Speedy Meals', 'Healthy Comfort'],
     prepTimeMinutes: 10,

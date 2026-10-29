@@ -439,6 +439,114 @@ Respond ONLY with a valid JSON object matching this schema:
   }
 
   /**
+   * Deterministically extracts dietary needs, strict cook time limits, vibes,
+   * cuisines, and allergies from natural language user prompts.
+   * Serves as both a standalone deterministic parser and an authoritative validation guard for AI models.
+   */
+  public static parseIntentConstraints(prompt: string): {
+    dietaryNeeds: DietaryNeed[];
+    maxCookTimeMinutes?: number;
+    vibes: MealVibe[];
+    cuisines: Cuisine[];
+    allergies: Allergen[];
+  } {
+    const text = prompt.toLowerCase();
+    const dietaryNeeds: DietaryNeed[] = [];
+    let maxCookTimeMinutes: number | undefined = undefined;
+    const vibes: MealVibe[] = [];
+    const cuisines: Cuisine[] = [];
+    const allergies: Allergen[] = [];
+
+    // 1. Dietary Needs Extraction
+    if (/\b(?:vegan|plant-?based)\b/i.test(text)) {
+      dietaryNeeds.push('Vegan');
+    } else if (/\b(?:vegetarian|veggie|meat-?free|meatless|no meat)\b/i.test(text)) {
+      dietaryNeeds.push('Vegetarian');
+    } else if (/\b(?:pescatarian|pescetarian)\b/i.test(text)) {
+      dietaryNeeds.push('Pescatarian');
+    }
+
+    // 2. Strict Time Limit Extraction
+    // Check "under X minutes" / "less than X minutes" -> strictly less than X (<= X - 1)
+    const underMatch = text.match(/(?:under|less than|fewer than)\s*(\d+)\s*(?:min|minute)s?/i);
+    if (underMatch && underMatch[1]) {
+      const parsed = parseInt(underMatch[1], 10);
+      if (!isNaN(parsed) && parsed > 0) {
+        maxCookTimeMinutes = parsed - 1; // e.g. "under 25 minutes" -> max 24 minutes
+      }
+    }
+
+    // Check "in X minutes or less" / "max X minutes" / "within X minutes" / "in X minutes"
+    const maxMatch =
+      text.match(/(?:max(?:imum)?|within|at most|up to)\s*(\d+)\s*(?:min|minute)s?/i) ||
+      text.match(/(\d+)\s*(?:min|minute)s?\s*(?:or less|max)/i) ||
+      text.match(/(?:ready in|cook(?:ing)? time(?: of)?|in)\s*(\d+)\s*(?:min|minute)s?/i);
+    if (maxMatch && maxMatch[1]) {
+      const parsed = parseInt(maxMatch[1], 10);
+      if (!isNaN(parsed) && parsed > 0) {
+        if (maxCookTimeMinutes === undefined || parsed < maxCookTimeMinutes) {
+          maxCookTimeMinutes = parsed;
+        }
+      }
+    }
+
+    // 3. Meal Vibes Extraction
+    if (/\b(?:quick|fast|speedy|express|rapid|20-?min|15-?min|10-?min)\b/i.test(text)) {
+      vibes.push('Speedy Meals');
+    }
+    if (/\b(?:low cal(?:orie)?|light)\b/i.test(text)) {
+      vibes.push('Low Calorie');
+    }
+    if (/\b(?:family|kid-?friendly|crowd-?pleaser)\b/i.test(text)) {
+      vibes.push('Family Favs');
+    }
+    if (/\b(?:healthy comfort|comfort food|hearty)\b/i.test(text)) {
+      vibes.push('Healthy Comfort');
+    }
+    if (/\b(?:fakeaway|takeaway|takeout)\b/i.test(text)) {
+      vibes.push('Fakeaway');
+    }
+    if (/\b(?:gut|digestion|fiber-rich|gut friendly)\b/i.test(text)) {
+      vibes.push('Gut Friendly');
+    }
+    if (/\b(?:protein|high protein|protein-packed)\b/i.test(text)) {
+      vibes.push('Protein Packed');
+    }
+    if (/\b(?:british|pub|staple)\b/i.test(text)) {
+      vibes.push('British Staples');
+    }
+
+    // 4. Cuisines
+    const supportedCuisines: Cuisine[] = ['Italian', 'Asian', 'Mexican', 'Indian', 'Mediterranean', 'British'];
+    for (const c of supportedCuisines) {
+      if (new RegExp(`\\b${c}\\b`, 'i').test(text)) {
+        cuisines.push(c);
+      }
+    }
+
+    // 5. Allergens
+    if (/\b(?:dairy-?free|no dairy|no milk|no cheese|zero dairy)\b/i.test(text)) allergies.push('Dairy');
+    if (/\b(?:gluten-?free|no gluten|no wheat|zero gluten)\b/i.test(text)) allergies.push('Gluten');
+    if (/\b(?:nut-?free|no nuts|no peanuts)\b/i.test(text)) {
+      allergies.push('Peanuts');
+      allergies.push('Tree Nuts');
+    }
+    if (/\b(?:egg-?free|no eggs)\b/i.test(text)) allergies.push('Eggs');
+    if (/\b(?:fish-?free|no fish)\b/i.test(text)) allergies.push('Fish');
+    if (/\b(?:shellfish-?free|no shellfish|no shrimp)\b/i.test(text)) allergies.push('Shellfish');
+    if (/\b(?:soy-?free|no soy)\b/i.test(text)) allergies.push('Soy');
+    if (/\b(?:sesame-?free|no sesame)\b/i.test(text)) allergies.push('Sesame');
+
+    return {
+      dietaryNeeds,
+      maxCookTimeMinutes,
+      vibes,
+      cuisines,
+      allergies,
+    };
+  }
+
+  /**
    * Parses natural language plan intent with Google Gemini to parameterize the deterministic weekly meal planner.
    */
   public static async customizePlanWithIntent(
@@ -462,12 +570,41 @@ Respond ONLY with a valid JSON object matching this schema:
     // If AI feature is disabled or unconfigured, fallback immediately to deterministic planner
     if (!isAIFeatureEnabled()) {
       await reservation.rollback();
-      const plan = await PlannerService.generateWeeklyPlan(userId, preference);
+      const deterministic = AiService.parseIntentConstraints(userPrompt);
+      const customizedPref: Partial<IPreference> = {
+        ...preference,
+        dietaryNeeds: deterministic.dietaryNeeds.length > 0 ? deterministic.dietaryNeeds : preference.dietaryNeeds,
+        maxCookTimeMinutes:
+          deterministic.maxCookTimeMinutes !== undefined
+            ? deterministic.maxCookTimeMinutes
+            : preference.maxCookTimeMinutes,
+        allergies: Array.from(new Set([...(preference.allergies || []), ...deterministic.allergies])) as Allergen[],
+        vibes: (deterministic.vibes.length > 0 ? deterministic.vibes : preference.vibes) as MealVibe[],
+      };
+
+      const plan = await PlannerService.generateWeeklyPlan(userId, customizedPref);
       await ShoppingListService.generateOrUpdateShoppingList(userId, plan._id.toString());
       const populated = await MealPlan.findById(plan._id).populate('dinners.recipe').populate('meals.recipe');
+
+      const requestedDays = preference.cookingDays || ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+      const scheduledCount = populated!.dinners.length;
+      const constraintNotes: string[] = [];
+      const activeDiets = customizedPref.dietaryNeeds?.filter((d) => d !== 'None');
+      if (activeDiets && activeDiets.length > 0) constraintNotes.push(activeDiets.join(', '));
+      if (customizedPref.maxCookTimeMinutes)
+        constraintNotes.push(`under ${customizedPref.maxCookTimeMinutes + 1} minutes`);
+      if (customizedPref.vibes && customizedPref.vibes.length > 0) constraintNotes.push(customizedPref.vibes[0]);
+      const desc = constraintNotes.join(', ');
+
+      let summary = `Customized your weekly dinners with ${scheduledCount} matching meals.`;
+      if (scheduledCount < requestedDays.length) {
+        const scheduledDays = populated!.dinners.map((d) => d.day).join(', ');
+        summary = `Found ${scheduledCount} recipes matching your strict criteria (${desc}). Scheduled meals on ${scheduledDays}. Catalog has no further unique meals meeting all strict constraints.`;
+      }
+
       return {
         plan: populated!,
-        summary: 'AI customization is currently offline. Generated plan using your default saved preferences.',
+        summary,
         isAiGenerated: false,
         fallback: true,
       };
@@ -481,14 +618,25 @@ Respond ONLY with a valid JSON object matching this schema:
       const daysList = preference.cookingDays?.join(', ') || 'Monday, Tuesday, Wednesday, Thursday, Friday';
 
       const systemPrompt = `You are the meal plan intent parser for Mise Meal Planner.
-Given the user's natural language request, extract desired meal vibes and cuisines per day for these active cooking days: ${daysList}.
+Given the user's natural language request, extract desired dietary requirements, maximum cooking times, meal vibes, and cuisines per day for these active cooking days: ${daysList}.
+
+Supported Dietary Needs: "Vegetarian", "Vegan", "Pescatarian", "None".
 Supported Meal Vibes: "Speedy Meals", "Low Calorie", "Family Favs", "Healthy Comfort", "Fakeaway", "Gut Friendly", "Protein Packed", "British Staples".
 Supported Cuisines: "Italian", "Asian", "Mexican", "Indian", "Mediterranean", "British".
+Supported Allergens: "Gluten", "Dairy", "Peanuts", "Tree Nuts", "Eggs", "Fish", "Shellfish", "Soy", "Sesame".
+
+CRITICAL TIME LIMIT INSTRUCTION:
+If the user specifies "under X minutes" or "less than X minutes", maxCookTimeMinutes must be strictly less than X (at most X - 1, e.g. "under 25 minutes" -> 24).
+If the user specifies "in X minutes" or "X minutes or less", maxCookTimeMinutes is X.
 
 Respond ONLY with a JSON object matching this schema:
 {
-  "summary": string (1 sentence explaining your interpretation of their week),
-  "preferredVibes": string[] (up to 3 overall vibes),
+  "summary": string (1-2 sentences explaining your interpretation of their week),
+  "dietaryNeeds": ("Vegetarian" | "Vegan" | "Pescatarian" | "None")[],
+  "maxCookTimeMinutes": number or null,
+  "preferredVibes": string[],
+  "cuisines": string[],
+  "allergies": string[],
   "dayOverrides": {
     "[DayName]": {
       "vibe": string,
@@ -515,21 +663,66 @@ Respond ONLY with a JSON object matching this schema:
       if (!content) throw new Error('Gemini returned empty plan intent.');
 
       const parsed = JSON.parse(AiService.cleanJson(content));
-      const summary = parsed.summary || 'Custom plan generated based on your notes.';
 
-      // Apply interpreted vibes to a temporary preference object without destroying user defaults
+      // Deterministic validation & merging to guarantee strict safety boundary
+      const deterministic = AiService.parseIntentConstraints(userPrompt);
+
+      let finalDietaryNeeds: DietaryNeed[] = preference.dietaryNeeds || ['None'];
+      if (deterministic.dietaryNeeds.length > 0) {
+        finalDietaryNeeds = deterministic.dietaryNeeds;
+      } else if (parsed.dietaryNeeds && Array.isArray(parsed.dietaryNeeds) && parsed.dietaryNeeds.length > 0) {
+        const valid = parsed.dietaryNeeds.filter((d: string) =>
+          ['Vegetarian', 'Vegan', 'Pescatarian', 'None'].includes(d)
+        );
+        if (valid.length > 0) finalDietaryNeeds = valid;
+      }
+
+      let finalMaxCookTime: number | undefined = preference.maxCookTimeMinutes;
+      if (deterministic.maxCookTimeMinutes !== undefined) {
+        finalMaxCookTime = deterministic.maxCookTimeMinutes;
+      } else if (
+        parsed.maxCookTimeMinutes &&
+        typeof parsed.maxCookTimeMinutes === 'number' &&
+        parsed.maxCookTimeMinutes > 0
+      ) {
+        finalMaxCookTime = parsed.maxCookTimeMinutes;
+      }
+
+      const finalAllergies: Allergen[] = Array.from(
+        new Set([...(preference.allergies || []), ...deterministic.allergies, ...(parsed.allergies || [])])
+      ) as Allergen[];
+
+      const finalVibes: MealVibe[] = Array.from(
+        new Set([...deterministic.vibes, ...(parsed.preferredVibes || []), ...(preference.vibes || [])])
+      ).slice(0, 3) as MealVibe[];
+
       const customizedPref: Partial<IPreference> = {
         ...preference,
-        vibes: (parsed.preferredVibes && parsed.preferredVibes.length > 0 ? parsed.preferredVibes : preference.vibes) as MealVibe[],
+        dietaryNeeds: finalDietaryNeeds,
+        maxCookTimeMinutes: finalMaxCookTime,
+        allergies: finalAllergies,
+        vibes: finalVibes,
       };
 
-      // Generate the weekly plan using the deterministic engine (guarantees allergen safety, pricing, and catalog recipes!)
+      // Generate the weekly plan using the deterministic engine (strictly enforces allergen safety, ingredient-level dietary requirements, and strict time limits!)
       const plan = await PlannerService.generateWeeklyPlan(userId, customizedPref);
       await ShoppingListService.generateOrUpdateShoppingList(userId, plan._id.toString());
 
       await reservation.commit();
 
       const populated = await MealPlan.findById(plan._id).populate('dinners.recipe').populate('meals.recipe');
+
+      const requestedDays = preference.cookingDays || ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+      const scheduledCount = populated!.dinners.length;
+
+      let summary = parsed.summary || 'Custom plan generated based on your notes.';
+      if (!parsed.summary && scheduledCount < requestedDays.length) {
+        const scheduledDays = populated!.dinners.map((d) => d.day).join(', ');
+        const activeDiets = finalDietaryNeeds.filter((d) => d !== 'None').join(', ');
+        const timeLimitStr = finalMaxCookTime ? `under ${finalMaxCookTime + 1} minutes` : '';
+        const constraintDetails = [activeDiets, timeLimitStr].filter(Boolean).join(' and ');
+        summary = `Found ${scheduledCount} recipes matching your strict criteria (${constraintDetails}). Scheduled dinners on ${scheduledDays}. Catalog has no further unique meals meeting all strict constraints.`;
+      }
 
       return {
         plan: populated!,
@@ -538,15 +731,45 @@ Respond ONLY with a JSON object matching this schema:
         fallback: false,
       };
     } catch (err: any) {
-      console.warn(`[AiService] Gemini plan intent parsing failed: ${err.message}. Generating default plan.`);
+      console.warn(`[AiService] Gemini plan intent parsing failed: ${err.message}. Generating deterministic plan.`);
       await reservation.rollback();
-      const plan = await PlannerService.generateWeeklyPlan(userId, preference);
+
+      const deterministic = AiService.parseIntentConstraints(userPrompt);
+      const customizedPref: Partial<IPreference> = {
+        ...preference,
+        dietaryNeeds: deterministic.dietaryNeeds.length > 0 ? deterministic.dietaryNeeds : preference.dietaryNeeds,
+        maxCookTimeMinutes:
+          deterministic.maxCookTimeMinutes !== undefined
+            ? deterministic.maxCookTimeMinutes
+            : preference.maxCookTimeMinutes,
+        allergies: Array.from(new Set([...(preference.allergies || []), ...deterministic.allergies])) as Allergen[],
+        vibes: (deterministic.vibes.length > 0 ? deterministic.vibes : preference.vibes) as MealVibe[],
+      };
+
+      const plan = await PlannerService.generateWeeklyPlan(userId, customizedPref);
       await ShoppingListService.generateOrUpdateShoppingList(userId, plan._id.toString());
       const populated = await MealPlan.findById(plan._id).populate('dinners.recipe').populate('meals.recipe');
-      const safeReason = err.message ? err.message.replace(/AIza[0-9A-Za-z-_]{35}/g, '[REDACTED]').slice(0, 150) : undefined;
+
+      const requestedDays = preference.cookingDays || ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+      const scheduledCount = populated!.dinners.length;
+
+      const constraintNotes: string[] = [];
+      const activeDiets = customizedPref.dietaryNeeds?.filter((d) => d !== 'None');
+      if (activeDiets && activeDiets.length > 0) constraintNotes.push(activeDiets.join(', '));
+      if (customizedPref.maxCookTimeMinutes)
+        constraintNotes.push(`ready in under ${customizedPref.maxCookTimeMinutes + 1} minutes`);
+      if (customizedPref.vibes && customizedPref.vibes.length > 0) constraintNotes.push(customizedPref.vibes[0]);
+      const desc = constraintNotes.join(', ');
+
+      let summary = `Customized your weekly dinners with ${scheduledCount} ${desc} meals.`;
+      if (scheduledCount < requestedDays.length) {
+        const scheduledDays = populated!.dinners.map((d) => d.day).join(', ');
+        summary = `Found ${scheduledCount} recipes matching your strict criteria (${desc}). Scheduled dinners on ${scheduledDays}. Catalog has no further unique meals meeting all constraints.`;
+      }
+
       return {
         plan: populated!,
-        summary: `Generated plan using your default saved preferences (AI: ${safeReason || 'unavailable'}).`,
+        summary,
         isAiGenerated: false,
         fallback: true,
       };

@@ -4,6 +4,7 @@ import { usePlan } from '../../context/PlanContext.js';
 import { useAuth } from '../../context/AuthContext.js';
 import { Button } from '../../components/common/Button.js';
 import { AllergyBanner } from '../../components/common/AllergyBanner.js';
+import { RecipeImage } from '../../components/common/RecipeImage.js';
 import {
   Clock,
   Users,
@@ -570,7 +571,7 @@ export const PlanOverview: React.FC = () => {
                     to={`/app/recipes/${recipe._id}`}
                     className="flex-shrink-0 w-20 h-20 rounded-[18px] overflow-hidden bg-gray-100 shadow-xs"
                   >
-                    <img
+                    <RecipeImage
                       src={recipe.image}
                       alt={recipe.title}
                       className="w-full h-full object-cover hover:scale-105 transition-transform"
@@ -757,7 +758,7 @@ export const PlanOverview: React.FC = () => {
                     onClick={() => handleSelectSwap(r._id)}
                     className="flex items-center gap-3.5 p-3 rounded-2xl border border-gray-100 hover:border-[#9ed034] hover:bg-[#9ed034]/10 cursor-pointer transition-all"
                   >
-                    <img src={r.image} alt={r.title} className="w-14 h-14 rounded-xl object-cover flex-shrink-0" />
+                    <RecipeImage src={r.image} alt={r.title} className="w-14 h-14 rounded-xl object-cover flex-shrink-0" />
                     <div className="flex-1 min-w-0">
                       <h4 className="font-sans font-bold text-sm text-[#2a2a2a] truncate">{r.title}</h4>
                       <p className="text-xs text-[#888]">{r.cuisine} • {r.cookTimeMinutes} mins • {r.calories} kcal</p>
@@ -874,7 +875,7 @@ export const PlanOverview: React.FC = () => {
                       onClick={() => handleAddMealSubmit(r._id)}
                       className="flex items-center gap-3 p-2.5 rounded-2xl border border-gray-100 hover:border-[#9ed034] hover:bg-[#9ed034]/10 cursor-pointer transition-all"
                     >
-                      <img src={r.image} alt={r.title} className="w-12 h-12 rounded-xl object-cover flex-shrink-0" />
+                      <RecipeImage src={r.image} alt={r.title} className="w-12 h-12 rounded-xl object-cover flex-shrink-0" />
                       <div className="flex-1 min-w-0">
                         <h4 className="font-sans font-bold text-xs text-[#2a2a2a] truncate">{r.title}</h4>
                         <p className="text-[11px] text-[#888]">
