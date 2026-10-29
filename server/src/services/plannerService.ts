@@ -341,16 +341,24 @@ export class PlannerService {
     const totalEstimatedCost = Math.round(baseCost * multiplier * 100) / 100;
 
     // Check if an existing meal plan exists for this user and overwrite, or create new
-    const chosenMeals: IMealSlotDoc[] = chosenDinners.map((d, idx) => ({
-      id: `slot_${idx}_${d.day.toLowerCase()}_dinner`,
-      day: d.day,
-      mealType: 'dinner',
-      recipe: d.recipe,
-      servings: preference.householdSize || 2,
-      isCooked: false,
-    }));
+    const existingPlan = await MealPlan.findOne({ user: userId });
+    const nonDinnerMeals = existingPlan
+      ? (existingPlan.meals || []).filter((m) => m.mealType !== 'dinner')
+      : [];
 
-    let plan = await MealPlan.findOne({ user: userId });
+    const chosenMeals: IMealSlotDoc[] = [
+      ...nonDinnerMeals,
+      ...chosenDinners.map((d, idx) => ({
+        id: `slot_${idx}_${d.day.toLowerCase()}_dinner`,
+        day: d.day,
+        mealType: 'dinner' as MealType,
+        recipe: d.recipe,
+        servings: preference.householdSize || 2,
+        isCooked: false,
+      })),
+    ];
+
+    let plan = existingPlan;
     if (plan) {
       plan.dinners = chosenDinners;
       plan.meals = chosenMeals;

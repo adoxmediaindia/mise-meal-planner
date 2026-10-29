@@ -716,7 +716,7 @@ Respond ONLY with a JSON object matching this schema:
       const scheduledCount = populated!.dinners.length;
 
       let summary = parsed.summary || 'Custom plan generated based on your notes.';
-      if (!parsed.summary && scheduledCount < requestedDays.length) {
+      if (scheduledCount < requestedDays.length) {
         const scheduledDays = populated!.dinners.map((d) => d.day).join(', ');
         const activeDiets = finalDietaryNeeds.filter((d) => d !== 'None').join(', ');
         const timeLimitStr = finalMaxCookTime ? `under ${finalMaxCookTime + 1} minutes` : '';

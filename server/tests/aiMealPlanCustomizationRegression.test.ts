@@ -128,19 +128,65 @@ describe('Regression Suite: Production AI Meal Plan Customization & Strict Const
     });
   });
 
-  describe('3. Production Live Test Prompt: Vegetarian and Ready in Under 25 Minutes', () => {
-    it('executes AI plan customization and guarantees strict < 25 min and 100% vegetarian ingredients across all days', async () => {
-      // Mock Gemini intent parser output to simulate realistic AI response
+  describe('3. Production Live Test Prompt: Vegetarian and Ready in Under 25 Minutes (Before & After Comparison)', () => {
+    it('compares plan before and after submitting: strictly enforces vegetarian, < 25 min across all five weekdays, and updates both dinners and meals arrays', async () => {
+      // Step A: Setup existing plan BEFORE AI Customization with non-vegetarian and >25 min recipes
+      const fishTacos = await Recipe.findOne({ slug: 'crispy-air-fryer-fish-tacos' }); // Pescatarian, 12 min
+      const chicken = await Recipe.findOne({ slug: 'creamy-tuscan-garlic-chicken' }); // Non-veg, 20 min
+      const cottagePie = await Recipe.findOne({ slug: 'hearty-lentil-veggie-cottage-pie' }); // Veg, 30 min (exceeds 25m)
+      const penne = await Recipe.findOne({ slug: 'roasted-butternut-squash-sage-pasta' }); // Veg, 25 min (exceeds <25m)
+      const dahl = await Recipe.findOne({ slug: 'red-lentil-coconut-dahl' }); // Veg, 20 min
+
+      expect(fishTacos).toBeDefined();
+      expect(chicken).toBeDefined();
+      expect(cottagePie).toBeDefined();
+      expect(penne).toBeDefined();
+
+      const initialDinners = [
+        { day: 'Monday', recipe: fishTacos!._id, isCooked: false },
+        { day: 'Tuesday', recipe: penne!._id, isCooked: false }, // 25 min violation
+        { day: 'Wednesday', recipe: dahl!._id, isCooked: false },
+        { day: 'Thursday', recipe: cottagePie!._id, isCooked: false }, // 30 min violation
+        { day: 'Friday', recipe: chicken!._id, isCooked: false }, // Meat violation
+      ];
+
+      await MealPlan.findOneAndUpdate(
+        { user: testUserId },
+        {
+          $set: {
+            dinners: initialDinners,
+            meals: initialDinners.map((d, i) => ({
+              id: `slot_${i}_${d.day.toLowerCase()}_dinner`,
+              day: d.day,
+              mealType: 'dinner',
+              recipe: d.recipe,
+              servings: 2,
+              isCooked: false,
+            })),
+          },
+        },
+        { upsert: true }
+      );
+
+      // Verify BEFORE plan has violations
+      const beforeRes = await request(app).get('/api/v1/plan/current').set('Cookie', authCookie);
+      expect(beforeRes.body.data.dinners.length).toBe(5);
+      const beforeTitles = beforeRes.body.data.dinners.map((d: any) => d.recipe.title);
+      expect(beforeTitles).toContain('Crispy Air Fryer Fish Tacos');
+      expect(beforeTitles).toContain('Creamy Tuscan Garlic Chicken');
+      expect(beforeTitles).toContain('Hearty Lentil & Veggie Cottage Pie');
+
+      // Step B: Submit AI Customization: "Make my dinners vegetarian, quick, and ready in under 25 minutes."
       const isEnabledSpy = vi.spyOn(geminiConfig, 'isAIFeatureEnabled').mockReturnValue(true);
       const getClientSpy = vi.spyOn(geminiConfig, 'getGeminiClient').mockReturnValue({
         models: {
           generateContent: vi.fn().mockResolvedValue({
             text: JSON.stringify({
-              summary: 'Tailored 5 quick vegetarian dinners ready in under 25 minutes.',
+              summary: 'Tailored 5 quick vegetarian dinners ready in under 25 minutes for the week.',
               dietaryNeeds: ['Vegetarian'],
               maxCookTimeMinutes: 24,
               preferredVibes: ['Speedy Meals'],
-              cuisines: ['Indian', 'Mediterranean', 'Italian'],
+              cuisines: ['Indian', 'Mediterranean', 'Mexican'],
               allergies: [],
               dayOverrides: {},
             }),
@@ -148,7 +194,6 @@ describe('Regression Suite: Production AI Meal Plan Customization & Strict Const
         },
       } as any);
 
-      // Reset AI usage quota for test user
       await User.findByIdAndUpdate(testUserId, {
         $set: { aiGenerationsThisWeek: 0, aiUsageTimestamps: [] },
       });
@@ -162,29 +207,30 @@ describe('Regression Suite: Production AI Meal Plan Customization & Strict Const
 
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
-      expect(res.body.data.dinners.length).toBe(5);
 
+      // Step C: Verify AFTER plan - all five active cooking days are present and compliant
+      const weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
       const dinners = res.body.data.dinners;
+      expect(dinners.length).toBe(5);
+      expect(dinners.map((d: any) => d.day)).toEqual(weekdays);
 
       for (const dinner of dinners) {
         const recipe = dinner.recipe;
 
-        // 1. Strict Under-25-Minute Constraint: must be <= 24 minutes
+        // Requirement 1 & 2: strictly under 25 minutes and vegetarian
         expect(recipe.cookTimeMinutes).toBeLessThan(25);
         expect(recipe.cookTimeMinutes).toBeLessThanOrEqual(24);
 
-        // Explicitly assert that 25-minute and 30-minute meals were EXCLUDED
-        expect(recipe.title).not.toBe('Roasted Butternut Squash & Sage Penne'); // 25 min
-        expect(recipe.title).not.toBe('Hearty Lentil & Veggie Cottage Pie'); // 30 min
-        expect(recipe.title).not.toBe('Spinach & Ricotta Stuffed Shells'); // 25 min
-        expect(recipe.title).not.toBe('Creamy Mushroom & Thyme Risotto'); // 25 min
-
-        // 2. Strict Vegetarian Constraint
         expect(
           recipe.dietaryTags.includes('Vegetarian') || recipe.dietaryTags.includes('Vegan')
         ).toBe(true);
 
-        // Audit every single ingredient of the recipe for zero meat & zero seafood
+        expect(recipe.title).not.toBe('Roasted Butternut Squash & Sage Penne'); // 25 min
+        expect(recipe.title).not.toBe('Hearty Lentil & Veggie Cottage Pie'); // 30 min
+        expect(recipe.title).not.toBe('Spinach & Ricotta Stuffed Shells'); // 25 min
+        expect(recipe.title).not.toBe('Crispy Air Fryer Fish Tacos'); // Seafood
+        expect(recipe.title).not.toBe('Creamy Tuscan Garlic Chicken'); // Meat
+
         for (const ing of recipe.ingredients) {
           expect(ing.aisle).not.toBe('Meat & Seafood');
           const lower = ing.name.toLowerCase();
@@ -197,15 +243,114 @@ describe('Regression Suite: Production AI Meal Plan Customization & Strict Const
         }
       }
 
+      // Step D: Verify meals array is also synchronized for all five days
+      const meals = res.body.data.meals;
+      expect(meals.length).toBe(5);
+      expect(meals.map((m: any) => m.day)).toEqual(weekdays);
+      for (const meal of meals) {
+        expect(meal.recipe.cookTimeMinutes).toBeLessThan(25);
+        expect(
+          meal.recipe.dietaryTags.includes('Vegetarian') || meal.recipe.dietaryTags.includes('Vegan')
+        ).toBe(true);
+      }
+
       isEnabledSpy.mockRestore();
       getClientSpy.mockRestore();
     });
   });
 
-  describe('4. Insufficient Matching Recipes Handling', () => {
-    it('offers fewer valid meals rather than silently returning meals that violate constraints', async () => {
-      // Test when strict constraints match only a very small subset
-      // In seed data: recipes that are Vegetarian and cookTime < 10 minutes: only Mediterranean Greek Salad (3m)
+  describe('4. Persistence Across Page Refresh & Grocery-List Synchronization for All Five Weekdays', () => {
+    it('persists the customized 5-weekday plan strictly following constraints after simulated page refresh', async () => {
+      const planRes = await request(app).get('/api/v1/plan/current').set('Cookie', authCookie);
+
+      expect(planRes.status).toBe(200);
+      expect(planRes.body.success).toBe(true);
+      const weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+      expect(planRes.body.data.dinners.length).toBe(5);
+      expect(planRes.body.data.dinners.map((d: any) => d.day)).toEqual(weekdays);
+
+      for (const dinner of planRes.body.data.dinners) {
+        const recipe = dinner.recipe;
+        expect(recipe.cookTimeMinutes).toBeLessThan(25);
+        expect(
+          recipe.dietaryTags.includes('Vegetarian') || recipe.dietaryTags.includes('Vegan')
+        ).toBe(true);
+      }
+
+      // Also verify persisted meals array
+      expect(planRes.body.data.meals.length).toBe(5);
+      expect(planRes.body.data.meals.map((m: any) => m.day)).toEqual(weekdays);
+    });
+
+    it('synchronizes the shopping list with zero meat or seafood and matches the customized 5-weekday plan', async () => {
+      const shopRes = await request(app).get('/api/v1/shopping-list').set('Cookie', authCookie);
+
+      expect(shopRes.status).toBe(200);
+      expect(shopRes.body.success).toBe(true);
+      expect(shopRes.body.data.items.length).toBeGreaterThan(0);
+
+      const meatAisleItems = shopRes.body.data.items.filter(
+        (item: any) => item.aisle === 'Meat & Seafood'
+      );
+      expect(meatAisleItems.length).toBe(0);
+
+      for (const item of shopRes.body.data.items) {
+        if (!item.isCustom) {
+          const l = item.name.toLowerCase();
+          for (const kw of MEAT_KEYWORDS) {
+            expect(new RegExp(`\\b${kw}\\b`, 'i').test(l)).toBe(false);
+          }
+          for (const kw of SEAFOOD_KEYWORDS) {
+            expect(new RegExp(`\\b${kw}\\b`, 'i').test(l)).toBe(false);
+          }
+        }
+      }
+    });
+  });
+
+  describe('5. Insufficient Matching Recipes Handling & Honest Limitations', () => {
+    it('honestly explains limitation in summary when AI is enabled but matching recipes < requested cooking days', async () => {
+      const isEnabledSpy = vi.spyOn(geminiConfig, 'isAIFeatureEnabled').mockReturnValue(true);
+      const getClientSpy = vi.spyOn(geminiConfig, 'getGeminiClient').mockReturnValue({
+        models: {
+          generateContent: vi.fn().mockResolvedValue({
+            text: JSON.stringify({
+              summary: 'Planned ultra-fast meals under 10 minutes.',
+              dietaryNeeds: ['Vegetarian'],
+              maxCookTimeMinutes: 9,
+              preferredVibes: ['Speedy Meals'],
+              cuisines: [],
+              allergies: [],
+              dayOverrides: {},
+            }),
+          }),
+        },
+      } as any);
+
+      await User.findByIdAndUpdate(testUserId, {
+        $set: { aiGenerationsThisWeek: 0, aiUsageTimestamps: [] },
+      });
+
+      const res = await request(app)
+        .post('/api/v1/ai/plan-intent')
+        .set('Cookie', authCookie)
+        .send({
+          prompt: 'Make my dinners vegetarian and ready in under 10 minutes',
+        });
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      // Only 1 recipe matches: Mediterranean Greek Salad (3m)
+      expect(res.body.data.dinners.length).toBe(1);
+      // Limitation is honestly communicated even when Gemini supplied an initial summary
+      expect(res.body.summary).toContain('Found 1 recipes matching your strict criteria');
+      expect(res.body.summary).toContain('Catalog has no further unique meals');
+
+      isEnabledSpy.mockRestore();
+      getClientSpy.mockRestore();
+    });
+
+    it('offers fewer valid meals rather than silently returning meals that violate constraints in fallback', async () => {
       const isEnabledSpy = vi.spyOn(geminiConfig, 'isAIFeatureEnabled').mockReturnValue(false);
 
       const res = await request(app)
@@ -219,17 +364,14 @@ describe('Regression Suite: Production AI Meal Plan Customization & Strict Const
       expect(res.body.success).toBe(true);
 
       const dinners = res.body.data.dinners;
-      // There is only 1 vegetarian recipe with cookTime < 10 (Greek Salad: 3m)
       expect(dinners.length).toBe(1);
       expect(dinners[0].recipe.cookTimeMinutes).toBeLessThan(10);
-      // Explains honestly in the summary
       expect(res.body.summary).toContain('Found 1 recipes matching your strict criteria');
 
       isEnabledSpy.mockRestore();
     });
 
     it('honestly rejects and informs user when 0 matching recipes exist without returning invalid meals', async () => {
-      // Impossible constraint: Vegan and under 2 minutes
       await expect(
         PlannerService.generateWeeklyPlan(testUserId, {
           cookingDays: ['Monday', 'Tuesday'],
@@ -237,49 +379,6 @@ describe('Regression Suite: Production AI Meal Plan Customization & Strict Const
           maxCookTimeMinutes: 1,
         })
       ).rejects.toThrow(/No recipes found matching your active dietary preferences/);
-    });
-  });
-
-  describe('5. Shopping List Synchronization & Plan Persistence', () => {
-    it('synchronizes the shopping list to strictly match the newly customized vegetarian plan', async () => {
-      const shopRes = await request(app).get('/api/v1/shopping-list').set('Cookie', authCookie);
-
-      expect(shopRes.status).toBe(200);
-      expect(shopRes.body.success).toBe(true);
-      expect(shopRes.body.data.items.length).toBeGreaterThan(0);
-
-      // Verify no Meat & Seafood aisle items in the shopping list
-      const meatAisleItems = shopRes.body.data.items.filter(
-        (item: any) => item.aisle === 'Meat & Seafood'
-      );
-      expect(meatAisleItems.length).toBe(0);
-
-      // Verify all items belong to recipes in the plan
-      for (const item of shopRes.body.data.items) {
-        if (!item.isCustom) {
-          const l = item.name.toLowerCase();
-          for (const kw of MEAT_KEYWORDS) {
-            expect(new RegExp(`\\b${kw}\\b`, 'i').test(l)).toBe(false);
-          }
-        }
-      }
-    });
-
-    it('persists the customized meal plan and shopping list across re-fetching / simulated refresh', async () => {
-      const planRes = await request(app).get('/api/v1/plan/current').set('Cookie', authCookie);
-
-      expect(planRes.status).toBe(200);
-      expect(planRes.body.success).toBe(true);
-      expect(planRes.body.data.dinners.length).toBeGreaterThanOrEqual(1);
-
-      // Every persisted dinner recipe still satisfies under 25 min and vegetarian
-      for (const dinner of planRes.body.data.dinners) {
-        expect(dinner.recipe.cookTimeMinutes).toBeLessThan(25);
-        expect(
-          dinner.recipe.dietaryTags.includes('Vegetarian') ||
-            dinner.recipe.dietaryTags.includes('Vegan')
-        ).toBe(true);
-      }
     });
   });
 

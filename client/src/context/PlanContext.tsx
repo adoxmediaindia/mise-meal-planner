@@ -309,12 +309,19 @@ export const PlanProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setError(null);
     try {
       const res = await api.customizePlanWithIntent(prompt);
-      const newPlan = res.data?.plan || res.data;
-      if (newPlan) {
+      const newPlan = (res as any)?.data?.plan || (res as any)?.data?.data || (res as any)?.data || (res as any)?.plan || res;
+      if (newPlan && (newPlan.dinners || newPlan.meals)) {
         setPlan(newPlan);
       }
-      const shopRes = await api.getShoppingList();
-      if (shopRes.data) {
+      // Re-fetch current plan and shopping list to guarantee 100% database synchronization
+      const [currentPlanRes, shopRes] = await Promise.all([
+        api.getCurrentPlan().catch(() => ({ data: null })),
+        api.getShoppingList().catch(() => ({ data: null })),
+      ]);
+      if (currentPlanRes?.data) {
+        setPlan(currentPlanRes.data);
+      }
+      if (shopRes?.data) {
         setShoppingList(shopRes.data);
       }
       return res;
