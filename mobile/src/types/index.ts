@@ -1,3 +1,77 @@
+export type OnboardingLanguage = 'en' | 'de' | 'sv' | 'nl' | 'pt' | 'es' | 'fr';
+
+export type AgeRange = '24 and under' | '25-34' | '35-44' | '45-54' | '55+';
+
+export type PrimaryGoal =
+  | 'Meal prep for the week'
+  | 'Find super simple recipes'
+  | 'Feed myself'
+  | 'Feed my family';
+
+export type CookingBarrier =
+  | 'Lack of time'
+  | 'Too tired after work'
+  | 'I find cooking difficult'
+  | 'I struggle for inspiration';
+
+export type ShoppingSavingsConfidence =
+  | 'Definitely'
+  | 'Most likely'
+  | 'Somewhat'
+  | 'Not really';
+
+export type UsualCookingTime =
+  | '15–30 min'
+  | '30–45 min'
+  | '45–60 min'
+  | '60+ min';
+
+export type ReferralSource =
+  | 'Instagram'
+  | 'TikTok'
+  | 'YouTube'
+  | 'Facebook'
+  | 'Word of mouth'
+  | 'Google Play';
+
+export type CountryCode = 'US' | 'EU' | 'GB' | 'AU' | 'CA' | 'NZ' | 'BR' | 'IN';
+export type CurrencyCode = 'USD' | 'EUR' | 'GBP' | 'AUD' | 'CAD' | 'NZD' | 'BRL' | 'INR';
+
+export interface CountryOption {
+  code: CountryCode;
+  name: string;
+  currency: CurrencyCode;
+  symbol: string;
+  flag: string;
+}
+
+export type TrialReminderPreference = '1_day_before' | '2_days_before';
+
+export interface IOnboardingData {
+  preferredLanguage?: OnboardingLanguage;
+  name?: string;
+  ageRange?: AgeRange;
+  primaryGoal?: PrimaryGoal;
+  cookingBarrier?: CookingBarrier;
+  shoppingSavingsConfidence?: ShoppingSavingsConfidence;
+  usualCookingTime?: UsualCookingTime;
+  referralSource?: ReferralSource;
+  countryCode?: CountryCode;
+  countryName?: string;
+  currencyCode?: CurrencyCode;
+  householdSize?: number;
+  cookingDays?: DayOfWeek[];
+  weeklyBudget?: number;
+  weeklyBudgetCurrency?: CurrencyCode;
+  mealMoods?: string[];
+  dietaryPreferences?: string[];
+  allergies?: string[];
+  appliances?: string[];
+  trialReminderPreference?: TrialReminderPreference;
+  onboardingStep?: number;
+  onboardingCompleted?: boolean;
+}
+
 export type DietaryNeed = 'Vegetarian' | 'Vegan' | 'Pescatarian' | 'None';
 
 export type Allergen =
@@ -15,7 +89,9 @@ export type KitchenEquipment =
   | 'Air Fryer'
   | 'Slow Cooker'
   | 'Hob Only'
+  | 'Stovetop'
   | 'Oven'
+  | 'Microwave'
   | 'Blender'
   | 'Instant Pot';
 
@@ -59,7 +135,41 @@ export type Supermarket =
   | 'Whole Foods'
   | "Trader Joe's"
   | 'Food Lion'
-  | 'Sprouts';
+  | 'Sprouts'
+  | 'Blinkit'
+  | 'Zepto'
+  | 'Instamart'
+  | 'BigBasket'
+  | 'DMart'
+  | "Nature's Basket"
+  | 'Reliance Fresh'
+  | 'Tesco'
+  | "Sainsbury's"
+  | 'Asda'
+  | 'Morrisons'
+  | 'Lidl'
+  | 'Waitrose'
+  | 'M&S'
+  | 'Carrefour'
+  | 'E.Leclerc'
+  | 'REWE'
+  | 'Edeka'
+  | 'Mercadona'
+  | 'Albert Heijn'
+  | 'Loblaws'
+  | 'No Frills'
+  | 'Metro'
+  | 'Sobeys'
+  | 'Woolworths'
+  | 'Coles'
+  | 'IGA'
+  | 'Countdown'
+  | "Pak'nSave"
+  | 'New World'
+  | 'Pão de Açúcar'
+  | 'Extra'
+  | 'Assaí'
+  | (string & {});
 
 export type SupermarketAisle =
   | 'Fresh Produce'
@@ -250,6 +360,9 @@ export interface IUserPreferences {
   equipment: KitchenEquipment[];
   vibes: MealVibe[];
   maxCookTimeMinutes?: number;
+  countryCode?: CountryCode;
+  countryName?: string;
+  currencyCode?: CurrencyCode;
 }
 
 export interface IUser {
@@ -261,4 +374,47 @@ export interface IUser {
   subscriptionStatus: 'active' | 'trial' | 'cancelled';
   favorites?: string[];
   token?: string;
+  preferredLanguage?: OnboardingLanguage;
+  ageRange?: AgeRange;
+  primaryGoal?: PrimaryGoal;
+  cookingBarrier?: CookingBarrier;
+  shoppingSavingsConfidence?: ShoppingSavingsConfidence;
+  usualCookingTime?: UsualCookingTime;
+  referralSource?: ReferralSource;
+  countryCode?: CountryCode;
+  countryName?: string;
+  currencyCode?: CurrencyCode;
+  householdSize?: number;
+  cookingDays?: DayOfWeek[];
+  weeklyBudget?: number;
+  weeklyBudgetCurrency?: CurrencyCode;
+  mealMoods?: string[];
+  dietaryPreferences?: string[];
+  allergies?: string[];
+  appliances?: string[];
+  trialReminderPreference?: TrialReminderPreference;
+  onboardingStep?: number;
+  onboardingCompleted?: boolean;
+}
+
+export interface IAiLeftoverResponse {
+  recipe: IRecipe;
+  isAiGenerated: boolean;
+  fallback: boolean;
+  note?: string;
+}
+
+export interface ISubscriptionUsage {
+  aiQuotaUsed: number;
+  aiQuotaLimit: number;
+  resetDate?: string;
+}
+
+export interface IInvoice {
+  id: string;
+  amount: number;
+  currency: string;
+  status: string;
+  date: string;
+  pdfUrl?: string;
 }

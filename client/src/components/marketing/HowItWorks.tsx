@@ -36,7 +36,7 @@ export const HowItWorks: React.FC = () => {
           <p>
             {t(
               'how.sub',
-              'No spreadsheets, no scrolling recipe blogs. Just tell mise a little about you and it does the planning.'
+              'No spreadsheets, no scrolling recipe blogs. Just tell Meltto a little about you and it does the planning.'
             )}
           </p>
         </div>

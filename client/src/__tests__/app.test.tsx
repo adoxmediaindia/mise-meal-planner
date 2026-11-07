@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { LanguageProvider } from '../context/LanguageContext.js';
@@ -13,7 +13,7 @@ import { StatsSection } from '../components/marketing/StatsSection.js';
 import { ForgotPassword } from '../pages/auth/ForgotPassword.js';
 import { Login } from '../pages/auth/Login.js';
 
-describe('Mise Client UI Components', () => {
+describe('Meltto Client UI Components', () => {
   it('renders AllergyBanner with mandatory safety notice', () => {
     render(
       <BrowserRouter>
@@ -22,7 +22,7 @@ describe('Mise Client UI Components', () => {
     );
 
     expect(screen.getByText(/Important Allergy & Safety Disclaimer/i)).toBeInTheDocument();
-    expect(screen.getByText(/mise is a meal-planning tool, not an allergen-safety certification service/i)).toBeInTheDocument();
+    expect(screen.getByText(/(meltto|mise) is a meal-planning tool, not an allergen-safety certification service/i)).toBeInTheDocument();
   });
 
   it('renders Button component with primary style and text', () => {
@@ -46,7 +46,7 @@ describe('Mise Client UI Components', () => {
     expect(screen.getByLabelText(/Get it on Google Play/i)).toHaveAttribute('href', expect.stringContaining('play.google.com'));
   });
 
-  it('renders Nav with "Get the app" linking to /auth/login for unauthenticated users', () => {
+  it('renders Nav with "Get the app" linking to /auth/login for unauthenticated users', async () => {
     render(
       <BrowserRouter>
         <LanguageProvider>
@@ -57,10 +57,12 @@ describe('Mise Client UI Components', () => {
       </BrowserRouter>
     );
 
-    const getAppLinks = screen.getAllByRole('link', { name: /Get the app/i });
-    expect(getAppLinks.length).toBeGreaterThan(0);
-    getAppLinks.forEach((link) => {
-      expect(link).toHaveAttribute('href', '/auth/login');
+    await waitFor(() => {
+      const getAppLinks = screen.getAllByRole('link', { name: /Get the app/i });
+      expect(getAppLinks.length).toBeGreaterThan(0);
+      getAppLinks.forEach((link) => {
+        expect(link).toHaveAttribute('href', '/auth/login');
+      });
     });
   });
 
@@ -77,7 +79,7 @@ describe('Mise Client UI Components', () => {
     expect(screen.getByText(/typical weekly saving\*/i)).toBeInTheDocument();
   });
 
-  it('renders Login page with visible Forgot Password link', () => {
+  it('renders Login page with visible Forgot Password link', async () => {
     render(
       <BrowserRouter>
         <AuthProvider>
@@ -86,9 +88,11 @@ describe('Mise Client UI Components', () => {
       </BrowserRouter>
     );
 
-    const forgotLink = screen.getByRole('link', { name: /Forgot password\?/i });
-    expect(forgotLink).toBeInTheDocument();
-    expect(forgotLink).toHaveAttribute('href', '/auth/forgot-password');
+    await waitFor(() => {
+      const forgotLink = screen.getByRole('link', { name: /Forgot password\?/i });
+      expect(forgotLink).toBeInTheDocument();
+      expect(forgotLink).toHaveAttribute('href', '/auth/forgot-password');
+    });
   });
 
   it('renders ForgotPassword page in recovery request mode', () => {

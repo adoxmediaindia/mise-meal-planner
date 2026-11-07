@@ -2,8 +2,8 @@
   "lang": "de",
   "label": "Deutsch",
   "meta": {
-    "title": "mise · App zur Essensplanung | Wöchentliche Speisepläne, Rezepte & Essensvorbereitung",
-    "description": "mise ist eine App zur wöchentlichen Essensplanung, mit Rezepten, Tipps zur Essenszubereitung und zur Vorratshaltung. Erstellen Sie einen individuellen Speiseplan, holen Sie sich Rezeptideen und erstellen Sie eine intelligente Einkaufsliste für Ihren Supermarkt."
+    "title": "Meltto · App zur Essensplanung | Wöchentliche Speisepläne, Rezepte & Essensvorbereitung",
+    "description": "Meltto ist eine App zur wöchentlichen Essensplanung, mit Rezepten, Tipps zur Essenszubereitung und zur Vorratshaltung. Erstellen Sie einen individuellen Speiseplan, holen Sie sich Rezeptideen und erstellen Sie eine intelligente Einkaufsliste für Ihren Supermarkt."
   },
   "regional": {
     "marqueeStores": [
@@ -33,10 +33,10 @@
     "toggleMenu": "Menü ein-/ausblenden"
   },
   "hero": {
-    "eyebrow": "🥗 Willkommen bei mise",
+    "eyebrow": "🥗 Willkommen bei Meltto",
     "titleLead": "Iss gut,",
     "titleAccent": "Mach dir weniger Stress.",
-    "sub": "mise ist ein Planer für die wöchentliche Essensplanung und Essensvorbereitung. Planen Sie Ihre Abendessen ganz nach Ihrem Budget, Ihren Gelüsten und dem, was Sie bereits in Ihrer Küche vorrätig haben. Stellen Sie in etwa fünf Minuten Ihren Wochenplan und eine intelligente Einkaufsliste zusammen.",
+    "sub": "Meltto ist ein Planer für die wöchentliche Essensplanung und Essensvorbereitung. Planen Sie Ihre Abendessen ganz nach Ihrem Budget, Ihren Gelüsten und dem, was Sie bereits in Ihrer Küche vorrätig haben. Stellen Sie in etwa fünf Minuten Ihren Wochenplan und eine intelligente Einkaufsliste zusammen.",
     "chipList": "Eine Einkaufsliste",
     "chipBudget": "Unter dem Budget",
     "appStoreSmall": "Download auf der",
@@ -72,7 +72,7 @@
   "showcaseA": {
     "eyebrow": "Individuell gestaltet",
     "title": "Ein Plan, der ganz auf Sie zugeschnitten ist – keine Standardvorlage",
-    "body": "mise berücksichtigt Ihr Budget, die Anzahl der Personen, die Sie versorgen, Ihre Ernährungsbedürfnisse und die Stimmung, auf die Sie diese Woche Lust haben. Jeder Plan ist ganz auf Sie zugeschnitten.",
+    "body": "Meltto berücksichtigt Ihr Budget, die Anzahl der Personen, die Sie versorgen, Ihre Ernährungsbedürfnisse und die Stimmung, auf die Sie diese Woche Lust haben. Jeder Plan ist ganz auf Sie zugeschnitten.",
     "tick1": "Preisbewusste Mahlzeiten, die Ihr wöchentliches Budget schonen",
     "tick2": "Für Vegetarier, Veganer, Pescatarier, Menschen mit Glutenunverträglichkeit und mehr geeignet – ohne Bedenken hinsichtlich Ernährung und Allergien",
     "tick3": "Geräte für Ihre Küche – von der Heißluftfritteuse über reine Kochfelder bis hin zum Slow Cooker",
@@ -131,7 +131,7 @@
   "reviewsSection": {
     "eyebrow": "★★★★★ Bei Hobbyköchen sehr beliebt",
     "title": "Echte Wochentage – alles geregelt",
-    "sub": "Ein paar Worte von Menschen, die sich von „mise“ ihre Woche planen lassen.",
+    "sub": "Ein paar Worte von Menschen, die sich von „Meltto“ ihre Woche planen lassen.",
     "r1Title": "Ok, hat das tatsächlich geholfen??",
     "r1Body": "Hätte nicht gedacht, dass ich noch eine App brauche, aber meine Ausgaben für Lebensmittel sind definitiv gesunken. Keine Ahnung, vielleicht 25–30 Euro? Meine Frau schickt mir jetzt die Einkaufsliste, damit ich nicht einfach durch den Aldi laufe und Sachen hinzufüge.",
     "r1User": "aldishopper_tx",
@@ -154,12 +154,12 @@
   "faqSection": {
     "eyebrow": "Häufig gestellte Fragen",
     "title": "Gut zu wissen",
-    "q1": "Welche Supermärkte werden von mise unterstützt?",
+    "q1": "Welche Supermärkte werden von Meltto unterstützt?",
     "a1": "Die App basiert auf großen Supermarktketten wie Aldi, Lidl, EDEKA, REWE, Kaufland, Netto und weiteren und unterstützt Filialen in mehreren Ländern. Ihr Plan und Ihre Einkaufsliste werden auf das von Ihnen ausgewählte Geschäft abgestimmt.",
     "q2": "Wird auf Ernährungsbedürfnisse und Allergien Rücksicht genommen?",
-    "a2": "Ja. Legen Sie Ihre Ernährungspräferenzen fest, z. B. vegetarisch, vegan, pescetarisch oder glutenfrei, und geben Sie Allergene an, die vermieden werden sollen. Bitte überprüfen Sie vor dem Kochen stets die Zutatenangaben. mise kann keine Garantie für die Allergenfreiheit übernehmen.",
-    "q3": "Wie viel kostet die Mise?",
-    "a3": "mise ist ein Abonnement. Sie können die App erkunden und sich mit ihrer Funktionsweise vertraut machen. Der volle Planungsumfang wird durch ein Abonnement freigeschaltet, das über den App Store oder Google Play verwaltet wird. Sie können das Abonnement jederzeit über Ihr Store-Konto kündigen.",
+    "a2": "Ja. Legen Sie Ihre Ernährungspräferenzen fest, z. B. vegetarisch, vegan, pescetarisch oder glutenfrei, und geben Sie Allergene an, die vermieden werden sollen. Bitte überprüfen Sie vor dem Kochen stets die Zutatenangaben. Meltto kann keine Garantie für die Allergenfreiheit übernehmen.",
+    "q3": "Wie viel kostet Meltto?",
+    "a3": "Meltto ist ein Abonnement. Sie können die App erkunden und sich mit ihrer Funktionsweise vertraut machen. Der volle Planungsumfang wird durch ein Abonnement freigeschaltet, das über den App Store oder Google Play verwaltet wird. Sie können das Abonnement jederzeit über Ihr Store-Konto kündigen.",
     "q4": "Muss ich jede Mahlzeit aus meinem Ernährungsplan selbst zubereiten?",
     "a4": "Aber natürlich nicht. Planen Sie so viele oder so wenige Übernachtungen ein, wie Sie möchten – bis zu sieben. Tauschen Sie jede Mahlzeit aus, auf die Sie keine Lust haben, stellen Sie die gesamte Woche neu zusammen oder kochen Sie einfach nur die Gerichte, die Ihnen schmecken. Ihre Einkaufsliste wird entsprechend aktualisiert.",
     "q5": "Werde ich dadurch wirklich Geld sparen?",
@@ -181,7 +181,7 @@
     "privacy": "Datenschutzerklärung",
     "terms": "Nutzungsbedingungen",
     "contact": "Kontakt",
-    "rights": "TEGS Labs Ltd. Alle Rechte vorbehalten.",
+    "rights": "Meltto. Alle Rechte vorbehalten.",
     "madeIn": "Hergestellt mit 🥬 in Großbritannien · *Die Ersparnisse variieren je nach Haushalt und Geschäft."
   }
 }

@@ -1,0 +1,330 @@
+import {
+  IMealPlan,
+  IPantryItem,
+  IPantryRecipeMatch,
+  IRecipe,
+  IShoppingList,
+  IUser,
+  IUserPreferences,
+  DayOfWeek,
+} from '../types';
+
+const image = (background: string, food: string, accent: string) => {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360"><rect width="640" height="360" fill="${background}"/><circle cx="320" cy="180" r="143" fill="#fffdf8"/><circle cx="320" cy="180" r="116" fill="#f3eadb"/><ellipse cx="320" cy="190" rx="91" ry="76" fill="${food}"/><path d="M239 182c39-48 109-49 162 0-46 57-117 66-162 0Z" fill="${accent}"/><circle cx="285" cy="158" r="12" fill="#f9d66b"/><circle cx="351" cy="209" r="14" fill="#6c9b59"/><circle cx="371" cy="155" r="10" fill="#e68155"/><circle cx="263" cy="207" r="9" fill="#fff2c2"/><path d="M298 222c18-14 40-15 58-2" fill="none" stroke="#fff4d8" stroke-width="8" stroke-linecap="round"/></svg>`;
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+};
+
+const recipes: IRecipe[] = [
+  {
+    _id: 'demo-recipe-lentil-dahl',
+    title: 'Spiced Lentil Dahl with Spinach',
+    slug: 'spiced-lentil-dahl',
+    description: 'A warming one-pot dahl with tender lentils, spinach and fragrant spices.',
+    image: image('#e9d8bd', '#d99942', '#7a9a54'),
+    cuisine: 'Indian',
+    vibes: ['Healthy Comfort', 'Family Favs'],
+    prepTimeMinutes: 10,
+    cookTimeMinutes: 20,
+    servings: 3,
+    calories: 380,
+    carbsGrams: 48,
+    proteinGrams: 19,
+    fatGrams: 11,
+    ingredients: [
+      { name: 'Red lentils', quantity: 250, unit: 'g', aisle: 'Pantry & Grains', estimatedCost: 1.2 },
+      { name: 'Baby spinach', quantity: 100, unit: 'g', aisle: 'Fresh Produce', estimatedCost: 1.1 },
+      { name: 'Coconut milk', quantity: 1, unit: 'can', aisle: 'Pantry & Grains', estimatedCost: 1.4 },
+    ],
+    instructions: ['Simmer lentils with spices and coconut milk until tender.', 'Fold through spinach and serve warm.'],
+    dietaryTags: ['Vegetarian', 'Vegan'],
+    allergens: [],
+    equipmentNeeded: ['Hob Only'],
+    upvotes: 24,
+    downvotes: 1,
+  },
+  {
+    _id: 'demo-recipe-herb-risotto',
+    title: 'Creamy Mushroom & Herb Risotto',
+    slug: 'creamy-mushroom-herb-risotto',
+    description: 'A cosy, creamy risotto finished with mushrooms and fresh herbs.',
+    image: image('#d7dfd1', '#d8b27a', '#7b8d5c'),
+    cuisine: 'Italian',
+    vibes: ['Family Favs', 'Healthy Comfort'],
+    prepTimeMinutes: 10,
+    cookTimeMinutes: 25,
+    servings: 3,
+    calories: 445,
+    carbsGrams: 61,
+    proteinGrams: 13,
+    fatGrams: 15,
+    ingredients: [
+      { name: 'Arborio rice', quantity: 250, unit: 'g', aisle: 'Pantry & Grains', estimatedCost: 1.5 },
+      { name: 'Chestnut mushrooms', quantity: 200, unit: 'g', aisle: 'Fresh Produce', estimatedCost: 1.7 },
+      { name: 'Parmesan', quantity: 40, unit: 'g', aisle: 'Dairy & Refrigerated', estimatedCost: 1.2 },
+    ],
+    instructions: ['Soften mushrooms and toast the rice.', 'Add stock gradually, stirring until creamy, then finish with parmesan and herbs.'],
+    dietaryTags: ['Vegetarian'],
+    allergens: ['Dairy'],
+    equipmentNeeded: ['Hob Only'],
+    upvotes: 31,
+    downvotes: 2,
+  },
+  {
+    _id: 'demo-recipe-salmon',
+    title: 'Lemon Salmon with Green Vegetables',
+    slug: 'lemon-salmon-green-vegetables',
+    description: 'Bright lemon salmon with seasonal greens for an easy weeknight dinner.',
+    image: image('#d7e5df', '#e89b63', '#739b66'),
+    cuisine: 'British',
+    vibes: ['Speedy Meals', 'Protein Packed'],
+    prepTimeMinutes: 8,
+    cookTimeMinutes: 15,
+    servings: 3,
+    calories: 410,
+    carbsGrams: 22,
+    proteinGrams: 36,
+    fatGrams: 19,
+    ingredients: [
+      { name: 'Salmon fillets', quantity: 3, unit: 'pieces', aisle: 'Meat & Seafood', estimatedCost: 6.5 },
+      { name: 'Tenderstem broccoli', quantity: 200, unit: 'g', aisle: 'Fresh Produce', estimatedCost: 1.8 },
+      { name: 'Lemon', quantity: 1, unit: 'piece', aisle: 'Fresh Produce', estimatedCost: 0.4 },
+    ],
+    instructions: ['Season the salmon with lemon and herbs.', 'Roast until just cooked and serve with steamed greens.'],
+    dietaryTags: ['Pescatarian'],
+    allergens: ['Fish'],
+    equipmentNeeded: ['Oven'],
+    upvotes: 19,
+    downvotes: 0,
+  },
+  {
+    _id: 'demo-recipe-tacos',
+    title: 'Smoky Bean & Avocado Tacos',
+    slug: 'smoky-bean-avocado-tacos',
+    description: 'Quick smoky beans, crunchy slaw and creamy avocado in warm tortillas.',
+    image: image('#f0dfc8', '#c87345', '#8ca94f'),
+    cuisine: 'Mexican',
+    vibes: ['Speedy Meals', 'Fakeaway'],
+    prepTimeMinutes: 12,
+    cookTimeMinutes: 10,
+    servings: 3,
+    calories: 395,
+    carbsGrams: 54,
+    proteinGrams: 16,
+    fatGrams: 13,
+    ingredients: [
+      { name: 'Black beans', quantity: 2, unit: 'cans', aisle: 'Pantry & Grains', estimatedCost: 1.6 },
+      { name: 'Avocado', quantity: 1, unit: 'piece', aisle: 'Fresh Produce', estimatedCost: 1.2 },
+      { name: 'Soft tortillas', quantity: 6, unit: 'pieces', aisle: 'Bakery', estimatedCost: 1.5 },
+    ],
+    instructions: ['Warm the beans with smoked paprika.', 'Fill warm tortillas and top with slaw and avocado.'],
+    dietaryTags: ['Vegetarian', 'Vegan'],
+    allergens: [],
+    equipmentNeeded: ['Hob Only'],
+    upvotes: 28,
+    downvotes: 1,
+  },
+  {
+    _id: 'demo-recipe-chicken-traybake',
+    title: 'Herby Chicken & Potato Traybake',
+    slug: 'herby-chicken-potato-traybake',
+    description: 'Golden chicken, baby potatoes and green beans roasted together.',
+    image: image('#e7dfd2', '#c78b4e', '#76915c'),
+    cuisine: 'Mediterranean',
+    vibes: ['Family Favs', 'Healthy Comfort'],
+    prepTimeMinutes: 12,
+    cookTimeMinutes: 30,
+    servings: 3,
+    calories: 490,
+    carbsGrams: 43,
+    proteinGrams: 38,
+    fatGrams: 18,
+    ingredients: [
+      { name: 'Chicken thighs', quantity: 450, unit: 'g', aisle: 'Meat & Seafood', estimatedCost: 4.5 },
+      { name: 'Baby potatoes', quantity: 400, unit: 'g', aisle: 'Fresh Produce', estimatedCost: 1.6 },
+      { name: 'Green beans', quantity: 150, unit: 'g', aisle: 'Fresh Produce', estimatedCost: 1.2 },
+    ],
+    instructions: ['Toss the chicken and potatoes with herbs and olive oil.', 'Roast until golden and add green beans for the final 10 minutes.'],
+    dietaryTags: [],
+    allergens: [],
+    equipmentNeeded: ['Oven'],
+    upvotes: 35,
+    downvotes: 2,
+  },
+  {
+    _id: 'demo-recipe-noodle-bowl',
+    title: 'Ginger Sesame Noodle Bowls',
+    slug: 'ginger-sesame-noodle-bowls',
+    description: 'A fresh noodle bowl with crisp vegetables and a gingery sesame dressing.',
+    image: image('#dce5d2', '#d6a957', '#749c65'),
+    cuisine: 'Asian',
+    vibes: ['Speedy Meals', 'Protein Packed'],
+    prepTimeMinutes: 12,
+    cookTimeMinutes: 10,
+    servings: 3,
+    calories: 430,
+    carbsGrams: 58,
+    proteinGrams: 18,
+    fatGrams: 14,
+    ingredients: [
+      { name: 'Rice noodles', quantity: 220, unit: 'g', aisle: 'Pantry & Grains', estimatedCost: 1.8 },
+      { name: 'Edamame', quantity: 150, unit: 'g', aisle: 'Frozen', estimatedCost: 1.5 },
+      { name: 'Sesame seeds', quantity: 1, unit: 'tbsp', aisle: 'Spices & Condiments', estimatedCost: 0.3 },
+    ],
+    instructions: ['Cook the noodles and edamame.', 'Toss with ginger dressing and finish with sesame seeds.'],
+    dietaryTags: ['Vegetarian', 'Vegan'],
+    allergens: ['Sesame', 'Soy'],
+    equipmentNeeded: ['Hob Only'],
+    upvotes: 17,
+    downvotes: 0,
+  },
+];
+
+export const demoRecipes = recipes;
+
+export const demoUser: IUser = {
+  id: 'local-demo-user',
+  name: 'Alex Morgan',
+  email: 'alex.demo@meltto.local',
+  role: 'user',
+  subscriptionTier: 'free',
+  subscriptionStatus: 'active',
+  favorites: ['demo-recipe-lentil-dahl', 'demo-recipe-salmon'],
+  preferredLanguage: 'en',
+  countryCode: 'GB',
+  countryName: 'United Kingdom',
+  currencyCode: 'GBP',
+  householdSize: 3,
+  cookingDays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+  weeklyBudget: 75,
+  weeklyBudgetCurrency: 'GBP',
+  mealMoods: ['Speedy Meals', 'Healthy Comfort'],
+  dietaryPreferences: ['None'],
+  allergies: [],
+  appliances: ['Oven', 'Hob Only'],
+  onboardingStep: 25,
+  onboardingCompleted: true,
+};
+
+export const demoPreferences: IUserPreferences = {
+  supermarket: 'Tesco',
+  householdSize: 3,
+  cookingDays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+  weeklyBudget: 75,
+  dietaryNeeds: ['None'],
+  allergies: [],
+  equipment: ['Oven', 'Hob Only'],
+  vibes: ['Speedy Meals', 'Healthy Comfort'],
+  maxCookTimeMinutes: 35,
+  countryCode: 'GB',
+  countryName: 'United Kingdom',
+  currencyCode: 'GBP',
+};
+
+const days: DayOfWeek[] = [
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
+  'Sunday',
+];
+
+const weekDays: IMealPlan['dinners'] = days.map((day, index) => ({
+  day,
+  recipe: recipes[index % recipes.length],
+  isCooked: index === 0,
+}));
+
+export const demoMealPlan: IMealPlan = {
+  _id: 'local-demo-plan',
+  user: demoUser.id,
+  weekStartDate: '2026-11-02T00:00:00.000Z',
+  dinners: weekDays,
+  meals: weekDays.map(({ day, recipe, isCooked }) => ({
+    id: `local-demo-${day.toLowerCase()}`,
+    day,
+    mealType: 'dinner',
+    recipe,
+    servings: 3,
+    isCooked,
+  })),
+  householdSize: 3,
+  estimatedCost: 62.4,
+  budgetLimit: 75,
+};
+
+export const demoShoppingList: IShoppingList = {
+  _id: 'local-demo-shopping-list',
+  user: demoUser.id,
+  plan: demoMealPlan._id,
+  supermarket: 'Tesco',
+  items: [
+    { id: 'grocery-tomatoes', name: 'Cherry tomatoes', totalQuantity: 250, unit: 'g', aisle: 'Fresh Produce', estimatedCost: 1.25, isBought: true, recipeTitles: ['Smoky Bean & Avocado Tacos'], icon: '🍅' },
+    { id: 'grocery-spinach', name: 'Baby spinach', totalQuantity: 100, unit: 'g', aisle: 'Fresh Produce', estimatedCost: 1.1, isBought: false, recipeTitles: ['Spiced Lentil Dahl with Spinach'], icon: '🥬' },
+    { id: 'grocery-salmon', name: 'Salmon fillets', totalQuantity: 3, unit: 'pieces', aisle: 'Meat & Seafood', estimatedCost: 6.5, isBought: false, recipeTitles: ['Lemon Salmon with Green Vegetables'], icon: '🐟' },
+    { id: 'grocery-parmesan', name: 'Parmesan', totalQuantity: 40, unit: 'g', aisle: 'Dairy & Refrigerated', estimatedCost: 1.2, isBought: true, recipeTitles: ['Creamy Mushroom & Herb Risotto'], icon: '🧀' },
+    { id: 'grocery-tortillas', name: 'Soft tortillas', totalQuantity: 6, unit: 'pieces', aisle: 'Bakery', estimatedCost: 1.5, isBought: false, recipeTitles: ['Smoky Bean & Avocado Tacos'], icon: '🫓' },
+    { id: 'grocery-lentils', name: 'Red lentils', totalQuantity: 250, unit: 'g', aisle: 'Pantry & Grains', estimatedCost: 1.2, isBought: false, recipeTitles: ['Spiced Lentil Dahl with Spinach'], icon: '🫘' },
+    { id: 'grocery-ginger', name: 'Fresh ginger', totalQuantity: 1, unit: 'piece', aisle: 'Spices & Condiments', estimatedCost: 0.45, isBought: false, recipeTitles: ['Ginger Sesame Noodle Bowls'], icon: '🫚' },
+    { id: 'grocery-edamame', name: 'Edamame', totalQuantity: 150, unit: 'g', aisle: 'Frozen', estimatedCost: 1.5, isBought: false, recipeTitles: ['Ginger Sesame Noodle Bowls'], icon: '🫛' },
+  ],
+  totalEstimatedCost: 14.7,
+  itemsBoughtCount: 2,
+  totalItemsCount: 8,
+};
+
+const daysFromNow = (days: number) => {
+  const date = new Date();
+  date.setDate(date.getDate() + days);
+  return date.toISOString();
+};
+
+export const demoPantryItems: IPantryItem[] = [
+  { _id: 'pantry-oats', name: 'Rolled oats', quantity: 500, unit: 'g', category: 'Pantry & Grains', expiryDate: daysFromNow(120), icon: '🌾', notes: 'Breakfast staple', daysUntilExpiry: 120 },
+  { _id: 'pantry-eggs', name: 'Free-range eggs', quantity: 6, unit: 'pieces', category: 'Dairy & Refrigerated', expiryDate: daysFromNow(2), icon: '🥚', daysUntilExpiry: 2, isExpiringSoon: true },
+  { _id: 'pantry-avocado', name: 'Avocado', quantity: 2, unit: 'pieces', category: 'Fresh Produce', expiryDate: daysFromNow(1), icon: '🥑', daysUntilExpiry: 1, isExpiringSoon: true },
+  { _id: 'pantry-lentils', name: 'Red lentils', quantity: 350, unit: 'g', category: 'Pantry & Grains', expiryDate: daysFromNow(210), icon: '🫘', daysUntilExpiry: 210 },
+  { _id: 'pantry-yogurt', name: 'Greek yoghurt', quantity: 300, unit: 'g', category: 'Dairy & Refrigerated', expiryDate: daysFromNow(-2), icon: '🥣', daysUntilExpiry: -2, isExpired: true },
+  { _id: 'pantry-carrots', name: 'Carrots', quantity: 4, unit: 'pieces', category: 'Fresh Produce', expiryDate: daysFromNow(9), icon: '🥕', daysUntilExpiry: 9 },
+  { _id: 'pantry-pasta', name: 'Wholewheat pasta', quantity: 400, unit: 'g', category: 'Pantry & Grains', expiryDate: daysFromNow(180), icon: '🍝', daysUntilExpiry: 180 },
+  { _id: 'pantry-basil', name: 'Fresh basil', quantity: 1, unit: 'bunch', category: 'Fresh Produce', expiryDate: daysFromNow(3), icon: '🌿', daysUntilExpiry: 3, isExpiringSoon: true },
+];
+
+export const demoPantrySuggestions: IPantryRecipeMatch[] = [
+  {
+    recipe: recipes[0],
+    matchPercentage: 80,
+    availableIngredients: [
+      { name: 'Red lentils', quantity: 350, unit: 'g', pantryQuantity: 350, pantryUnit: 'g' },
+      { name: 'Spinach', quantity: 100, unit: 'g', pantryQuantity: 100, pantryUnit: 'g' },
+    ],
+    missingIngredients: [
+      { name: 'Coconut milk', quantity: 1, unit: 'can', deficitQuantity: 1, aisle: 'Pantry & Grains', estimatedCost: 1.4 },
+    ],
+    canCookFully: false,
+  },
+  {
+    recipe: recipes[1],
+    matchPercentage: 100,
+    availableIngredients: [
+      { name: 'Arborio rice', quantity: 250, unit: 'g', pantryQuantity: 300, pantryUnit: 'g' },
+      { name: 'Mushrooms', quantity: 200, unit: 'g', pantryQuantity: 220, pantryUnit: 'g' },
+    ],
+    missingIngredients: [],
+    canCookFully: true,
+  },
+];
+
+export const demoHousehold = {
+  _id: 'local-demo-household',
+  name: 'Morgan Household',
+  owner: { _id: demoUser.id, name: demoUser.name, email: demoUser.email },
+  members: [
+    { user: { _id: demoUser.id, name: demoUser.name, email: demoUser.email }, role: 'owner' as const, joinedAt: '2026-01-15T00:00:00.000Z' },
+    { user: { _id: 'local-demo-member', name: 'Jamie Morgan', email: 'jamie.demo@meltto.local' }, role: 'member' as const, joinedAt: '2026-02-01T00:00:00.000Z' },
+  ],
+  shareMealPlan: true,
+  shareGroceryList: true,
+  sharePantry: true,
+};

@@ -33,10 +33,10 @@ export const Support: React.FC = () => {
               <p className="text-[#444] text-[15px] sm:text-base leading-relaxed">
                 Email{' '}
                 <a
-                  href="mailto:support@misemealplanner.com"
+                  href="mailto:support@meltto.com"
                   className="text-[#8bc020] font-bold underline"
                 >
-                  support@misemealplanner.com
+                  support@meltto.com
                 </a>{' '}
                 for bugs, subscription questions, feedback, legal enquiries, or account and data deletion requests. We'll get back to you as soon as we can.
               </p>
@@ -61,7 +61,7 @@ export const Support: React.FC = () => {
                   How does the shopping list work?
                 </h3>
                 <p className="text-[#6b6b6b] text-sm sm:text-base leading-relaxed">
-                  mise combines ingredients across your week's recipes into one smart list, grouped for your chosen supermarket.
+                  Meltto combines ingredients across your week's recipes into one smart list, grouped for your chosen supermarket.
                 </p>
               </div>
 
@@ -80,8 +80,8 @@ export const Support: React.FC = () => {
                 </h3>
                 <p className="text-[#6b6b6b] text-sm sm:text-base leading-relaxed">
                   Email{' '}
-                  <a href="mailto:support@misemealplanner.com" className="text-[#8bc020] underline font-medium">
-                    support@misemealplanner.com
+                  <a href="mailto:support@meltto.com" className="text-[#8bc020] underline font-medium">
+                    support@meltto.com
                   </a>{' '}
                   or tap "Delete Account" under app Settings.
                 </p>
@@ -92,7 +92,7 @@ export const Support: React.FC = () => {
                   Allergies and dietary requirements
                 </h3>
                 <p className="text-[#6b6b6b] text-sm sm:text-base leading-relaxed">
-                  mise uses the preferences you set during onboarding to filter recipes. Always check ingredient labels and recipes before cooking — we cannot guarantee allergen safety.
+                  Meltto uses the preferences you set during onboarding to filter recipes. Always check ingredient labels and recipes before cooking — we cannot guarantee allergen safety.
                 </p>
               </div>
             </div>

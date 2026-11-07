@@ -16,7 +16,7 @@ export const CtaBanner: React.FC = () => {
             <p>
               {t(
                 'cta.sub',
-                'Download mise and get a personalised plan and shopping list in about five minutes.'
+                'Download Meltto and get a personalised plan and shopping list in about five minutes.'
               )}
             </p>
             <div className="store-badges">

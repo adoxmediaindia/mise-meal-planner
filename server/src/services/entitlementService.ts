@@ -136,7 +136,7 @@ export class EntitlementService {
 
     if (totalRecentGenerations >= entitlements.maxWeeklyGenerations) {
       throw new EntitlementError(
-        `Weekly meal plan generation limit reached on the Free plan (${entitlements.maxWeeklyGenerations}/week). Upgrade to Mise Pro for unlimited generations.`,
+        `Weekly meal plan generation limit reached on the Free plan (${entitlements.maxWeeklyGenerations}/week). Upgrade to Meltto Pro for unlimited generations.`,
         'maxWeeklyGenerations',
         entitlements.maxWeeklyGenerations,
         totalRecentGenerations
@@ -166,7 +166,7 @@ export class EntitlementService {
 
     if (count >= entitlements.maxWeeklyAiQueries) {
       throw new EntitlementError(
-        `Weekly AI assistant query limit reached on the Free plan (${entitlements.maxWeeklyAiQueries}/week). Upgrade to Mise Pro for higher AI limits.`,
+        `Weekly AI assistant query limit reached on the Free plan (${entitlements.maxWeeklyAiQueries}/week). Upgrade to Meltto Pro for higher AI limits.`,
         'maxWeeklyAiQueries',
         entitlements.maxWeeklyAiQueries,
         count
@@ -253,7 +253,7 @@ export class EntitlementService {
           : latest?.aiGenerationsThisWeek || entitlements.maxWeeklyAiQueries;
 
       throw new EntitlementError(
-        `Weekly AI assistant query limit reached on the Free plan (${entitlements.maxWeeklyAiQueries}/week). Upgrade to Mise Pro for higher AI limits.`,
+        `Weekly AI assistant query limit reached on the Free plan (${entitlements.maxWeeklyAiQueries}/week). Upgrade to Meltto Pro for higher AI limits.`,
         'maxWeeklyAiQueries',
         entitlements.maxWeeklyAiQueries,
         currentCount
@@ -312,7 +312,7 @@ export class EntitlementService {
     const currentCount = await PantryItem.countDocuments({ user: userId });
     if (currentCount >= entitlements.maxPantryItems) {
       throw new EntitlementError(
-        `Pantry inventory limit reached on the Free plan (${entitlements.maxPantryItems} items). Upgrade to Mise Pro for unlimited kitchen pantry tracking.`,
+        `Pantry inventory limit reached on the Free plan (${entitlements.maxPantryItems} items). Upgrade to Meltto Pro for unlimited kitchen pantry tracking.`,
         'maxPantryItems',
         entitlements.maxPantryItems,
         currentCount
@@ -339,7 +339,7 @@ export class EntitlementService {
     const totalOccupants = household.members.length + pendingCount;
     if (totalOccupants >= entitlements.maxHouseholdMembers) {
       throw new EntitlementError(
-        `Household member limit reached (${entitlements.maxHouseholdMembers} members on your current plan). Upgrade to Mise Pro to share with up to 10 family members.`,
+        `Household member limit reached (${entitlements.maxHouseholdMembers} members on your current plan). Upgrade to Meltto Pro to share with up to 10 family members.`,
         'maxHouseholdMembers',
         entitlements.maxHouseholdMembers,
         totalOccupants
@@ -363,7 +363,7 @@ export class EntitlementService {
     const customItemsCount = list.items.filter((i) => i.isCustom).length;
     if (customItemsCount >= entitlements.maxSavedCustomGroceryItems) {
       throw new EntitlementError(
-        `Custom grocery item limit reached on the Free plan (${entitlements.maxSavedCustomGroceryItems} items). Upgrade to Mise Pro for unlimited custom items.`,
+        `Custom grocery item limit reached on the Free plan (${entitlements.maxSavedCustomGroceryItems} items). Upgrade to Meltto Pro for unlimited custom items.`,
         'maxSavedCustomGroceryItems',
         entitlements.maxSavedCustomGroceryItems,
         customItemsCount

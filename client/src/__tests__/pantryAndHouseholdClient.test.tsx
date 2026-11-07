@@ -121,6 +121,10 @@ describe('Pantry Web UI Component', () => {
       </BrowserRouter>
     );
 
+    await waitFor(() => {
+      expect(screen.getByText('Olive Oil')).toBeInTheDocument();
+    });
+
     const addBtn = screen.getByRole('button', { name: /Add Item/i });
     fireEvent.click(addBtn);
 

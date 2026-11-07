@@ -11,7 +11,7 @@ export const ShowcaseB: React.FC = () => {
           <div className="phone">
             <img
               src="/assets/screens/en/recipe-detail.png"
-              alt="A mise recipe with clear steps"
+              alt="A Meltto recipe with clear steps"
             />
           </div>
         </div>

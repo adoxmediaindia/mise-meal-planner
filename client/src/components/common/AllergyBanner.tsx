@@ -35,7 +35,7 @@ export const AllergyBanner: React.FC<AllergyBannerProps> = ({
       <div className="space-y-1">
         <h4 className="font-bold text-amber-950 text-sm">Important Allergy &amp; Safety Disclaimer</h4>
         <p className="text-amber-800 leading-relaxed text-xs sm:text-sm">
-          mise is a meal-planning tool, not an allergen-safety certification service. Recommendations may occasionally
+          Meltto is a meal-planning tool, not an allergen-safety certification service. Recommendations may occasionally
           contain ingredients conflicting with entered preferences due to formulation changes. Always independently
           inspect actual product packaging and manufacturer warnings before preparation.{' '}
           <Link to="/terms" className="underline font-semibold hover:text-amber-950">

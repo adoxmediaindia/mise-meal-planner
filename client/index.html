@@ -3,18 +3,68 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <title>mise · Meal Planner App | Weekly Meal Plans, Recipes &amp; Meal Prep</title>
+    <title>Meltto — Weekly Meal Planner, Smart Grocery Lists &amp; AI Recipes</title>
     <meta
       name="description"
-      content="mise is a meal planner app for weekly meal planning, recipes, meal prep and food prep. Build a personalised meal plan, get recipe ideas, and one smart shopping list for your supermarket."
+      content="Meltto is a meal planner app for weekly meal planning, recipes, meal prep and food prep. Build a personalised meal plan, get recipe ideas, and one smart shopping list for your supermarket."
     />
     <meta
       name="keywords"
-      content="meal planner, meal plan, meal planning, weekly meal plan, recipes, meal prep, food prep, dinner planner, shopping list, budget meals"
+      content="meal planner, meal plan, meal planning, weekly meal plan, recipes, meal prep, food prep, dinner planner, shopping list, budget meals, meltto"
     />
     <meta name="theme-color" content="#9ED034" />
+    <link rel="canonical" href="https://meltto.com/" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://meltto.com/" />
+    <meta property="og:title" content="Meltto — Weekly Meal Planner, Smart Grocery Lists &amp; AI Recipes" />
+    <meta property="og:description" content="Meltto is a meal planner app for weekly meal planning, recipes, meal prep and food prep. Build a personalised meal plan, get recipe ideas, and one smart shopping list for your supermarket." />
+    <meta property="og:image" content="https://meltto.com/assets/meltto-logo.png" />
+    <meta property="og:site_name" content="Meltto" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://meltto.com/" />
+    <meta name="twitter:title" content="Meltto — Weekly Meal Planner, Smart Grocery Lists &amp; AI Recipes" />
+    <meta name="twitter:description" content="Meltto is a meal planner app for weekly meal planning, recipes, meal prep and food prep. Build a personalised meal plan, get recipe ideas, and one smart shopping list for your supermarket." />
+    <meta name="twitter:image" content="https://meltto.com/assets/meltto-logo.png" />
+
+    <!-- Favicons -->
+    <link rel="icon" type="image/svg+xml" href="/assets/meltto-logo.svg" />
     <link rel="icon" type="image/png" sizes="192x192" href="/assets/favicon-192.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://meltto.com/#organization",
+          "name": "Meltto",
+          "url": "https://meltto.com/",
+          "logo": "https://meltto.com/assets/meltto-logo.png"
+        },
+        {
+          "@type": "WebApplication",
+          "@id": "https://meltto.com/#webapp",
+          "name": "Meltto Meal Planner",
+          "url": "https://meltto.com/",
+          "applicationCategory": "LifestyleApplication",
+          "operatingSystem": "All",
+          "description": "Meltto is a smart meal planner app for weekly meal planning, automated supermarket shopping lists, pantry tracking, and AI recipe assistance.",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+          }
+        }
+      ]
+    }
+    </script>
   </head>
   <body class="bg-[#fafaf8] text-[#2a2a2a] antialiased selection:bg-[#9ed034]/30 selection:text-[#1f2a06]">
     <div id="root"></div>

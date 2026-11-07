@@ -1,15 +1,20 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { IShoppingItem } from '../../types';
+import { CurrencyCode, IShoppingItem } from '../../types';
+import { formatCurrency } from '../../utils/currency';
 
 interface GroceryItemRowProps {
   item: IShoppingItem;
+  currencyCode: CurrencyCode;
   onToggle: () => void;
+  onDelete?: () => void;
 }
 
 export const GroceryItemRow: React.FC<GroceryItemRowProps> = ({
   item,
+  currencyCode,
   onToggle,
+  onDelete,
 }) => {
   return (
     <TouchableOpacity
@@ -36,6 +41,7 @@ export const GroceryItemRow: React.FC<GroceryItemRowProps> = ({
         <Text style={styles.subtext}>
           {item.totalQuantity} {item.unit}
           {item.recipeTitles?.length ? ` • for ${item.recipeTitles[0]}` : ''}
+          {item.isCustom ? ' • Custom item' : ''}
         </Text>
         {item.pantryNote && (
           <Text style={styles.pantryNoteText}>📦 {item.pantryNote}</Text>
@@ -44,8 +50,20 @@ export const GroceryItemRow: React.FC<GroceryItemRowProps> = ({
 
       {/* Estimated Cost */}
       <Text style={[styles.cost, item.isBought && styles.costBought]}>
-        ${item.estimatedCost.toFixed(2)}
+        {formatCurrency(item.estimatedCost, currencyCode)}
       </Text>
+
+      {/* Delete button for custom items */}
+      {item.isCustom && onDelete && (
+        <TouchableOpacity
+          style={styles.deleteBtn}
+          onPress={(e) => {
+            onDelete();
+          }}
+        >
+          <Text style={styles.deleteBtnText}>✕</Text>
+        </TouchableOpacity>
+      )}
     </TouchableOpacity>
   );
 };
@@ -122,5 +140,17 @@ const styles = StyleSheet.create({
   costBought: {
     textDecorationLine: 'line-through',
     color: '#9CA3AF',
+  },
+  deleteBtn: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+    backgroundColor: '#FEE2E2',
+    marginLeft: 8,
+  },
+  deleteBtnText: {
+    color: '#DC2626',
+    fontSize: 12,
+    fontWeight: '700',
   },
 });

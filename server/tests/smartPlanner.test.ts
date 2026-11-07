@@ -120,6 +120,9 @@ describe('Phase 3: Smart Meal Planning & Personalized Grocery Engine', () => {
     const cookies = regRes.headers['set-cookie'];
     authCookie = Array.isArray(cookies) ? cookies[0] : (cookies as any);
 
+    // Mark test user as onboardingCompleted to allow planner endpoints to be exercised
+    await User.findByIdAndUpdate(testUserId, { $set: { onboardingCompleted: true } });
+
     // Set user preferences with Peanuts allergy and household size 2
     await Preference.findOneAndUpdate(
       { user: testUserId },
@@ -375,7 +378,8 @@ describe('Phase 3: Smart Meal Planning & Personalized Grocery Engine', () => {
     // Set impossible filter (e.g. maxCookTimeMinutes: 1) so auto-generation finds 0 recipes
     await Preference.findOneAndUpdate(
       { user: newUserId },
-      { $set: { maxCookTimeMinutes: 1, allergies: ['Gluten', 'Dairy', 'Peanuts', 'Soy', 'Sesame', 'Eggs', 'Fish', 'Shellfish', 'Tree Nuts'] } }
+      { $set: { maxCookTimeMinutes: 1, allergies: ['Gluten', 'Dairy', 'Peanuts', 'Soy', 'Sesame', 'Eggs', 'Fish', 'Shellfish', 'Tree Nuts'] } },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
     );
 
     // GET /api/v1/plan/current should gracefully return 200 with data: null (NOT 500!)
@@ -399,10 +403,14 @@ describe('Phase 3: Smart Meal Planning & Personalized Grocery Engine', () => {
     const filterCookie = regRes.headers['set-cookie'][0];
     const filterUserId = regRes.body.data.id;
 
+    // Mark onboardingCompleted to reach planner filtering logic (expecting 422 NO_RECIPES_FOUND, not 409)
+    await User.findByIdAndUpdate(filterUserId, { $set: { onboardingCompleted: true } });
+
     // Set impossible filters (e.g. maxCookTimeMinutes: 1)
     await Preference.findOneAndUpdate(
       { user: filterUserId },
-      { $set: { maxCookTimeMinutes: 1, allergies: ['Gluten', 'Dairy', 'Peanuts', 'Soy', 'Sesame', 'Eggs', 'Fish', 'Shellfish', 'Tree Nuts'] } }
+      { $set: { maxCookTimeMinutes: 1, allergies: ['Gluten', 'Dairy', 'Peanuts', 'Soy', 'Sesame', 'Eggs', 'Fish', 'Shellfish', 'Tree Nuts'] } },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
     );
 
     // POST /api/v1/plan/generate should return 422 Unprocessable Entity
@@ -427,10 +435,14 @@ describe('Phase 3: Smart Meal Planning & Personalized Grocery Engine', () => {
     const swapCookie = regRes.headers['set-cookie'][0];
     const swapUserId = regRes.body.data.id;
 
+    // Mark onboardingCompleted to allow initial plan generation and meal swap
+    await User.findByIdAndUpdate(swapUserId, { $set: { onboardingCompleted: true } });
+
     // Set preference
     await Preference.findOneAndUpdate(
       { user: swapUserId },
-      { $set: { cookingDays: ['Monday'], dietaryNeeds: ['None'], allergies: [] } }
+      { $set: { cookingDays: ['Monday'], dietaryNeeds: ['None'], allergies: [] } },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
     );
 
     // Generate initial plan
@@ -442,7 +454,8 @@ describe('Phase 3: Smart Meal Planning & Personalized Grocery Engine', () => {
     // Now set impossible preference filter
     await Preference.findOneAndUpdate(
       { user: swapUserId },
-      { $set: { maxCookTimeMinutes: 1, allergies: ['Gluten', 'Dairy', 'Peanuts', 'Soy', 'Sesame', 'Eggs', 'Fish', 'Shellfish', 'Tree Nuts'] } }
+      { $set: { maxCookTimeMinutes: 1, allergies: ['Gluten', 'Dairy', 'Peanuts', 'Soy', 'Sesame', 'Eggs', 'Fish', 'Shellfish', 'Tree Nuts'] } },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
     );
 
     // Attempting swap should return 422 (NOT 500!)

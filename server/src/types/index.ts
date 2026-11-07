@@ -15,7 +15,9 @@ export type KitchenEquipment =
   | 'Air Fryer'
   | 'Slow Cooker'
   | 'Hob Only'
+  | 'Stovetop'
   | 'Oven'
+  | 'Microwave'
   | 'Blender'
   | 'Instant Pot';
 
@@ -55,9 +57,43 @@ export type Supermarket =
   | 'Safeway'
   | 'H-E-B'
   | 'Whole Foods'
-  | 'Trader Joe\'s'
+  | "Trader Joe's"
   | 'Food Lion'
-  | 'Sprouts';
+  | 'Sprouts'
+  | 'Blinkit'
+  | 'Zepto'
+  | 'Instamart'
+  | 'BigBasket'
+  | 'DMart'
+  | "Nature's Basket"
+  | 'Reliance Fresh'
+  | 'Tesco'
+  | "Sainsbury's"
+  | 'Asda'
+  | 'Morrisons'
+  | 'Lidl'
+  | 'Waitrose'
+  | 'M&S'
+  | 'Carrefour'
+  | 'E.Leclerc'
+  | 'REWE'
+  | 'Edeka'
+  | 'Mercadona'
+  | 'Albert Heijn'
+  | 'Loblaws'
+  | 'No Frills'
+  | 'Metro'
+  | 'Sobeys'
+  | 'Woolworths'
+  | 'Coles'
+  | 'IGA'
+  | 'Countdown'
+  | "Pak'nSave"
+  | 'New World'
+  | 'Pão de Açúcar'
+  | 'Extra'
+  | 'Assaí'
+  | (string & {});
 
 export type SupermarketAisle =
   | 'Fresh Produce'
@@ -109,6 +145,9 @@ export interface IUserPreferences {
   equipment: KitchenEquipment[];
   vibes: MealVibe[];
   maxCookTimeMinutes?: number;
+  countryCode?: string;
+  countryName?: string;
+  currencyCode?: string;
 }
 
 export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack';

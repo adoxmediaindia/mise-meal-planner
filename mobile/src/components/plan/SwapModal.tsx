@@ -75,7 +75,7 @@ export const SwapModal: React.FC<SwapModalProps> = ({
           <View style={styles.header}>
             <View>
               <Text style={styles.title}>Swap Dinner for {day}</Text>
-              <Text style={styles.subtitle}>Choose an alternative or let Mise pick</Text>
+              <Text style={styles.subtitle}>Choose an alternative or let Meltto pick</Text>
             </View>
             <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
               <Text style={styles.closeText}>✕</Text>

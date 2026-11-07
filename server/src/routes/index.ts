@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { authenticate, requireAdmin } from '../middleware/auth.js';
+import { requireOnboardingComplete } from '../middleware/onboarding.js';
 import { validate } from '../middleware/validate.js';
 import { authLimiter, aiLimiter } from '../middleware/rateLimiter.js';
 import * as authCtrl from '../controllers/authController.js';
@@ -20,6 +21,7 @@ router.post('/auth/register', authLimiter, validate(authCtrl.registerSchema), au
 router.post('/auth/login', authLimiter, validate(authCtrl.loginSchema), authCtrl.login);
 router.post('/auth/logout', authCtrl.logout);
 router.get('/auth/me', authenticate, authCtrl.me);
+router.patch('/auth/onboarding', authenticate, validate(authCtrl.updateOnboardingSchema), authCtrl.updateOnboarding);
 router.post('/auth/forgot-password', authLimiter, validate(authCtrl.forgotPasswordSchema), authCtrl.forgotPassword);
 router.post('/auth/reset-password', authLimiter, validate(authCtrl.resetPasswordSchema), authCtrl.resetPassword);
 
@@ -38,13 +40,38 @@ router.post('/recipes/:id/reaction', recipeCtrl.submitReaction);
 router.get('/plan/current', authenticate, planCtrl.getCurrentPlan);
 router.get('/plan/history', authenticate, planCtrl.getPlanHistory);
 router.post('/plan/generate', authenticate, planCtrl.generatePlan);
-router.post('/plan/archive', authenticate, planCtrl.archiveCurrentPlan);
-router.put('/plan/swap-meal', authenticate, validate(planCtrl.swapMealSchema), planCtrl.swapMeal);
-router.patch('/plan/dinners/:day/cooked', authenticate, planCtrl.toggleDinnerCooked);
-router.post('/plan/meals', authenticate, validate(planCtrl.addMealSlotSchema), planCtrl.addMealSlot);
-router.delete('/plan/meals/:slotId', authenticate, planCtrl.removeMealSlot);
-router.patch('/plan/meals/:slotId', authenticate, validate(planCtrl.editMealSlotSchema), planCtrl.editMealSlot);
-router.patch('/plan/household-size', authenticate, validate(planCtrl.updateHouseholdSizeSchema), planCtrl.updateHouseholdSize);
+router.post('/plan/preview', planCtrl.previewPlan);
+router.post('/plan/archive', authenticate, requireOnboardingComplete, planCtrl.archiveCurrentPlan);
+router.put(
+  '/plan/swap-meal',
+  authenticate,
+  requireOnboardingComplete,
+  validate(planCtrl.swapMealSchema),
+  planCtrl.swapMeal
+);
+router.patch('/plan/dinners/:day/cooked', authenticate, requireOnboardingComplete, planCtrl.toggleDinnerCooked);
+router.post(
+  '/plan/meals',
+  authenticate,
+  requireOnboardingComplete,
+  validate(planCtrl.addMealSlotSchema),
+  planCtrl.addMealSlot
+);
+router.delete('/plan/meals/:slotId', authenticate, requireOnboardingComplete, planCtrl.removeMealSlot);
+router.patch(
+  '/plan/meals/:slotId',
+  authenticate,
+  requireOnboardingComplete,
+  validate(planCtrl.editMealSlotSchema),
+  planCtrl.editMealSlot
+);
+router.patch(
+  '/plan/household-size',
+  authenticate,
+  requireOnboardingComplete,
+  validate(planCtrl.updateHouseholdSizeSchema),
+  planCtrl.updateHouseholdSize
+);
 
 // 5. Shopping List routes
 router.get('/shopping-list', authenticate, shopCtrl.getShoppingList);
@@ -104,6 +131,7 @@ router.post(
 router.post(
   '/ai/plan-intent',
   authenticate,
+  requireOnboardingComplete,
   aiLimiter,
   validate(aiCtrl.planIntentSchema),
   aiCtrl.customizePlanWithIntent

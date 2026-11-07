@@ -15,11 +15,13 @@ import { Button } from '../../components/common/Button';
 interface LoginScreenProps {
   onNavigateToRegister: () => void;
   onNavigateToForgotPassword: () => void;
+  onNavigateToOnboarding?: () => void;
 }
 
 export const LoginScreen: React.FC<LoginScreenProps> = ({
   onNavigateToRegister,
   onNavigateToForgotPassword,
+  onNavigateToOnboarding,
 }) => {
   const { login } = useAuth();
   const [email, setEmail] = useState('');
@@ -51,7 +53,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       <ScrollView contentContainerStyle={styles.scroll}>
         {/* Brand Header */}
         <View style={styles.header}>
-          <Text style={styles.logoBadge}>🌱 MISE</Text>
+          <Text style={styles.logoBadge}>🌱 MELTTO</Text>
           <Text style={styles.title}>Welcome back</Text>
           <Text style={styles.subtitle}>
             Sign in to access your weekly meal plan and supermarket shopping checklist
@@ -114,6 +116,17 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
             <Text style={styles.signUpLink}>Sign up free</Text>
           </TouchableOpacity>
         </View>
+
+        {onNavigateToOnboarding ? (
+          <TouchableOpacity
+            onPress={onNavigateToOnboarding}
+            style={{ alignItems: 'center', marginTop: 12 }}
+          >
+            <Text style={{ fontSize: 13, color: '#8BC020', fontWeight: '700' }}>
+              Start Onboarding (Screens 1–5) →
+            </Text>
+          </TouchableOpacity>
+        ) : null}
       </ScrollView>
     </KeyboardAvoidingView>
   );

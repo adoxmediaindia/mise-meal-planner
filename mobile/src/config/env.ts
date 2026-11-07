@@ -7,6 +7,10 @@ const getDefaultBaseUrl = (): string => {
   if (ENV_API_URL) {
     return ENV_API_URL.replace(/\/$/, '');
   }
+  // In standalone/release mode, never use localhost/10.0.2.2; connect to production backend
+  if (!__DEV__) {
+    return 'https://mise-backend-api.onrender.com';
+  }
   // Android emulator routes host machine loopback to 10.0.2.2
   if (Platform.OS === 'android') {
     return 'http://10.0.2.2:5000';

@@ -18,25 +18,62 @@ import { PreferencesScreen } from '../screens/app/PreferencesScreen';
 import { ProfileScreen } from '../screens/app/ProfileScreen';
 import { RecipeDetailScreen } from '../screens/app/RecipeDetailScreen';
 import { LoadingState } from '../components/common/LoadingState';
+import { OnboardingScreen } from '../screens/onboarding/OnboardingScreen';
+import { isLocalDemoMode } from '../demo/demoMode';
 
-type AuthRoute = 'LOGIN' | 'REGISTER' | 'FORGOT_PASSWORD';
-type TabRoute = 'PLAN' | 'PANTRY' | 'GROCERY' | 'EXPLORE' | 'PREFS' | 'PROFILE';
+type AuthRoute = 'ONBOARDING' | 'LOGIN' | 'REGISTER' | 'FORGOT_PASSWORD';
+type TabRoute = 'PLAN' | 'PANTRY' | 'GROCERY' | 'EXPLORE' | 'PROFILE';
+type ProfileRoute = 'PROFILE' | 'PREFERENCES';
+
+const TABS: { route: TabRoute; label: string; icon: string }[] = [
+  { route: 'PLAN', label: 'Plan', icon: '▦' },
+  { route: 'PANTRY', label: 'Pantry', icon: '◉' },
+  { route: 'GROCERY', label: 'Grocery', icon: '✓' },
+  { route: 'EXPLORE', label: 'Explore', icon: '⌕' },
+  { route: 'PROFILE', label: 'Profile', icon: '●' },
+];
 
 export const RootNavigator: React.FC = () => {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { shoppingList } = usePlan();
 
-  // Navigation state
-  const [authRoute, setAuthRoute] = useState<AuthRoute>('LOGIN');
+  // Navigation state: starts with Onboarding per Batch 1 requirements
+  const [authRoute, setAuthRoute] = useState<AuthRoute>('ONBOARDING');
   const [activeTab, setActiveTab] = useState<TabRoute>('PLAN');
+  const [profileRoute, setProfileRoute] = useState<ProfileRoute>('PROFILE');
+  const [visitedProfilePreferences, setVisitedProfilePreferences] = useState(false);
+  const [visitedTabs, setVisitedTabs] = useState<TabRoute[]>(['PLAN']);
   const [selectedRecipe, setSelectedRecipe] = useState<IRecipe | null>(null);
 
+  const navigateToTab = (tab: TabRoute) => {
+    setActiveTab(tab);
+    setVisitedTabs((visited) => (visited.includes(tab) ? visited : [...visited, tab]));
+    if (tab === 'PROFILE') setProfileRoute('PROFILE');
+  };
+
+  const navigateToPreferences = () => {
+    setProfileRoute('PREFERENCES');
+    setVisitedProfilePreferences(true);
+    setActiveTab('PROFILE');
+    setVisitedTabs((visited) => (visited.includes('PROFILE') ? visited : [...visited, 'PROFILE']));
+  };
+
   if (authLoading) {
-    return <LoadingState message="Connecting to Mise Backend..." />;
+    return <LoadingState message="Connecting to Meltto Backend..." />;
   }
 
-  // Unauthenticated Auth Flow
+  // Unauthenticated Auth / Onboarding Flow
   if (!isAuthenticated) {
+    if (authRoute === 'ONBOARDING') {
+      return (
+        <SafeAreaView style={styles.container}>
+          <OnboardingScreen
+            onFinishBatch1={() => setAuthRoute('REGISTER')}
+            onNavigateToAuth={() => setAuthRoute('LOGIN')}
+          />
+        </SafeAreaView>
+      );
+    }
     if (authRoute === 'REGISTER') {
       return (
         <SafeAreaView style={styles.container}>
@@ -56,6 +93,7 @@ export const RootNavigator: React.FC = () => {
         <LoginScreen
           onNavigateToRegister={() => setAuthRoute('REGISTER')}
           onNavigateToForgotPassword={() => setAuthRoute('FORGOT_PASSWORD')}
+          onNavigateToOnboarding={() => setAuthRoute('ONBOARDING')}
         />
       </SafeAreaView>
     );
@@ -75,124 +113,84 @@ export const RootNavigator: React.FC = () => {
 
   // Main Authenticated Tab Navigation
   const remainingGroceryCount = shoppingList
-    ? shoppingList.totalItemsCount - shoppingList.itemsBoughtCount
+    ? Math.max(0, shoppingList.totalItemsCount - shoppingList.itemsBoughtCount)
     : 0;
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Content Area */}
+      {isLocalDemoMode() ? (
+        <View style={styles.demoBanner}>
+          <Text style={styles.demoBannerText}>DEMO MODE · LOCAL DATA ONLY</Text>
+        </View>
+      ) : null}
       <View style={styles.content}>
-        {activeTab === 'PLAN' && (
+        {visitedTabs.includes('PLAN') && (
+          <View style={[styles.screen, activeTab !== 'PLAN' && styles.hiddenScreen]}>
           <PlanScreen
             onSelectRecipe={setSelectedRecipe}
-            onNavigateToPreferences={() => setActiveTab('PREFS')}
+            onNavigateToPreferences={navigateToPreferences}
+            onNavigateToGrocery={() => navigateToTab('GROCERY')}
+            onNavigateToPantry={() => navigateToTab('PANTRY')}
           />
+          </View>
         )}
-        {activeTab === 'PANTRY' && (
+        {visitedTabs.includes('PANTRY') && (
+          <View style={[styles.screen, activeTab !== 'PANTRY' && styles.hiddenScreen]}>
           <PantryScreen onSelectRecipe={setSelectedRecipe} />
+          </View>
         )}
-        {activeTab === 'GROCERY' && (
+        {visitedTabs.includes('GROCERY') && (
+          <View style={[styles.screen, activeTab !== 'GROCERY' && styles.hiddenScreen]}>
           <GroceryScreen onNavigateToPlan={() => setActiveTab('PLAN')} />
+          </View>
         )}
-        {activeTab === 'EXPLORE' && (
+        {visitedTabs.includes('EXPLORE') && (
+          <View style={[styles.screen, activeTab !== 'EXPLORE' && styles.hiddenScreen]}>
           <ExploreScreen onSelectRecipe={setSelectedRecipe} />
+          </View>
         )}
-        {activeTab === 'PREFS' && <PreferencesScreen />}
-        {activeTab === 'PROFILE' && <ProfileScreen />}
+        {visitedTabs.includes('PROFILE') && (
+          <View style={[styles.screen, activeTab !== 'PROFILE' && styles.hiddenScreen]}>
+            <View style={[styles.screen, profileRoute !== 'PROFILE' && styles.hiddenScreen]}>
+              <ProfileScreen onNavigateToPreferences={() => {
+                setProfileRoute('PREFERENCES');
+                setVisitedProfilePreferences(true);
+              }} />
+            </View>
+            {visitedProfilePreferences ? (
+              <View style={[styles.screen, profileRoute !== 'PREFERENCES' && styles.hiddenScreen]}>
+                <PreferencesScreen onBackToProfile={() => setProfileRoute('PROFILE')} />
+              </View>
+            ) : null}
+          </View>
+        )}
       </View>
 
-      {/* Bottom Tab Bar */}
       <View style={styles.tabBar}>
-        <TouchableOpacity
-          style={styles.tabItem}
-          onPress={() => setActiveTab('PLAN')}
-        >
-          <Text style={[styles.tabIcon, activeTab === 'PLAN' && styles.tabIconActive]}>
-            🗓️
-          </Text>
-          <Text style={[styles.tabLabel, activeTab === 'PLAN' && styles.tabLabelActive]}>
-            Plan
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.tabItem}
-          onPress={() => setActiveTab('PANTRY')}
-        >
-          <Text style={[styles.tabIcon, activeTab === 'PANTRY' && styles.tabIconActive]}>
-            🥫
-          </Text>
-          <Text style={[styles.tabLabel, activeTab === 'PANTRY' && styles.tabLabelActive]}>
-            Pantry
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.tabItem}
-          onPress={() => setActiveTab('GROCERY')}
-        >
-          <View>
-            <Text style={[styles.tabIcon, activeTab === 'GROCERY' && styles.tabIconActive]}>
-              🛒
-            </Text>
-            {remainingGroceryCount > 0 && (
-              <View style={styles.tabBadge}>
-                <Text style={styles.tabBadgeText}>
-                  {remainingGroceryCount > 99 ? '99+' : remainingGroceryCount}
-                </Text>
+        {TABS.map(({ route, label, icon }) => {
+          const isActive = activeTab === route;
+          return (
+            <TouchableOpacity
+              key={route}
+              accessibilityRole="button"
+              accessibilityState={{ selected: isActive }}
+              style={styles.tabItem}
+              onPress={() => navigateToTab(route)}
+            >
+              <View style={styles.tabIconWrap}>
+                <Text style={[styles.tabIcon, isActive && styles.tabIconActive]}>{icon}</Text>
+                {route === 'GROCERY' && remainingGroceryCount > 0 ? (
+                  <View style={styles.tabBadge}>
+                    <Text style={styles.tabBadgeText}>
+                      {remainingGroceryCount > 99 ? '99+' : remainingGroceryCount}
+                    </Text>
+                  </View>
+                ) : null}
               </View>
-            )}
-          </View>
-          <Text
-            style={[styles.tabLabel, activeTab === 'GROCERY' && styles.tabLabelActive]}
-          >
-            Grocery
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.tabItem}
-          onPress={() => setActiveTab('EXPLORE')}
-        >
-          <Text
-            style={[styles.tabIcon, activeTab === 'EXPLORE' && styles.tabIconActive]}
-          >
-            🔍
-          </Text>
-          <Text
-            style={[styles.tabLabel, activeTab === 'EXPLORE' && styles.tabLabelActive]}
-          >
-            Explore
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.tabItem}
-          onPress={() => setActiveTab('PREFS')}
-        >
-          <Text style={[styles.tabIcon, activeTab === 'PREFS' && styles.tabIconActive]}>
-            ⚙️
-          </Text>
-          <Text style={[styles.tabLabel, activeTab === 'PREFS' && styles.tabLabelActive]}>
-            Settings
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.tabItem}
-          onPress={() => setActiveTab('PROFILE')}
-        >
-          <Text
-            style={[styles.tabIcon, activeTab === 'PROFILE' && styles.tabIconActive]}
-          >
-            👤
-          </Text>
-          <Text
-            style={[styles.tabLabel, activeTab === 'PROFILE' && styles.tabLabelActive]}
-          >
-            Profile
-          </Text>
-        </TouchableOpacity>
+              <Text style={[styles.tabLabel, isActive && styles.tabLabelActive]}>{label}</Text>
+            </TouchableOpacity>
+          );
+        })}
       </View>
     </SafeAreaView>
   );
@@ -203,16 +201,36 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FAF9F5',
   },
+  demoBanner: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#0D5C3A',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  demoBannerText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 1,
+  },
   content: {
     flex: 1,
+    minHeight: 0,
+  },
+  screen: {
+    flex: 1,
+  },
+  hiddenScreen: {
+    display: 'none',
   },
   tabBar: {
     flexDirection: 'row',
     backgroundColor: '#FFFFFF',
     borderTopWidth: 1,
-    borderTopColor: '#F0ECE4',
-    paddingVertical: 8,
-    paddingBottom: Platform.OS === 'ios' ? 12 : 8,
+    borderTopColor: '#E9ECE7',
+    paddingTop: 7,
+    paddingBottom: Platform.OS === 'ios' ? 12 : 7,
     justifyContent: 'space-around',
     alignItems: 'center',
     shadowColor: '#000000',
@@ -225,40 +243,47 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     flex: 1,
+    minHeight: 48,
+  },
+  tabIconWrap: {
+    position: 'relative',
   },
   tabIcon: {
-    fontSize: 20,
+    color: '#809087',
+    fontSize: 21,
+    lineHeight: 25,
+    fontWeight: '700',
     opacity: 0.6,
   },
   tabIconActive: {
+    color: '#0D5C3A',
     opacity: 1,
-    transform: [{ scale: 1.1 }],
   },
   tabLabel: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '600',
-    color: '#6B7280',
-    marginTop: 3,
+    color: '#748078',
+    marginTop: 2,
   },
   tabLabelActive: {
     color: '#0D5C3A',
-    fontWeight: '700',
+    fontWeight: '800',
   },
   tabBadge: {
     position: 'absolute',
-    top: -4,
-    right: -10,
-    backgroundColor: '#DC2626',
-    borderRadius: 9,
-    minWidth: 18,
-    height: 18,
+    top: -5,
+    right: -13,
+    backgroundColor: '#E97456',
+    borderRadius: 8,
+    minWidth: 16,
+    height: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 4,
+    paddingHorizontal: 3,
   },
   tabBadgeText: {
     color: '#FFFFFF',
-    fontSize: 10,
+    fontSize: 8,
     fontWeight: '700',
   },
 });

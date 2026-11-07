@@ -237,6 +237,9 @@ describe('Phase 7.2 — Security & Audit Fixes Verification Suite', () => {
       expect(isOriginAllowed('http://127.0.0.1:5173')).toBe(true);
 
       // Allowed production frontend
+      expect(isOriginAllowed('https://meltto.com')).toBe(true);
+      expect(isOriginAllowed('https://www.meltto.com')).toBe(true);
+      expect(isOriginAllowed('https://meltto.com/')).toBe(true);
       expect(isOriginAllowed('https://mise-meal-planner-pi.vercel.app')).toBe(true);
       expect(isOriginAllowed('https://mise-meal-planner-pi.vercel.app/')).toBe(true);
 

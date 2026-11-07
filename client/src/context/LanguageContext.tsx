@@ -26,7 +26,7 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [language, setLanguageState] = useState<Language>(() => {
     if (typeof window !== 'undefined' && window.localStorage) {
-      const saved = localStorage.getItem('mise-site-lang');
+      const saved = localStorage.getItem('meltto-site-lang') || localStorage.getItem('mise-site-lang');
       if (saved && ['en', 'de', 'fr', 'nl'].includes(saved)) {
         return saved as Language;
       }
@@ -76,7 +76,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
     if (typeof window !== 'undefined' && window.localStorage) {
-      localStorage.setItem('mise-site-lang', lang);
+      localStorage.setItem('meltto-site-lang', lang);
     }
   };
 

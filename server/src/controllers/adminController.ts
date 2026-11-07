@@ -20,7 +20,7 @@ export const createRecipeSchema = z.object({
   description: z.string().min(5, 'Description required'),
   image: z.string().url().or(z.string().min(1)),
   cuisine: z.enum(['Italian', 'Asian', 'Mexican', 'Indian', 'Mediterranean', 'British']),
-  vibes: z.array(z.string()).default([]),
+  vibes: z.array(z.string().max(50)).max(15).default([]),
   prepTimeMinutes: z.number().min(1),
   cookTimeMinutes: z.number().min(0),
   servings: z.number().min(1).default(2),
@@ -45,11 +45,11 @@ export const createRecipeSchema = z.object({
       estimatedCost: z.number().min(0).default(1),
       icon: z.string().optional(),
     })
-  ).min(1, 'At least 1 ingredient required'),
-  instructions: z.array(z.string().min(1)).min(1, 'At least 1 instruction step required'),
-  dietaryTags: z.array(z.enum(['Vegetarian', 'Vegan', 'Pescatarian', 'None'])).default(['None']),
-  allergens: z.array(z.string()).default([]),
-  equipmentNeeded: z.array(z.string()).default(['Hob Only']),
+  ).min(1, 'At least 1 ingredient required').max(50, 'Cannot exceed 50 ingredients'),
+  instructions: z.array(z.string().min(1).max(1000)).min(1, 'At least 1 instruction step required').max(30, 'Cannot exceed 30 instruction steps'),
+  dietaryTags: z.array(z.enum(['Vegetarian', 'Vegan', 'Pescatarian', 'None'])).max(5).default(['None']),
+  allergens: z.array(z.string().max(50)).max(20).default([]),
+  equipmentNeeded: z.array(z.string().max(50)).max(15).default(['Hob Only']),
 });
 
 export const updateRecipeSchema = createRecipeSchema.partial();

@@ -20,7 +20,7 @@ export const MealVibesSection: React.FC = () => {
       <div className="container">
         <div className="section-head">
           <span className="eyebrow">{t('vibesSection.eyebrow', 'Meal vibes')}</span>
-          <h2>{t('vibesSection.title', 'Tell mise the mood, get the meals')}</h2>
+          <h2>{t('vibesSection.title', 'Tell Meltto the mood, get the meals')}</h2>
           <p>
             {t(
               'vibesSection.sub',

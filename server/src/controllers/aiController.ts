@@ -15,7 +15,11 @@ export const leftoverRecipeSchema = z.object({
 });
 
 export const planIntentSchema = z.object({
-  prompt: z.string().trim().min(3).max(500),
+  prompt: z
+    .string({ message: 'Please enter a description for your meal plan' })
+    .trim()
+    .min(3, 'Please describe your preferences in at least 3 characters')
+    .max(1000, 'Meal plan prompt cannot exceed 1,000 characters'),
 });
 
 export const generateLeftoverRecipe = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -85,6 +89,14 @@ export const customizePlanWithIntent = async (req: AuthRequest, res: Response): 
         feature: err.feature,
         limit: err.limit,
         current: err.current,
+      });
+      return;
+    }
+    if (err instanceof NoRecipesFoundError || err.code === 'NO_RECIPES_FOUND') {
+      res.status(422).json({
+        success: false,
+        error: err.message,
+        code: 'NO_RECIPES_FOUND',
       });
       return;
     }

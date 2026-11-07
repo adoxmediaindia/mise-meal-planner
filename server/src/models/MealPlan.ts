@@ -25,6 +25,10 @@ export interface IMealPlanDoc extends Document {
   estimatedCost: number;
   budgetLimit: number;
   isArchived: boolean;
+  isInitialOnboardingPlan?: boolean;
+  initialPlanGenerationStatus?: 'pending' | 'ready' | 'complete';
+  initialPlanGenerationToken?: string;
+  initialPlanGenerationLeaseUntil?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -73,8 +77,43 @@ const MealPlanSchema = new Schema<IMealPlanDoc>(
     estimatedCost: { type: Number, required: true, default: 0 },
     budgetLimit: { type: Number, required: true, default: 40 },
     isArchived: { type: Boolean, default: false, index: true },
+    isInitialOnboardingPlan: { type: Boolean, default: false },
+    initialPlanGenerationStatus: {
+      type: String,
+      enum: ['pending', 'ready', 'complete'],
+    },
+    initialPlanGenerationToken: { type: String },
+    initialPlanGenerationLeaseUntil: { type: Date },
   },
   { timestamps: true }
+);
+
+type MealPlanQueryOptions = mongoose.QueryOptions & {
+  includePendingInitialPlan?: boolean;
+};
+
+const hidePendingInitialPlans = function (
+  this: mongoose.Query<unknown, IMealPlanDoc>
+): void {
+  const options = this.getOptions() as MealPlanQueryOptions;
+  if (options.includePendingInitialPlan) {
+    delete options.includePendingInitialPlan;
+    this.setOptions(options);
+    return;
+  }
+  this.where({ initialPlanGenerationStatus: { $ne: 'pending' } });
+};
+
+MealPlanSchema.pre('find', hidePendingInitialPlans);
+MealPlanSchema.pre('findOne', hidePendingInitialPlans);
+MealPlanSchema.pre('findOneAndUpdate', hidePendingInitialPlans);
+
+MealPlanSchema.index(
+  { user: 1, isInitialOnboardingPlan: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { isInitialOnboardingPlan: true },
+  }
 );
 
 export const MealPlan = mongoose.model<IMealPlanDoc>('MealPlan', MealPlanSchema);

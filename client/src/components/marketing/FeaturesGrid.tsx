@@ -21,7 +21,7 @@ export const FeaturesGrid: React.FC = () => {
       icon: '💷',
       bg: '#FFE0BC',
       title: t('features.f3Title', 'Budget-aware'),
-      body: t('features.f3Body', 'Set your weekly spend and mise plans meals that keep you inside it.'),
+      body: t('features.f3Body', 'Set your weekly spend and Meltto plans meals that keep you inside it.'),
     },
     {
       icon: '🥗',
@@ -39,7 +39,7 @@ export const FeaturesGrid: React.FC = () => {
       icon: '🍳',
       bg: '#5EEAD4',
       title: t('features.f6Title', 'Cooks for your kitchen'),
-      body: t('features.f6Body', 'Tell mise your equipment and recipes adapt, from air fryer to hob-only and more.'),
+      body: t('features.f6Body', 'Tell Meltto your equipment and recipes adapt, from air fryer to hob-only and more.'),
     },
     {
       icon: '🌍',

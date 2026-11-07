@@ -66,7 +66,7 @@ vi.mock('../services/api.js', () => ({
         status: 'trial',
         price: 'Free Starter',
         billingCycle: 'monthly',
-        planDetails: { name: 'Mise Starter', description: 'Free tier', features: ['3 plans/week'] },
+        planDetails: { name: 'Meltto Starter', description: 'Free tier', features: ['3 plans/week'] },
         usage: {
           tier: 'free',
           status: 'trial',
@@ -86,7 +86,7 @@ vi.mock('../services/api.js', () => ({
           amount: 4.99,
           currency: 'usd',
           status: 'paid',
-          planName: 'Mise Pro Monthly',
+          planName: 'Meltto Pro Monthly',
           paidAt: new Date().toISOString(),
         },
       ],
@@ -131,7 +131,7 @@ describe('Admin Dashboard & Subscription UI Suite', () => {
       user: {
         id: 'u-admin',
         name: 'Super Admin',
-        email: 'admin@misemealplanner.com',
+        email: 'admin@meltto.com',
         role: 'admin',
         subscriptionTier: 'pro',
         subscriptionStatus: 'active',
@@ -191,7 +191,91 @@ describe('Admin Dashboard & Subscription UI Suite', () => {
       expect(screen.getByText(/Your Resource Entitlements/i)).toBeInTheDocument();
       expect(screen.getByText(/Weekly Plan Generations/i)).toBeInTheDocument();
       expect(screen.getByText(/Pantry Staples Tracked/i)).toBeInTheDocument();
-      expect(screen.getByText(/Upgrade to Mise Pro/i)).toBeInTheDocument();
+      expect(screen.getByText(/Upgrade to (Meltto|Mise) Pro/i)).toBeInTheDocument();
+    });
+  });
+
+  it('Bug 1 Regression: safely renders Settings when user has no household (household is null)', async () => {
+    vi.spyOn(authContext, 'useAuth').mockReturnValue({
+      user: {
+        id: 'u-reg',
+        name: 'Jane Doe',
+        email: 'jane@example.com',
+        role: 'user',
+        subscriptionTier: 'free',
+        subscriptionStatus: 'trial',
+      },
+      isAuthenticated: true,
+      isLoading: false,
+      login: vi.fn(),
+      register: vi.fn(),
+      logout: vi.fn(),
+      toggleFavoriteInState: vi.fn(),
+      refreshUser: vi.fn(),
+    });
+
+    render(
+      <BrowserRouter>
+        <Settings />
+      </BrowserRouter>
+    );
+
+    // Verify Settings card renders without any uncaught TypeError
+    expect(screen.getByText(/Household & Sharing/i)).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/Create a shared household to plan meals, manage pantry staples, and shop for groceries together/i)
+      ).toBeInTheDocument();
+      expect(screen.getByPlaceholderText(/e\.g\., The Miller Family/i)).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /^Create$/i })).toBeInTheDocument();
+    });
+  });
+
+  it('Bug 1 Regression: safely renders Settings when household has empty members or unpopulated user objects', async () => {
+    const { api } = await import('../services/api.js');
+    vi.mocked(api.getMyHousehold).mockResolvedValueOnce({
+      success: true,
+      data: {
+        _id: 'hh-100',
+        name: 'The Test Family',
+        owner: { id: 'u-reg', name: 'Jane Doe', email: 'jane@example.com' } as any,
+        members: [
+          { user: { id: 'u-reg', name: 'Jane Doe', email: 'jane@example.com' } as any, role: 'owner' as const, joinedAt: new Date().toISOString() },
+          { user: undefined as any, role: 'member' as const, joinedAt: new Date().toISOString() },
+        ],
+        inviteCode: 'TEST100',
+      } as any,
+    });
+
+    vi.spyOn(authContext, 'useAuth').mockReturnValue({
+      user: {
+        id: 'u-reg',
+        name: 'Jane Doe',
+        email: 'jane@example.com',
+        role: 'user',
+        subscriptionTier: 'free',
+        subscriptionStatus: 'trial',
+      },
+      isAuthenticated: true,
+      isLoading: false,
+      login: vi.fn(),
+      register: vi.fn(),
+      logout: vi.fn(),
+      toggleFavoriteInState: vi.fn(),
+      refreshUser: vi.fn(),
+    });
+
+    render(
+      <BrowserRouter>
+        <Settings />
+      </BrowserRouter>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('The Test Family')).toBeInTheDocument();
+      expect(screen.getByText(/Members \(2\)/i)).toBeInTheDocument();
+      expect(screen.getByText('OWNER')).toBeInTheDocument();
     });
   });
 });

@@ -89,7 +89,7 @@ export const GeneratedRecipeSchema = z.object({
   title: z.string().min(3).max(100),
   description: z.string().min(10).max(300),
   cuisine: z.enum(['Italian', 'Asian', 'Mexican', 'Indian', 'Mediterranean', 'British']),
-  vibes: z.array(z.string()).min(1),
+  vibes: z.array(z.string().max(50)).min(1).max(10),
   prepTimeMinutes: z.number().int().min(1).max(180),
   cookTimeMinutes: z.number().int().min(1).max(240),
   servings: z.number().int().min(1).max(12),
@@ -114,15 +114,15 @@ export const GeneratedRecipeSchema = z.object({
       estimatedCost: z.number().min(0),
       icon: z.string().optional(),
     })
-  ).min(2),
-  instructions: z.array(z.string().min(5)).min(2),
-  dietaryTags: z.array(z.enum(['Vegetarian', 'Vegan', 'Pescatarian', 'None'])),
+  ).min(2).max(50),
+  instructions: z.array(z.string().min(5).max(1000)).min(2).max(30),
+  dietaryTags: z.array(z.enum(['Vegetarian', 'Vegan', 'Pescatarian', 'None'])).max(5),
   allergens: z.array(
     z.enum(['Gluten', 'Dairy', 'Peanuts', 'Tree Nuts', 'Eggs', 'Fish', 'Shellfish', 'Soy', 'Sesame'])
-  ),
+  ).max(15),
   equipmentNeeded: z.array(
     z.enum(['Air Fryer', 'Slow Cooker', 'Hob Only', 'Oven', 'Blender', 'Instant Pot'])
-  ),
+  ).max(10),
 });
 
 export interface LeftoverRecipeResult {
@@ -283,7 +283,7 @@ export class AiService {
           ? `STRICT DIETARY REQUIREMENT: The recipe must be 100% compliant with: ${dietaryNeeds.join(', ')}.`
           : 'No specific dietary restriction.';
 
-      const systemPrompt = `You are Chef Mise, an expert culinary assistant for home cooks.
+      const systemPrompt = `You are Chef Meltto, an expert culinary assistant for home cooks.
 Create a delicious, realistic home-cooked dinner recipe centered around the user's available leftover ingredients.
 ${allergenPrompt}
 ${dietPrompt}
@@ -617,7 +617,7 @@ Respond ONLY with a valid JSON object matching this schema:
 
       const daysList = preference.cookingDays?.join(', ') || 'Monday, Tuesday, Wednesday, Thursday, Friday';
 
-      const systemPrompt = `You are the meal plan intent parser for Mise Meal Planner.
+      const systemPrompt = `You are the meal plan intent parser for Meltto.
 Given the user's natural language request, extract desired dietary requirements, maximum cooking times, meal vibes, and cuisines per day for these active cooking days: ${daysList}.
 
 Supported Dietary Needs: "Vegetarian", "Vegan", "Pescatarian", "None".

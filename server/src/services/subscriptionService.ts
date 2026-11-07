@@ -95,7 +95,7 @@ export class SubscriptionService {
       currentPeriodEnd: sub.currentPeriodEnd,
       cancelAtPeriodEnd: sub.cancelAtPeriodEnd,
       planDetails: {
-        name: isPro ? (isYearly ? 'Mise Pro Annual' : 'Mise Pro Monthly') : 'Mise Starter',
+        name: isPro ? (isYearly ? 'Meltto Pro Annual' : 'Meltto Pro Monthly') : 'Meltto Starter',
         description: isPro
           ? 'Full access to unlimited meal generations, unlimited pantry, and 10-member household sharing.'
           : 'Starter meal planning with 3 generations per week, 15 pantry staples, and 2 household members.',
@@ -165,13 +165,13 @@ export class SubscriptionService {
       currency: 'usd',
       status: 'paid',
       billingCycle,
-      planName: isYearly ? 'Mise Pro Annual Subscription' : 'Mise Pro Monthly Subscription',
+      planName: isYearly ? 'Meltto Pro Annual Subscription' : 'Meltto Pro Monthly Subscription',
       paidAt: new Date(),
     });
 
     return {
       subscription: sub,
-      message: `Successfully upgraded to ${isYearly ? 'Mise Pro Annual ($49.99/yr)' : 'Mise Pro Monthly ($4.99/mo)'}. Your pro features are active immediately!`,
+      message: `Successfully upgraded to ${isYearly ? 'Meltto Pro Annual ($49.99/yr)' : 'Meltto Pro Monthly ($4.99/mo)'}. Your pro features are active immediately!`,
     };
   }
 
@@ -483,7 +483,7 @@ export class SubscriptionService {
               currency: dataObject.currency || 'usd',
               status: 'paid',
               billingCycle: 'monthly',
-              planName: 'Mise Pro Monthly',
+              planName: 'Meltto Pro Monthly',
               paidAt: new Date(),
             });
             break;

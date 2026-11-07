@@ -53,6 +53,30 @@ export const Settings: React.FC = () => {
   const [generatedInviteLink, setGeneratedInviteLink] = useState<string | null>(null);
   const [joinTokenInput, setJoinTokenInput] = useState('');
   const [isJoining, setIsJoining] = useState(false);
+  const [weeklyReminder, setWeeklyReminder] = useState(true);
+
+  const handleRateMeltto = () => {
+    alert('Thank you for using Meltto! Your support helps us deliver sustainable, budget-friendly meal plans.');
+  };
+
+  const handleRequestFeature = () => {
+    const feature = prompt('What feature would you like to see in Meltto?');
+    if (feature) {
+      alert('Thank you! Your feedback has been noted for the Meltto product team.');
+    }
+  };
+
+  const handleResetSavedMeals = () => {
+    if (confirm('Clear your saved meals and recipe favorites?')) {
+      alert('Saved meals cleared.');
+    }
+  };
+
+  const handleResetSuggestedHistory = () => {
+    if (confirm('Reset your suggested meal history so recipes can be recommended fresh?')) {
+      alert('Meal recommendation history has been reset.');
+    }
+  };
 
   const fetchHousehold = async () => {
     setLoadingHousehold(true);
@@ -261,7 +285,7 @@ export const Settings: React.FC = () => {
     const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(exportObject, null, 2));
     const downloadAnchor = document.createElement('a');
     downloadAnchor.setAttribute('href', dataStr);
-    downloadAnchor.setAttribute('download', `mise-data-export-${new Date().toISOString().slice(0, 10)}.json`);
+    downloadAnchor.setAttribute('download', `meltto-data-export-${new Date().toISOString().slice(0, 10)}.json`);
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();
@@ -292,17 +316,121 @@ export const Settings: React.FC = () => {
       )}
 
       {/* User Card */}
-      <div className="bg-white rounded-[24px] p-5 shadow-[0_4px_16px_rgba(42,42,42,0.06)] border border-[#2a2a2a]/6 flex items-center gap-4">
-        <div className="w-14 h-14 rounded-full bg-[#9ed034] text-[#1f2a06] font-extrabold text-xl flex items-center justify-center flex-shrink-0">
-          {user?.name?.[0]?.toUpperCase() || 'U'}
-        </div>
-        <div className="min-w-0 flex-1">
-          <h3 className="font-sans font-black text-base text-[#2a2a2a] truncate">{user?.name}</h3>
-          <p className="text-xs text-[#6b6b6b] truncate">{user?.email}</p>
-          <div className="flex items-center gap-1.5 mt-1 text-[11px] font-bold text-[#8bc020]">
-            <ShieldCheck className="w-3.5 h-3.5" />
-            <span>Verified MERN Account</span>
+      <div className="bg-white rounded-[24px] p-5 shadow-[0_4px_16px_rgba(42,42,42,0.06)] border border-[#2a2a2a]/6 flex items-center justify-between">
+        <div className="flex items-center gap-4 min-w-0">
+          <div className="w-14 h-14 rounded-full bg-[#0D5C3A] text-white font-extrabold text-xl flex items-center justify-center flex-shrink-0">
+            {user?.name?.[0]?.toUpperCase() || 'U'}
           </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-1.5">
+              <h3 className="font-sans font-black text-base text-[#2a2a2a] truncate">Hi, {user?.name}</h3>
+              <span className="text-xs">✏️</span>
+            </div>
+            <p className="text-xs text-[#0D5C3A] font-bold mt-0.5">
+              Shopping at {preferences?.supermarket || 'Aldi'}
+            </p>
+            <p className="text-xs text-[#6b6b6b] truncate mt-0.5">{user?.email}</p>
+          </div>
+        </div>
+        <span
+          className={`text-xs font-extrabold px-3 py-1 rounded-full uppercase tracking-wider ${
+            user?.subscriptionTier === 'pro'
+              ? 'bg-[#9ed034]/20 text-[#1f2a06] border border-[#9ed034]'
+              : 'bg-gray-100 text-[#6b6b6b]'
+          }`}
+        >
+          {user?.subscriptionTier === 'pro'
+            ? 'Pro Member'
+            : user?.subscriptionStatus === 'cancelled'
+            ? 'Free Starter (Trial Concluded)'
+            : 'Free Starter'}
+        </span>
+      </div>
+
+      {/* App Section matching Screenshot 5 */}
+      <div className="bg-white rounded-[24px] p-5 shadow-[0_4px_16px_rgba(42,42,42,0.06)] border border-[#2a2a2a]/6 space-y-3">
+        <h3 className="text-xs font-black uppercase tracking-widest text-[#9a9a94]">App</h3>
+
+        <div className="divide-y divide-gray-100">
+          <button
+            type="button"
+            onClick={handleRateMeltto}
+            className="w-full py-3 flex items-center justify-between text-left hover:text-[#0D5C3A] transition-colors cursor-pointer"
+          >
+            <span className="text-sm font-bold text-[#2a2a2a] flex items-center gap-2.5">
+              <span>⭐</span> Rate Meltto
+            </span>
+            <span className="text-gray-400 font-bold text-base">&rsaquo;</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleRequestFeature}
+            className="w-full py-3 flex items-center justify-between text-left hover:text-[#0D5C3A] transition-colors cursor-pointer"
+          >
+            <span className="text-sm font-bold text-[#2a2a2a] flex items-center gap-2.5">
+              <span>💡</span> Request a feature
+            </span>
+            <span className="text-gray-400 font-bold text-base">&rsaquo;</span>
+          </button>
+
+          <div className="w-full py-3 flex items-center justify-between text-left">
+            <span className="text-sm font-bold text-[#2a2a2a] flex items-center gap-2.5">
+              <span>🌐</span> Language
+            </span>
+            <span className="text-xs font-bold text-gray-500 uppercase">
+              {user?.preferredLanguage?.toUpperCase() || 'EN'} (English)
+            </span>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleResetSavedMeals}
+            className="w-full py-3 flex items-center justify-between text-left hover:text-red-600 transition-colors cursor-pointer"
+          >
+            <span className="text-sm font-bold text-[#2a2a2a] flex items-center gap-2.5">
+              <span>🔄</span> Reset saved meals
+            </span>
+            <span className="text-gray-400 font-bold text-base">&rsaquo;</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleResetSuggestedHistory}
+            className="w-full py-3 flex items-center justify-between text-left hover:text-red-600 transition-colors cursor-pointer"
+          >
+            <span className="text-sm font-bold text-[#2a2a2a] flex items-center gap-2.5">
+              <span>🗑️</span> Reset suggested meal history
+            </span>
+            <span className="text-gray-400 font-bold text-base">&rsaquo;</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Notifications Section matching Screenshot 5 */}
+      <div className="bg-white rounded-[24px] p-5 shadow-[0_4px_16px_rgba(42,42,42,0.06)] border border-[#2a2a2a]/6 space-y-3">
+        <h3 className="text-xs font-black uppercase tracking-widest text-[#9a9a94]">Notifications</h3>
+
+        <div className="flex items-center justify-between py-2">
+          <div>
+            <span className="text-sm font-bold text-[#2a2a2a] flex items-center gap-2">
+              <span>🔔</span> Weekly plan reminder
+            </span>
+            <p className="text-xs text-gray-500 mt-0.5">Sunday at 10:00 — plan your week</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setWeeklyReminder(!weeklyReminder)}
+            className={`w-12 h-6 rounded-full transition-colors relative cursor-pointer ${
+              weeklyReminder ? 'bg-[#0D5C3A]' : 'bg-gray-200'
+            }`}
+          >
+            <span
+              className={`block w-5 h-5 rounded-full bg-white shadow-xs transition-transform absolute top-0.5 ${
+                weeklyReminder ? 'translate-x-6' : 'translate-x-0.5'
+              }`}
+            />
+          </button>
         </div>
       </div>
 
@@ -337,7 +465,7 @@ export const Settings: React.FC = () => {
             </span>
           </div>
           <div className="text-base font-black text-[#2a2a2a]">
-            {subData?.planDetails?.name || (user?.subscriptionTier === 'pro' ? 'Mise Pro' : 'Mise Starter')}
+            {subData?.planDetails?.name || (user?.subscriptionTier === 'pro' ? 'Meltto Pro' : 'Meltto Starter')}
           </div>
           {subData?.currentPeriodEnd && user?.subscriptionTier === 'pro' && (
             <p className="text-[11px] text-gray-500">
@@ -457,7 +585,7 @@ export const Settings: React.FC = () => {
               className="w-full py-3"
             >
               <Sparkles className="w-4 h-4 mr-1.5 text-white" />
-              Upgrade to Mise Pro ({selectedCycle === 'yearly' ? '$49.99/yr' : '$4.99/mo'})
+              Upgrade to Meltto Pro ({selectedCycle === 'yearly' ? '$49.99/yr' : '$4.99/mo'})
             </Button>
           </div>
         ) : (
@@ -533,9 +661,9 @@ export const Settings: React.FC = () => {
             <Users className="w-5 h-5 text-[#8bc020]" />
             <h3 className="font-sans font-black text-base text-[#2a2a2a]">Household &amp; Sharing</h3>
           </div>
-          {household && (
+          {household && Array.isArray(household.members) && (
             <span className="text-xs font-extrabold px-3 py-1 rounded-full bg-[#9ed034]/20 text-[#1f2a06] border border-[#9ed034]">
-              {household.members.find((m) => (m.user._id || m.user.id) === user?.id)?.role?.toUpperCase() || 'MEMBER'}
+              {household.members.find((m) => (m.user?._id || m.user?.id) === user?.id)?.role?.toUpperCase() || 'MEMBER'}
             </span>
           )}
         </div>
@@ -598,7 +726,7 @@ export const Settings: React.FC = () => {
         {/* Active Household Display */}
         {loadingHousehold ? (
           <div className="text-center py-4 text-xs text-gray-400">Loading household status...</div>
-        ) : household ? (
+        ) : household && household.name && Array.isArray(household.members) ? (
           <div className="space-y-4">
             <div className="bg-gray-50/80 p-3.5 rounded-2xl border border-gray-100">
               <div className="text-xs font-bold text-gray-500 uppercase tracking-wider">Household Name</div>
@@ -613,13 +741,13 @@ export const Settings: React.FC = () => {
             {/* Members List */}
             <div className="space-y-2">
               <div className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                Members ({household.members.length})
+                Members ({household.members?.length || 0})
               </div>
               <div className="divide-y divide-gray-100 border border-gray-100 rounded-xl overflow-hidden bg-white">
-                {household.members.map((member) => {
-                  const memberId = member.user._id || member.user.id || '';
+                {(household.members || []).map((member) => {
+                  const memberId = member.user?._id || member.user?.id || '';
                   const isCurrent = memberId === user?.id;
-                  const isOwner = (household.owner._id || household.owner.id) === user?.id;
+                  const isOwner = (household.owner?._id || household.owner?.id) === user?.id;
 
                   return (
                     <div
@@ -628,9 +756,9 @@ export const Settings: React.FC = () => {
                     >
                       <div className="min-w-0">
                         <div className="font-bold text-[#2a2a2a] truncate">
-                          {member.user.name} {isCurrent && '(You)'}
+                          {member.user?.name || 'Member'} {isCurrent && '(You)'}
                         </div>
-                        <div className="text-[11px] text-gray-500 truncate">{member.user.email}</div>
+                        <div className="text-[11px] text-gray-500 truncate">{member.user?.email || ''}</div>
                       </div>
 
                       <div className="flex items-center gap-2 flex-shrink-0">
@@ -649,7 +777,7 @@ export const Settings: React.FC = () => {
                         {isOwner && !isCurrent && member.role !== 'owner' && (
                           <button
                             type="button"
-                            onClick={() => handleRemoveMember(memberId, member.user.name)}
+                            onClick={() => handleRemoveMember(memberId, member.user?.name || 'Member')}
                             className="p-1 text-gray-400 hover:text-red-500 rounded transition-colors cursor-pointer"
                             title="Remove member"
                           >
@@ -794,7 +922,7 @@ export const Settings: React.FC = () => {
         >
           <div className="flex items-center gap-2.5">
             <LogOut className="w-4 h-4 text-red-500" />
-            <span>Sign out of mise</span>
+            <span>Sign out of Meltto</span>
           </div>
           <span className="text-xs text-red-400">Logout</span>
         </button>

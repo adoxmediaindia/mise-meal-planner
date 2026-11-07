@@ -54,7 +54,7 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({
       <ScrollView contentContainerStyle={styles.scroll}>
         {/* Brand Header */}
         <View style={styles.header}>
-          <Text style={styles.logoBadge}>🌱 MISE</Text>
+          <Text style={styles.logoBadge}>🌱 MELTTO</Text>
           <Text style={styles.title}>Create your account</Text>
           <Text style={styles.subtitle}>
             Plan delicious, zero-waste dinners scaled to your household and budget

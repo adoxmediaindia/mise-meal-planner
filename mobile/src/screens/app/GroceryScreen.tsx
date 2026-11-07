@@ -7,12 +7,17 @@ import {
   TouchableOpacity,
   RefreshControl,
   Alert,
+  Modal,
+  TextInput,
+  Share,
 } from 'react-native';
 import { usePlan } from '../../context/PlanContext';
+import { useAuth } from '../../context/AuthContext';
 import { AisleSection } from '../../components/grocery/AisleSection';
 import { LoadingState } from '../../components/common/LoadingState';
 import { EmptyState } from '../../components/common/EmptyState';
-import { SupermarketAisle } from '../../types';
+import { CurrencyCode, SupermarketAisle } from '../../types';
+import { formatCurrency } from '../../utils/currency';
 
 const AISLES: SupermarketAisle[] = [
   'Fresh Produce',
@@ -33,16 +38,31 @@ export const GroceryScreen: React.FC<GroceryScreenProps> = ({
 }) => {
   const {
     shoppingList,
+    preferences,
     isLoading,
     offlinePendingCount,
     fetchShoppingList,
     toggleShoppingItem,
     resetShoppingList,
+    addCustomShoppingItem,
+    deleteShoppingItem,
     syncOfflineChanges,
   } = usePlan();
+  const { user } = useAuth();
+  const currencyCode: CurrencyCode =
+    preferences?.currencyCode || user?.currencyCode || user?.weeklyBudgetCurrency || 'USD';
 
   const [refreshing, setRefreshing] = useState(false);
   const [syncing, setSyncing] = useState(false);
+
+  // Custom Item Modal State
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [nameInput, setNameInput] = useState('');
+  const [quantityInput, setQuantityInput] = useState('1');
+  const [unitInput, setUnitInput] = useState('');
+  const [aisleInput, setAisleInput] = useState<SupermarketAisle>('Fresh Produce');
+  const [costInput, setCostInput] = useState('2.50');
+  const [isSubmittingItem, setIsSubmittingItem] = useState(false);
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -65,6 +85,79 @@ export const GroceryScreen: React.FC<GroceryScreenProps> = ({
         { text: 'Reset', style: 'destructive', onPress: resetShoppingList },
       ]
     );
+  };
+
+  const handleCopyList = async () => {
+    if (!shoppingList || !shoppingList.items || shoppingList.items.length === 0) return;
+
+    let text = `🛒 MELTTO GROCERY LIST (${shoppingList.supermarket || 'Supermarket'})\n`;
+    text += `Total Estimated Cost: ${formatCurrency(shoppingList.totalEstimatedCost, currencyCode)}\n\n`;
+
+    AISLES.forEach((aisle) => {
+      const aisleItems = shoppingList.items.filter((i) => i.aisle === aisle);
+      if (aisleItems.length > 0) {
+        text += `[${aisle.toUpperCase()}]\n`;
+        aisleItems.forEach((item) => {
+          const status = item.isBought ? '[x]' : '[ ]';
+          text += `${status} ${item.name} (${item.totalQuantity} ${item.unit || ''}) - ${formatCurrency(item.estimatedCost, currencyCode)}\n`;
+        });
+        text += '\n';
+      }
+    });
+
+    try {
+      await Share.share({
+        message: text,
+        title: `Meltto Grocery List - ${shoppingList.supermarket}`,
+      });
+    } catch (err: any) {
+      Alert.alert('Share Grocery List', text);
+    }
+  };
+
+  const handleAddCustomItem = async () => {
+    if (!nameInput.trim()) {
+      Alert.alert('Required', 'Please enter an item name');
+      return;
+    }
+    const qty = parseFloat(quantityInput);
+    if (isNaN(qty) || qty <= 0) {
+      Alert.alert('Required', 'Please enter a valid quantity');
+      return;
+    }
+    const estCost = parseFloat(costInput) || 0;
+
+    setIsSubmittingItem(true);
+    try {
+      await addCustomShoppingItem({
+        name: nameInput.trim(),
+        totalQuantity: qty,
+        unit: unitInput.trim() || undefined,
+        aisle: aisleInput,
+        estimatedCost: estCost,
+      });
+      setIsAddModalOpen(false);
+      setNameInput('');
+      setQuantityInput('1');
+      setUnitInput('');
+      setCostInput('2.50');
+      Alert.alert('Added', 'Custom item added to grocery list');
+    } catch (err: any) {
+      Alert.alert('Error', err.message || 'Failed to add custom item');
+    } finally {
+      setIsSubmittingItem(false);
+    }
+  };
+
+  const handleDeleteCustomItem = (itemId: string) => {
+    Alert.alert('Remove Custom Item', 'Delete this item from your shopping list?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: () => deleteShoppingItem(itemId),
+      },
+    ]);
   };
 
   if (isLoading && !shoppingList) {
@@ -108,7 +201,7 @@ export const GroceryScreen: React.FC<GroceryScreenProps> = ({
               <Text style={styles.headerSub}>Consolidated weekly ingredients</Text>
             </View>
             <View style={styles.costBadge}>
-              <Text style={styles.costBadgeText}>${totalEstimatedCost.toFixed(2)}</Text>
+              <Text style={styles.costBadgeText}>{formatCurrency(totalEstimatedCost, currencyCode)}</Text>
             </View>
           </View>
 
@@ -126,6 +219,30 @@ export const GroceryScreen: React.FC<GroceryScreenProps> = ({
               />
             </View>
           </View>
+        </View>
+
+        {/* Action Buttons Toolbar */}
+        <View style={styles.toolbar}>
+          <TouchableOpacity
+            style={styles.toolBtnPrimary}
+            onPress={() => setIsAddModalOpen(true)}
+          >
+            <Text style={styles.toolBtnPrimaryText}>+ Add Item</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.toolBtnSecondary}
+            onPress={handleCopyList}
+          >
+            <Text style={styles.toolBtnSecondaryText}>📋 Copy / Share</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.toolBtnSecondary}
+            onPress={handleConfirmReset}
+          >
+            <Text style={styles.toolBtnSecondaryText}>↺ Reset</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Offline Banner when offline pending mutations exist */}
@@ -157,19 +274,107 @@ export const GroceryScreen: React.FC<GroceryScreenProps> = ({
               key={aisle}
               aisle={aisle}
               items={aisleItems}
+              currencyCode={currencyCode}
               onToggleItem={toggleShoppingItem}
+              onDeleteItem={handleDeleteCustomItem}
             />
           );
         })}
-
-        {/* Reset Button */}
-        <TouchableOpacity
-          onPress={handleConfirmReset}
-          style={styles.resetButton}
-        >
-          <Text style={styles.resetButtonText}>↺ Reset All Checkboxes</Text>
-        </TouchableOpacity>
       </ScrollView>
+
+      {/* ==================================================== */}
+      {/* ADD CUSTOM ITEM MODAL                                */}
+      {/* ==================================================== */}
+      <Modal visible={isAddModalOpen} transparent animationType="slide">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeaderRow}>
+              <Text style={styles.modalTitle}>Add Custom Item</Text>
+              <TouchableOpacity
+                onPress={() => setIsAddModalOpen(false)}
+                style={styles.modalCloseBtn}
+              >
+                <Text style={styles.modalCloseText}>✕</Text>
+              </TouchableOpacity>
+            </View>
+
+            <TextInput
+              style={styles.modalInput}
+              placeholder="Item name (e.g., Oat Milk, Kitchen Foil)"
+              placeholderTextColor="#9CA3AF"
+              value={nameInput}
+              onChangeText={setNameInput}
+            />
+
+            <View style={styles.modalRow}>
+              <TextInput
+                style={[styles.modalInput, { flex: 1, marginRight: 8 }]}
+                placeholder="Quantity (e.g. 1)"
+                placeholderTextColor="#9CA3AF"
+                keyboardType="numeric"
+                value={quantityInput}
+                onChangeText={setQuantityInput}
+              />
+              <TextInput
+                style={[styles.modalInput, { flex: 1 }]}
+                placeholder="Unit (e.g. carton, roll)"
+                placeholderTextColor="#9CA3AF"
+                value={unitInput}
+                onChangeText={setUnitInput}
+              />
+            </View>
+
+            <Text style={styles.modalFieldLabel}>Supermarket Aisle</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.modalAisleScroll}>
+              {AISLES.map((a) => (
+                <TouchableOpacity
+                  key={a}
+                  style={[styles.smallPill, aisleInput === a && styles.smallPillActive]}
+                  onPress={() => setAisleInput(a)}
+                >
+                  <Text
+                    style={[
+                      styles.smallPillText,
+                      aisleInput === a && styles.smallPillTextActive,
+                    ]}
+                  >
+                    {a}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+            <TextInput
+              style={styles.modalInput}
+              placeholder={`Estimated Cost (e.g. ${formatCurrency(2.5, currencyCode)})`}
+              placeholderTextColor="#9CA3AF"
+              keyboardType="numeric"
+              value={costInput}
+              onChangeText={setCostInput}
+            />
+
+            <View style={styles.modalActions}>
+              <TouchableOpacity
+                style={styles.modalCancelBtn}
+                onPress={() => setIsAddModalOpen(false)}
+                disabled={isSubmittingItem}
+              >
+                <Text style={styles.modalCancelBtnText}>Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.modalSubmitBtn}
+                onPress={handleAddCustomItem}
+                disabled={isSubmittingItem}
+              >
+                <Text style={styles.modalSubmitBtnText}>
+                  {isSubmittingItem ? 'Adding...' : 'Add to List'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -187,7 +392,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
     padding: 18,
-    marginBottom: 16,
+    marginBottom: 12,
     borderWidth: 1,
     borderColor: '#F0ECE4',
     shadowColor: '#000000',
@@ -252,6 +457,37 @@ const styles = StyleSheet.create({
     backgroundColor: '#0D5C3A',
     borderRadius: 4,
   },
+  toolbar: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 16,
+  },
+  toolBtnPrimary: {
+    flex: 1.2,
+    backgroundColor: '#0D5C3A',
+    paddingVertical: 10,
+    borderRadius: 14,
+    alignItems: 'center',
+  },
+  toolBtnPrimaryText: {
+    color: '#FFFFFF',
+    fontWeight: '800',
+    fontSize: 12,
+  },
+  toolBtnSecondary: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    paddingVertical: 10,
+    borderRadius: 14,
+    alignItems: 'center',
+  },
+  toolBtnSecondaryText: {
+    color: '#374151',
+    fontWeight: '700',
+    fontSize: 12,
+  },
   offlineBanner: {
     backgroundColor: '#FEF3C7',
     borderRadius: 14,
@@ -287,14 +523,109 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontSize: 12,
   },
-  resetButton: {
-    alignItems: 'center',
-    paddingVertical: 14,
-    marginTop: 10,
+
+  // Modal Styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
   },
-  resetButtonText: {
+  modalContent: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 20,
+  },
+  modalHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 14,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#111827',
+  },
+  modalCloseBtn: {
+    padding: 4,
+  },
+  modalCloseText: {
+    fontSize: 18,
+    fontWeight: '700',
     color: '#6B7280',
+  },
+  modalInput: {
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 13,
+    color: '#111827',
+    backgroundColor: '#F9FAFB',
+    marginBottom: 10,
+  },
+  modalRow: {
+    flexDirection: 'row',
+  },
+  modalFieldLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    color: '#6B7280',
+    marginBottom: 6,
+    marginTop: 4,
+  },
+  modalAisleScroll: {
+    marginBottom: 12,
+  },
+  smallPill: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+    backgroundColor: '#F3F4F6',
+    marginRight: 6,
+  },
+  smallPillActive: {
+    backgroundColor: '#0D5C3A',
+  },
+  smallPillText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#4B5563',
+  },
+  smallPillTextActive: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+  },
+  modalActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 10,
+    marginTop: 8,
+  },
+  modalCancelBtn: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+  },
+  modalCancelBtnText: {
     fontSize: 13,
     fontWeight: '600',
+    color: '#4B5563',
+  },
+  modalSubmitBtn: {
+    backgroundColor: '#0D5C3A',
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    borderRadius: 12,
+  },
+  modalSubmitBtnText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
 });

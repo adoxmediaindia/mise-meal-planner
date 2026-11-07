@@ -1,4 +1,5 @@
 import { secureStorage } from './secureStorage';
+import { isLocalDemoMode } from '../demo/demoMode';
 
 export interface OfflineMutation {
   id: string;
@@ -114,4 +115,6 @@ class OfflineSyncQueue {
 }
 
 export const offlineSyncQueue = new OfflineSyncQueue();
-offlineSyncQueue.init();
+if (!isLocalDemoMode()) {
+  offlineSyncQueue.init();
+}

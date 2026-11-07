@@ -1,18 +1,22 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { SupermarketAisle, IShoppingItem } from '../../types';
+import { CurrencyCode, SupermarketAisle, IShoppingItem } from '../../types';
 import { GroceryItemRow } from './GroceryItemRow';
 
 interface AisleSectionProps {
   aisle: SupermarketAisle;
   items: IShoppingItem[];
+  currencyCode: CurrencyCode;
   onToggleItem: (itemId: string) => void;
+  onDeleteItem?: (itemId: string) => void;
 }
 
 export const AisleSection: React.FC<AisleSectionProps> = ({
   aisle,
   items,
+  currencyCode,
   onToggleItem,
+  onDeleteItem,
 }) => {
   if (items.length === 0) return null;
 
@@ -32,7 +36,9 @@ export const AisleSection: React.FC<AisleSectionProps> = ({
           <GroceryItemRow
             key={item.id}
             item={item}
+            currencyCode={currencyCode}
             onToggle={() => onToggleItem(item.id)}
+            onDelete={onDeleteItem ? () => onDeleteItem(item.id) : undefined}
           />
         ))}
       </View>

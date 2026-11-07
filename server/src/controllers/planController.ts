@@ -1,4 +1,4 @@
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { z } from 'zod';
 import { MealPlan } from '../models/MealPlan.js';
 import { Preference } from '../models/Preference.js';
@@ -39,6 +39,12 @@ export const getCurrentPlan = async (req: AuthRequest, res: Response): Promise<v
       .populate('meals.recipe');
 
     if (!plan) {
+      const user = await User.findById(userId).select('onboardingCompleted');
+      if (user && !user.onboardingCompleted) {
+        res.json({ success: true, data: null });
+        return;
+      }
+
       let pref = await Preference.findOne({ user: userId });
       if (!pref) {
         pref = await Preference.create({
@@ -77,6 +83,16 @@ export const getCurrentPlan = async (req: AuthRequest, res: Response): Promise<v
 export const generatePlan = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const userId = req.user!.id;
+    const user = await User.findById(userId).select('onboardingCompleted');
+    if (user && !user.onboardingCompleted) {
+      res.status(409).json({
+        success: false,
+        error: 'Finish onboarding to generate your personalized first meal plan.',
+        code: 'ONBOARDING_COMPLETION_REQUIRED',
+      });
+      return;
+    }
+
     await EntitlementService.assertCanGeneratePlan(userId);
 
     let pref = await Preference.findOne({ user: userId });
@@ -118,6 +134,24 @@ export const generatePlan = async (req: AuthRequest, res: Response): Promise<voi
       });
       return;
     }
+    if (err instanceof NoRecipesFoundError || err.code === 'NO_RECIPES_FOUND') {
+      res.status(422).json({
+        success: false,
+        error: err.message,
+        code: 'NO_RECIPES_FOUND',
+      });
+      return;
+    }
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+export const previewPlan = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const pref = req.body || {};
+    const preview = await PlannerService.generatePreviewPlan(pref);
+    res.json({ success: true, data: preview, message: 'Preview plan generated successfully' });
+  } catch (err: any) {
     if (err instanceof NoRecipesFoundError || err.code === 'NO_RECIPES_FOUND') {
       res.status(422).json({
         success: false,

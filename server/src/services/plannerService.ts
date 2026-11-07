@@ -6,7 +6,7 @@ import { EntitlementService } from './entitlementService.js';
 import { DayOfWeek, Supermarket, MealType, DietaryNeed, Allergen } from '../types/index.js';
 
 // Supermarket cost multiplier based on real market grocery indices
-export const SUPERMARKET_PRICE_MULTIPLIERS: Record<Supermarket, number> = {
+export const SUPERMARKET_PRICE_MULTIPLIERS: Record<string, number> = {
   Aldi: 0.85,
   Walmart: 0.90,
   Kroger: 0.98,
@@ -18,6 +18,47 @@ export const SUPERMARKET_PRICE_MULTIPLIERS: Record<Supermarket, number> = {
   "Trader Joe's": 1.02,
   'Food Lion': 0.91,
   Sprouts: 1.15,
+  // India
+  Blinkit: 0.95,
+  Zepto: 0.95,
+  Instamart: 0.95,
+  BigBasket: 0.92,
+  DMart: 0.85,
+  "Nature's Basket": 1.15,
+  'Reliance Fresh': 0.90,
+  // UK
+  Tesco: 0.95,
+  "Sainsbury's": 0.98,
+  Asda: 0.90,
+  Morrisons: 0.92,
+  Lidl: 0.85,
+  Waitrose: 1.20,
+  'M&S': 1.22,
+  // EU
+  Carrefour: 0.98,
+  'E.Leclerc': 0.92,
+  REWE: 1.02,
+  Edeka: 1.05,
+  Mercadona: 0.90,
+  'Albert Heijn': 1.00,
+  // Canada
+  Loblaws: 1.05,
+  'No Frills': 0.88,
+  Metro: 1.02,
+  Sobeys: 1.04,
+  // Australia
+  Woolworths: 1.00,
+  Coles: 1.00,
+  ALDI: 0.85,
+  IGA: 1.08,
+  // New Zealand
+  Countdown: 1.00,
+  "Pak'nSave": 0.88,
+  'New World': 1.05,
+  // Brazil
+  'Pão de Açúcar': 1.10,
+  Extra: 0.95,
+  Assaí: 0.88,
 };
 
 // Strict Allergen Keyword Dictionary for Deterministic Server-Side Ingredient Auditing
@@ -227,6 +268,8 @@ export class PlannerService {
       strictMaxCookTimeMinutes?: number;
       strictDietaryNeeds?: DietaryNeed[];
       allowFewerMeals?: boolean;
+      initialOnboardingClaimToken?: string;
+      initialOnboardingReservationId?: string;
     }
   ): Promise<IMealPlanDoc> {
     const basePref: any =
@@ -358,8 +401,60 @@ export class PlannerService {
       })),
     ];
 
+    // Promote the reservation with an atomic owner-and-lease check on the same document.
+    if (options?.initialOnboardingClaimToken) {
+      if (!options.initialOnboardingReservationId) {
+        throw new Error('The initial meal plan reservation is missing. Please retry.');
+      }
+
+      if (existingPlan && !existingPlan.isInitialOnboardingPlan) {
+        throw new Error('An existing meal plan was found; it was preserved.');
+      }
+      if (existingPlan) return existingPlan;
+
+      const now = new Date();
+      const persistedPlan = await MealPlan.findOneAndUpdate(
+        {
+          _id: options.initialOnboardingReservationId,
+          user: userId,
+          isInitialOnboardingPlan: true,
+          initialPlanGenerationStatus: 'pending',
+          initialPlanGenerationToken: options.initialOnboardingClaimToken,
+          initialPlanGenerationLeaseUntil: { $gt: now },
+        },
+        {
+          $set: {
+            weekStartDate: new Date(),
+            dinners: chosenDinners,
+            meals: chosenMeals,
+            householdSize: preference.householdSize || 2,
+            estimatedCost: totalEstimatedCost,
+            budgetLimit: preference.weeklyBudget || 50,
+            initialPlanGenerationStatus: 'ready',
+          },
+        },
+        { new: true }
+      ).setOptions({ includePendingInitialPlan: true });
+
+      if (persistedPlan) return persistedPlan;
+
+      const committedPlan = await MealPlan.findOne({
+        user: userId,
+        isInitialOnboardingPlan: true,
+        initialPlanGenerationStatus: { $ne: 'pending' },
+      });
+      if (committedPlan) return committedPlan;
+      throw new Error('The initial meal plan request expired. Please retry.');
+    }
+
     let plan = existingPlan;
     if (plan) {
+      if (plan.initialPlanGenerationStatus === 'pending') {
+        throw new Error('The first meal plan is still being prepared. Please retry.');
+      }
+      if (plan.isInitialOnboardingPlan && plan.initialPlanGenerationStatus === 'ready') {
+        throw new Error('The first meal plan is awaiting finalization. Please retry.');
+      }
       plan.dinners = chosenDinners;
       plan.meals = chosenMeals;
       plan.householdSize = preference.householdSize || 2;
@@ -380,6 +475,114 @@ export class PlannerService {
     }
 
     return plan;
+  }
+
+  /**
+   * Generates a preview weekly dinner plan without requiring database persistence or user auth.
+   * Deterministically filters recipes by safety query, allergens, dietary constraints, and equipment.
+   */
+  public static async generatePreviewPlan(
+    preference: Partial<IPreference>
+  ): Promise<{
+    dinners: Array<{ day: DayOfWeek; recipe: IRecipeDoc; isCooked: boolean }>;
+    estimatedCost: number;
+    budgetLimit: number;
+    supermarket: string;
+    householdSize: number;
+    cookingDays: DayOfWeek[];
+    shoppingItemsCount: number;
+  }> {
+    const basePref: any =
+      typeof (preference as any)?.toObject === 'function'
+        ? (preference as any).toObject()
+        : preference;
+
+    const effectivePref: Partial<IPreference> = {
+      ...basePref,
+      supermarket: basePref.supermarket || 'Aldi',
+      householdSize: basePref.householdSize || 2,
+      weeklyBudget: basePref.weeklyBudget || 50,
+      cookingDays:
+        basePref.cookingDays && basePref.cookingDays.length > 0
+          ? basePref.cookingDays
+          : ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+    };
+
+    const baseQuery = this.buildSafetyQuery(effectivePref);
+    let candidateRecipes: IRecipeDoc[] = await Recipe.find(baseQuery);
+
+    candidateRecipes = candidateRecipes.filter((r) => {
+      if (!this.validateRecipeAllergySafety(r, effectivePref.allergies)) return false;
+      if (!this.validateRecipeDietarySafety(r, effectivePref.dietaryNeeds)) return false;
+      if (effectivePref.maxCookTimeMinutes && r.cookTimeMinutes > effectivePref.maxCookTimeMinutes) return false;
+      return true;
+    });
+
+    if (candidateRecipes.length === 0) {
+      throw new NoRecipesFoundError(
+        'No recipes found matching your active dietary preferences and allergen exclusions. Try relaxing one allergy filter.'
+      );
+    }
+
+    const scoredRecipes = candidateRecipes.map((recipe) => {
+      let score = 0;
+      if (effectivePref.vibes && effectivePref.vibes.length > 0) {
+        for (const vibe of effectivePref.vibes) {
+          if (recipe.vibes && recipe.vibes.includes(vibe)) score += 3;
+        }
+      }
+      return { recipe, score };
+    });
+
+    scoredRecipes.sort((a, b) => b.score - a.score + (Math.random() - 0.5));
+
+    const cookingDays: DayOfWeek[] = effectivePref.cookingDays!;
+    const targetDays =
+      candidateRecipes.length < cookingDays.length
+        ? cookingDays.slice(0, candidateRecipes.length)
+        : cookingDays;
+
+    const chosenDinners: Array<{ day: DayOfWeek; recipe: IRecipeDoc; isCooked: boolean }> = [];
+    const usedRecipeIds = new Set<string>();
+    let totalIngredientsCount = 0;
+
+    for (const day of targetDays) {
+      const nextMatch = scoredRecipes.find((item) => !usedRecipeIds.has(item.recipe._id.toString()));
+      const selected = nextMatch ? nextMatch.recipe : scoredRecipes[0].recipe;
+      usedRecipeIds.add(selected._id.toString());
+      if (selected.ingredients) {
+        totalIngredientsCount += selected.ingredients.length;
+      }
+
+      chosenDinners.push({
+        day,
+        recipe: selected,
+        isCooked: false,
+      });
+    }
+
+    const multiplier = SUPERMARKET_PRICE_MULTIPLIERS[effectivePref.supermarket as Supermarket] || 1.0;
+    const sizeRatio = (effectivePref.householdSize || 2) / 2;
+
+    let baseCost = 0;
+    for (const dinner of chosenDinners) {
+      const rec = dinner.recipe;
+      if (rec && rec.ingredients) {
+        const mealCost = rec.ingredients.reduce((acc, ing) => acc + ing.estimatedCost, 0);
+        baseCost += mealCost * sizeRatio;
+      }
+    }
+    const totalEstimatedCost = Math.round(baseCost * multiplier * 100) / 100;
+
+    return {
+      dinners: chosenDinners,
+      estimatedCost: totalEstimatedCost,
+      budgetLimit: effectivePref.weeklyBudget || 50,
+      supermarket: effectivePref.supermarket || 'Aldi',
+      householdSize: effectivePref.householdSize || 2,
+      cookingDays,
+      shoppingItemsCount: Math.min(Math.max(totalIngredientsCount, 12), 24),
+    };
   }
 
   /**
@@ -491,7 +694,7 @@ export class PlannerService {
   /**
    * Recalculates the estimated grocery cost based on all scheduled meals/dinners and supermarket multiplier
    */
-  public static recalculateCost(plan: IMealPlanDoc, supermarket: Supermarket): number {
+  public static recalculateCost(plan: IMealPlanDoc, supermarket: string): number {
     const multiplier = SUPERMARKET_PRICE_MULTIPLIERS[supermarket] || 1.0;
     const defaultRatio = (plan.householdSize || 2) / 2;
     let baseCost = 0;

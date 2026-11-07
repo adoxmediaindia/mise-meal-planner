@@ -11,7 +11,7 @@ export const ShowcaseA: React.FC = () => {
           <div className="phone">
             <img
               src="/assets/screens/en/preferences-vibes.png"
-              alt="Choosing meal vibes in mise"
+              alt="Choosing meal vibes in Meltto"
             />
           </div>
         </div>
@@ -21,7 +21,7 @@ export const ShowcaseA: React.FC = () => {
           <p>
             {t(
               'showcaseA.body',
-              "mise learns your budget, the people you're feeding, your dietary needs and the vibes you fancy this week. Every plan is yours."
+              "Meltto learns your budget, the people you're feeding, your dietary needs and the vibes you fancy this week. Every plan is yours."
             )}
           </p>
           <ul className="tick-list">

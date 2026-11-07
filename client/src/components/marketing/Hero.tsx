@@ -11,7 +11,7 @@ export const Hero: React.FC = () => {
       <span className="blob blob--yellow"></span>
       <div className="container hero-grid">
         <div className="hero-copy">
-          <span className="eyebrow">{t('hero.eyebrow', '🥗 Welcome to mise')}</span>
+          <span className="eyebrow">{t('hero.eyebrow', '🥗 Welcome to Meltto')}</span>
           <h1>
             <span>{t('hero.titleLead', 'Eat well,')}</span>
             <br />
@@ -20,7 +20,7 @@ export const Hero: React.FC = () => {
           <p className="hero-sub">
             {t(
               'hero.sub',
-              "mise is a meal planner for weekly meal planning and meal prep. Plan dinners around your budget, your cravings, and what's already in your kitchen. Build your week and one smart shopping list in about five minutes."
+              "Meltto is a meal planner for weekly meal planning and meal prep. Plan dinners around your budget, your cravings, and what's already in your kitchen. Build your week and one smart shopping list in about five minutes."
             )}
           </p>
 
@@ -43,13 +43,13 @@ export const Hero: React.FC = () => {
           <div className="phone phone--behind-left">
             <img
               src="/assets/screens/en/preferences-vibes.png"
-              alt="Choosing meal vibes in mise"
+              alt="Choosing meal vibes in Meltto"
             />
           </div>
           <div className="phone phone--main phone--floating">
             <img
               src="/assets/screens/en/plan-overview.png"
-              alt="mise weekly meal plan overview"
+              alt="Meltto weekly meal plan overview"
             />
           </div>
           <div className="phone phone--behind-right">

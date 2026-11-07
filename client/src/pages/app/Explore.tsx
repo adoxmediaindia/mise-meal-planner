@@ -2,12 +2,26 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../../services/api.js';
 import { useAuth } from '../../context/AuthContext.js';
+import { usePlan } from '../../context/PlanContext.js';
 import { IRecipe, Cuisine, MealVibe, DietaryNeed } from '../../types/index.js';
 import { Search, Clock, Flame, Heart } from 'lucide-react';
 import { RecipeImage } from '../../components/common/RecipeImage.js';
 
 export const Explore: React.FC = () => {
   const { user, toggleFavoriteInState } = useAuth();
+  const { preferences } = usePlan();
+
+  const currencySymbol =
+    preferences?.currencyCode === 'INR' || user?.currencyCode === 'INR' ? '₹'
+    : preferences?.currencyCode === 'GBP' || user?.currencyCode === 'GBP' ? '£'
+    : preferences?.currencyCode === 'EUR' || user?.currencyCode === 'EUR' ? '€'
+    : preferences?.currencyCode === 'BRL' || user?.currencyCode === 'BRL' ? 'R$'
+    : '$';
+
+  const activeDiets = (preferences?.dietaryNeeds || user?.dietaryPreferences || ['None']).filter((d) => d !== 'None');
+  const activeAllergies = preferences?.allergies || user?.allergies || [];
+  const dietSummary = activeDiets.length > 0 ? activeDiets.join(', ') : 'Standard diet';
+  const allergySummary = activeAllergies.length > 0 ? `${activeAllergies.join(', ')} safe` : 'zero exclusions';
   const [recipes, setRecipes] = useState<IRecipe[]>([]);
   const [selectedCuisine, setSelectedCuisine] = useState<Cuisine | 'All'>('All');
   const [selectedVibe, setSelectedVibe] = useState<MealVibe | 'All'>('All');
@@ -338,6 +352,11 @@ export const Explore: React.FC = () => {
               : 'No recipes found matching your search.'}
           </div>
         )}
+
+        {/* Safety Reassurance Notice matching Screenshot 2 */}
+        <div className="p-3.5 bg-[#F0FDF4] border border-[#BBF7D0] rounded-2xl text-center text-xs font-bold text-[#15803D] mt-6">
+          🛡️ Only showing meals you can eat ({dietSummary}, {allergySummary}).
+        </div>
       </div>
     </div>
   );

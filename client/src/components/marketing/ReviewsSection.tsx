@@ -49,7 +49,7 @@ export const ReviewsSection: React.FC = () => {
         <div className="section-head">
           <span className="eyebrow">{t('reviewsSection.eyebrow', '★★★★★ Loved by home cooks')}</span>
           <h2>{t('reviewsSection.title', 'Real weeknights, sorted')}</h2>
-          <p>{t('reviewsSection.sub', 'A few words from people who let mise plan their week.')}</p>
+          <p>{t('reviewsSection.sub', 'A few words from people who let Meltto plan their week.')}</p>
         </div>
 
         <div className="review-grid">

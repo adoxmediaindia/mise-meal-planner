@@ -1,13 +1,13 @@
-# Mise Meal Planner — Native Mobile Application (Expo & React Native)
+# Meltto — Native Mobile Application (Expo & React Native)
 
-This directory contains the production-ready React Native + Expo TypeScript client for **Mise Meal Planner**, designed to run natively on iOS and Android devices, as well as web preview.
+This directory contains the production-ready React Native + Expo TypeScript client for **Meltto**, designed to run natively on iOS and Android devices, as well as web preview.
 
 ---
 
 ## 1. Architectural Philosophy
 
 1. **Single Authoritative Backend & Database**:
-   The mobile application connects directly to the same Node.js + Express backend and MongoDB Atlas production database used by the public web application (`misemealplanner.com`). There is no mobile-specific database and zero business logic duplication.
+   The mobile application connects directly to the same Node.js + Express backend and MongoDB Atlas production database used by the public web application (`meltto.com`). There is no mobile-specific database and zero business logic duplication.
 2. **Hardware-Backed Secure Authentication**:
    Authentication tokens are kept in secure hardware storage using `expo-secure-store` (`Keychain` on iOS, `KeyStore` with EncryptedSharedPreferences on Android). Insecure plaintext storage (`AsyncStorage`) is strictly prohibited.
 3. **Cross-Device Synchronization**:
@@ -38,15 +38,22 @@ mobile/
     │   ├── AuthContext.tsx     # Mobile auth state (login, register, forgot/reset password, logout)
     │   └── PlanContext.tsx     # Plan state, meal swapping, preferences, grocery checklist
     ├── navigation/
-    │   └── RootNavigator.tsx   # Auth navigation flow & 5-tab main application navigation
+    │   └── RootNavigator.tsx   # First-launch flow, auth navigation & five-tab application shell
     ├── components/
     │   ├── common/             # Button, Card, Badge, EmptyState, ErrorState, LoadingState
     │   ├── plan/               # DinnerCard, SwapModal
     │   └── grocery/            # GroceryItemRow, AisleSection
     └── screens/
+        ├── onboarding/         # Resumable, one-question-at-a-time meal preference setup
         ├── auth/               # LoginScreen, RegisterScreen, ForgotPasswordScreen
-        └── app/                # PlanScreen, GroceryScreen, ExploreScreen, PreferencesScreen, RecipeDetailScreen, ProfileScreen
+        └── app/                # Plan, Pantry, Grocery, Explore, Profile, preferences & recipe detail
 ```
+
+New users see a short welcome followed by nine focused preference questions. Answers and
+progress are saved securely between launches; finishing the questions continues through
+account registration, then creates the first personalized plan. The main navigation keeps
+Plan, Pantry, Grocery, Explore and Profile visible, with meal preferences available from
+Profile. Visited tabs remain mounted so each tab retains its own scroll position.
 
 ---
 

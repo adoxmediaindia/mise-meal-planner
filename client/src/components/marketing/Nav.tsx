@@ -40,11 +40,11 @@ export const Nav: React.FC = () => {
   return (
     <header className="nav">
       <div className="container nav-inner">
-        {/* Brand Logo with exact clip geometry */}
-        <Link to="/" className="brand" aria-label="mise home">
+        {/* Meltto Brand Logo */}
+        <Link to="/" className="brand" aria-label="Meltto home">
           <img
-            src="/assets/mise-logo.png"
-            alt="mise"
+            src="/assets/meltto-logo.svg"
+            alt="Meltto"
           />
         </Link>
 

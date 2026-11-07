@@ -47,6 +47,6 @@ describe('RecipeImage & Recipe Card Integrity Regression Suite', () => {
   it('verifies that FALLBACK_RECIPE_IMAGE is a valid SVG data URI', () => {
     expect(FALLBACK_RECIPE_IMAGE.startsWith("data:image/svg+xml,")).toBe(true);
     expect(FALLBACK_RECIPE_IMAGE).toContain('%3Csvg');
-    expect(FALLBACK_RECIPE_IMAGE).toContain('MISE RECIPE');
+    expect(FALLBACK_RECIPE_IMAGE).toContain('MELTTO RECIPE');
   });
 });

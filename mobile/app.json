@@ -1,9 +1,15 @@
 {
   "expo": {
-    "name": "Mise Meal Planner",
-    "slug": "mise-meal-planner",
+    "name": "Meltto",
+    "slug": "meltto",
+    "scheme": "meltto",
     "version": "1.0.0",
     "orientation": "portrait",
+    "platforms": [
+      "android",
+      "ios",
+      "web"
+    ],
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
@@ -23,15 +29,22 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FAF9F5"
       },
-      "package": "com.misemealplanner.app"
+      "package": "com.misemealplanner.app",
+      "permissions": [
+        "INTERNET"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "extra": {
       "eas": {
-        "projectId": "mise-meal-planner-shared"
+        "projectId": "7fd134c3-77e6-4c42-8c5b-63579ed95857"
       }
-    }
+    },
+    "owner": "omavian-916",
+    "plugins": [
+      "expo-asset"
+    ]
   }
 }

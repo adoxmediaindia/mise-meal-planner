@@ -10,7 +10,7 @@ import { ShoppingList } from '../src/models/ShoppingList.js';
 import { PlannerService } from '../src/services/plannerService.js';
 import { ShoppingListService } from '../src/services/shoppingListService.js';
 
-describe('Mise Meal Planner Backend API & Core Engine', () => {
+describe('Meltto Backend API & Core Engine', () => {
   let authCookie: string;
   let testUserId: string;
 
@@ -121,6 +121,12 @@ describe('Mise Meal Planner Backend API & Core Engine', () => {
     expect(res.body.data.email).toBe('testcook@example.com');
     testUserId = res.body.data.id;
 
+    // Architectural contract: registration creates user with onboardingCompleted: false and NO Preference document
+    const userInDb = await User.findById(testUserId);
+    expect(userInDb?.onboardingCompleted).toBe(false);
+    const prefInDb = await Preference.findOne({ user: testUserId });
+    expect(prefInDb).toBeNull();
+
     // Cookie verification
     const cookies = res.headers['set-cookie'];
     expect(cookies).toBeDefined();
@@ -139,11 +145,19 @@ describe('Mise Meal Planner Backend API & Core Engine', () => {
   });
 
   it('STRICT ALLERGY EXCLUSION: Must completely filter out allergen-containing recipes', async () => {
-    // Set user preference to exclude Peanuts
-    const pref = await Preference.findOne({ user: testUserId });
-    expect(pref).toBeDefined();
-    pref!.allergies = ['Peanuts'];
-    await pref!.save();
+    // Explicitly create/upsert isolated test preference with Peanuts allergy
+    const pref = await Preference.findOneAndUpdate(
+      { user: testUserId },
+      {
+        $set: {
+          allergies: ['Peanuts'],
+          dietaryNeeds: ['None'],
+          cookingDays: ['Monday', 'Tuesday'],
+          householdSize: 2,
+        },
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
 
     // Query engine
     const safeQuery = PlannerService.buildSafetyQuery(pref!);
@@ -159,11 +173,18 @@ describe('Mise Meal Planner Backend API & Core Engine', () => {
   });
 
   it('SHOPPING LIST INGREDIENT MERGING: Merges identical ingredients across recipes', async () => {
-    const pref = await Preference.findOne({ user: testUserId });
-    pref!.allergies = [];
-    pref!.cookingDays = ['Monday', 'Tuesday'];
-    pref!.householdSize = 2; // size ratio = 1.0
-    await pref!.save();
+    // Explicitly create/upsert isolated test preference without allergies
+    const pref = await Preference.findOneAndUpdate(
+      { user: testUserId },
+      {
+        $set: {
+          allergies: [],
+          cookingDays: ['Monday', 'Tuesday'],
+          householdSize: 2,
+        },
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
 
     // Generate plan
     const plan = await PlannerService.generateWeeklyPlan(testUserId, pref!);
@@ -187,8 +208,51 @@ describe('Mise Meal Planner Backend API & Core Engine', () => {
   });
 
   it('PATCH /api/v1/shopping-list/item/:id should toggle bought status', async () => {
-    const list = await ShoppingList.findOne({ user: testUserId });
-    const firstItem = list!.items[0];
+    // Independently establish and verify a valid ShoppingList fixture for testUserId
+    let plan = await MealPlan.findOne({ user: testUserId });
+    if (!plan) {
+      plan = await MealPlan.create({
+        user: testUserId,
+        weekStartDate: new Date(),
+        dinners: [],
+        meals: [],
+        householdSize: 2,
+        estimatedCost: 20,
+        budgetLimit: 40,
+        isArchived: false,
+      });
+    }
+
+    const testItemId = 'test-toggle-garlic-item';
+    const list = await ShoppingList.findOneAndUpdate(
+      { user: testUserId },
+      {
+        $set: {
+          plan: plan._id,
+          supermarket: 'Aldi',
+          items: [
+            {
+              id: testItemId,
+              name: 'Garlic',
+              totalQuantity: 2,
+              unit: 'cloves',
+              aisle: 'Fresh Produce',
+              estimatedCost: 0.5,
+              isBought: false,
+              recipeTitles: ['Peanut Chicken Stir Fry'],
+            },
+          ],
+          totalEstimatedCost: 0.5,
+          itemsBoughtCount: 0,
+          totalItemsCount: 1,
+        },
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
+    expect(list).toBeDefined();
+    expect(list.items.length).toBeGreaterThan(0);
+
+    const firstItem = list.items[0];
 
     const res = await request(app)
       .patch(`/api/v1/shopping-list/item/${firstItem.id}`)

@@ -60,14 +60,7 @@ export const App: React.FC = () => {
       <Route path="/auth/reset-password" element={<ForgotPassword defaultMode="reset" />} />
 
       {/* 3. Onboarding Wizard */}
-      <Route
-        path="/onboarding"
-        element={
-          <ProtectedRoute>
-            <Onboarding />
-          </ProtectedRoute>
-        }
-      />
+      <Route path="/onboarding" element={<Onboarding />} />
 
       {/* 4. Protected Web Application Shell */}
       <Route

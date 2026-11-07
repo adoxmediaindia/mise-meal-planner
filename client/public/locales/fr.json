@@ -2,8 +2,8 @@
   "lang": "fr",
   "label": "Français",
   "meta": {
-    "title": "mise · Application de planification des repas | Menus hebdomadaires, recettes et préparation des repas",
-    "description": "mise est une application de planification des repas qui vous aide à organiser vos repas hebdomadaires, à trouver des recettes et à préparer vos repas et vos ingrédients. Créez un menu personnalisé, découvrez des idées de recettes et générez une liste de courses intelligente pour vos achats au supermarché."
+    "title": "Meltto · Application de planification des repas | Menus hebdomadaires, recettes et préparation des repas",
+    "description": "Meltto est une application de planification des repas qui vous aide à organiser vos repas hebdomadaires, à trouver des recettes et à préparer vos repas et vos ingrédients. Créez un menu personnalisé, découvrez des idées de recettes et générez une liste de courses intelligente pour vos achats au supermarché."
   },
   "regional": {
     "marqueeStores": [
@@ -33,10 +33,10 @@
     "toggleMenu": "Afficher/masquer le menu"
   },
   "hero": {
-    "eyebrow": "🥗 Bienvenue chez mise",
+    "eyebrow": "🥗 Bienvenue chez Meltto",
     "titleLead": "Mangez bien,",
     "titleAccent": "Ne vous faites pas trop de soucis.",
-    "sub": "mise est un outil de planification des repas qui vous aide à organiser vos menus hebdomadaires et à préparer vos plats à l'avance. Organisez vos dîners en fonction de votre budget, de vos envies et des ingrédients dont vous disposez déjà dans votre cuisine. Préparez votre menu de la semaine et une liste de courses intelligente en cinq minutes environ.",
+    "sub": "Meltto est un outil de planification des repas qui vous aide à organiser vos menus hebdomadaires et à préparer vos plats à l'avance. Organisez vos dîners en fonction de votre budget, de vos envies et des ingrédients dont vous disposez déjà dans votre cuisine. Préparez votre menu de la semaine et une liste de courses intelligente en cinq minutes environ.",
     "chipList": "Une liste de courses",
     "chipBudget": "En dessous du budget",
     "appStoreSmall": "Télécharger sur le",
@@ -59,7 +59,7 @@
   "how": {
     "eyebrow": "Comment ça marche ?",
     "title": "Le dîner est prêt en quelques secondes",
-    "sub": "Pas de tableurs, pas besoin de parcourir des blogs de recettes. Il suffit de donner quelques informations à Mise, et elle s'occupe de tout organiser.",
+    "sub": "Pas de tableurs, pas besoin de parcourir des blogs de recettes. Il suffit de donner quelques informations à Meltto, et elle s'occupe de tout organiser.",
     "step1Title": "Choisissez votre magasin",
     "step1Body": "Lidl, Carrefour, Aldi et bien d'autres. Les prix et les listes sont adaptés aux magasins où vous faites vos achats.",
     "step2Title": "Définissez vos préférences",
@@ -72,7 +72,7 @@
   "showcaseA": {
     "eyebrow": "Personnalisé",
     "title": "Un projet conçu spécialement pour vous, et non un modèle standardisé",
-    "body": "mise prend en compte votre budget, le nombre de personnes à nourrir, vos besoins alimentaires et l'ambiance qui vous fait envie cette semaine. Chaque menu est conçu sur mesure pour vous.",
+    "body": "Meltto prend en compte votre budget, le nombre de personnes à nourrir, vos besoins alimentaires et l'ambiance qui vous fait envie cette semaine. Chaque menu est conçu sur mesure pour vous.",
     "tick1": "Des repas adaptés à votre budget qui respectent vos dépenses hebdomadaires",
     "tick2": "Adapté aux régimes alimentaires et sans risque d'allergies pour les végétariens, les végétaliens, les pescatariens, les personnes suivant un régime sans gluten et bien d'autres encore",
     "tick3": "Des appareils pour votre cuisine, de la friteuse à air chaud aux modèles destinés uniquement à la plaque de cuisson, en passant par la mijoteuse",
@@ -154,12 +154,12 @@
   "faqSection": {
     "eyebrow": "FAQ",
     "title": "Bon à savoir",
-    "q1": "Quels supermarchés sont pris en charge par Mise ?",
+    "q1": "Quels supermarchés sont pris en charge par Meltto ?",
     "a1": "L'application s'articule autour des principaux supermarchés, notamment Lidl, Carrefour, Aldi, Intermarché, Franprix, Auchan et bien d'autres, et prend en charge des magasins dans plusieurs pays. Votre forfait et votre liste de courses sont adaptés au magasin que vous choisissez.",
     "q2": "Est-ce qu’il tient compte des besoins alimentaires et des allergies ?",
-    "a2": "Oui. Définissez vos préférences (végétarien, végétalien, pescatarien ou sans gluten) et indiquez les allergènes à éviter. Veuillez toujours vérifier la liste des ingrédients avant de cuisiner. mise ne peut garantir l'absence d'allergènes.",
-    "q3": "Combien coûte la mise ?",
-    "a3": "mise est un service par abonnement. Vous pouvez découvrir l'application et voir comment elle fonctionne ; l'accès à toutes les fonctionnalités de planification est débloqué via un abonnement géré depuis l'App Store ou Google Play. Vous pouvez résilier votre abonnement à tout moment depuis votre compte sur la boutique d'applications.",
+    "a2": "Oui. Définissez vos préférences (végétarien, végétalien, pescatarien ou sans gluten) et indiquez les allergènes à éviter. Veuillez toujours vérifier la liste des ingrédients avant de cuisiner. Meltto ne peut garantir l'absence d'allergènes.",
+    "q3": "Combien coûte Meltto ?",
+    "a3": "Meltto est un service par abonnement. Vous pouvez découvrir l'application et voir comment elle fonctionne ; l'accès à toutes les fonctionnalités de planification est débloqué via un abonnement géré depuis l'App Store ou Google Play. Vous pouvez résilier votre abonnement à tout moment depuis votre compte sur la boutique d'applications.",
     "q4": "Dois-je préparer tous les repas prévus dans mon programme ?",
     "a4": "Pas du tout. Prévoyez autant de nuits que vous le souhaitez, jusqu’à sept. Remplacez les repas qui ne vous tentent pas, réorganisez toute la semaine ou préparez simplement ceux qui vous plaisent. Votre liste de courses s’adaptera en conséquence.",
     "q5": "Est-ce que cela va vraiment me permettre de faire des économies ?",
@@ -181,7 +181,7 @@
     "privacy": "Politique de confidentialité",
     "terms": "Conditions générales d'utilisation",
     "contact": "Contact",
-    "rights": "TEGS Labs Ltd. Tous droits réservés.",
+    "rights": "Meltto. Tous droits réservés.",
     "madeIn": "Fabriqué avec 🥬 au Royaume-Uni · *Les économies réalisées varient selon les foyers et les magasins."
   }
 }

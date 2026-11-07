@@ -1,12 +1,25 @@
-const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+const resolveApiUrl = (): string => {
+  const envUrl = (import.meta.env.VITE_API_URL || '').trim().replace(/\/$/, '');
+  if (envUrl) return envUrl;
+  if (typeof window !== 'undefined' && window.location) {
+    const host = window.location.hostname;
+    if (host.includes('meltto.com') || host.includes('vercel.app')) {
+      return 'https://mise-backend-api.onrender.com';
+    }
+  }
+  return '';
+};
+
+const API_URL = resolveApiUrl();
 const API_BASE = `${API_URL}/api/v1`;
 
-const TOKEN_KEY = 'mise_token';
+const TOKEN_KEY = 'meltto_token';
+const LEGACY_TOKEN_KEY = 'mise_token';
 
 export const getStoredToken = (): string | null => {
   try {
     if (typeof window !== 'undefined' && window.localStorage) {
-      return localStorage.getItem(TOKEN_KEY);
+      return localStorage.getItem(TOKEN_KEY) || localStorage.getItem(LEGACY_TOKEN_KEY);
     }
   } catch {
     // localStorage may be unavailable or restricted
@@ -21,6 +34,7 @@ export const setStoredToken = (token: string | null): void => {
         localStorage.setItem(TOKEN_KEY, token);
       } else {
         localStorage.removeItem(TOKEN_KEY);
+        localStorage.removeItem(LEGACY_TOKEN_KEY);
       }
     }
   } catch {
@@ -64,8 +78,17 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     if (response.status === 401) {
       setStoredToken(null);
     }
-    const errorMsg = data.error || (data.details ? data.details.map((d: any) => d.message).join(', ') : 'Request failed');
-    throw new Error(errorMsg);
+    let errorMsg = data.error || 'Request failed';
+    if (data.details && Array.isArray(data.details) && data.details.length > 0) {
+      errorMsg = data.details
+        .map((d: any) => (d.message ? (d.field ? `${d.field}: ${d.message}` : d.message) : String(d)))
+        .join(', ');
+    }
+    const err: any = new Error(errorMsg);
+    err.status = response.status;
+    err.code = data.code;
+    err.details = data.details;
+    throw err;
   }
 
   return data;
@@ -102,6 +125,12 @@ export const api = {
   resetPassword: (payload: { token: string; newPassword: string }) =>
     request<{ success: boolean; message: string }>('/auth/reset-password', {
       method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+
+  updateOnboarding: (payload: any) =>
+    request<{ success: boolean; data: any }>('/auth/onboarding', {
+      method: 'PATCH',
       body: JSON.stringify(payload),
     }),
 
@@ -153,6 +182,12 @@ export const api = {
   generatePlan: () =>
     request<{ success: boolean; data: any; message: string }>('/plan/generate', {
       method: 'POST',
+    }),
+
+  generatePreviewPlan: (payload?: Record<string, any>) =>
+    request<{ success: boolean; data: any; message: string }>('/plan/preview', {
+      method: 'POST',
+      body: JSON.stringify(payload || {}),
     }),
 
   swapMeal: (payload: { day: string; targetRecipeId?: string }) =>

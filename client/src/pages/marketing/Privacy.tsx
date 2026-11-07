@@ -22,18 +22,18 @@ export const Privacy: React.FC = () => {
         <section className="pb-24">
           <div className="w-full max-w-[760px] mx-auto px-5 space-y-6 text-[#444] text-[15px] sm:text-base leading-relaxed">
             <p>
-              TEGS LABS LTD (&ldquo;mise&rdquo;, &ldquo;we&rdquo;, &ldquo;us&rdquo;, or &ldquo;our&rdquo;) respects your privacy and is committed to protecting your personal data.
+              Meltto (&ldquo;Meltto&rdquo;, &ldquo;we&rdquo;, &ldquo;us&rdquo;, or &ldquo;our&rdquo;) respects your privacy and is committed to protecting your personal data.
             </p>
             <p>
-              This Privacy Policy explains how we collect, use, store, and protect your information when you use the mise mobile application, website, and related services (collectively, the &ldquo;Service&rdquo;).
+              This Privacy Policy explains how we collect, use, store, and protect your information when you use the Meltto mobile application, website, and related services (collectively, the &ldquo;Service&rdquo;).
             </p>
 
             <h2 className="font-serif font-semibold text-2xl text-[#2a2a2a] pt-4">1. Who We Are</h2>
             <p>
-              mise is operated by TEGS LABS LTD. Email:{' '}
-              <a href="mailto:support@misemealplanner.com" className="text-[#8bc020] underline font-semibold">
-                support@misemealplanner.com
-              </a>. For the purposes of UK data protection law, TEGS LABS LTD is the data controller of your personal information.
+              Meltto is committed to secure, transparent meal planning. Email:{' '}
+              <a href="mailto:support@meltto.com" className="text-[#8bc020] underline font-semibold">
+                support@meltto.com
+              </a>. For data protection inquiries, Meltto serves as the data controller of your personal information.
             </p>
 
             <h2 className="font-serif font-semibold text-2xl text-[#2a2a2a] pt-4">2. Information We Collect</h2>
@@ -54,8 +54,8 @@ export const Privacy: React.FC = () => {
             <h2 className="font-serif font-semibold text-2xl text-[#2a2a2a] pt-4">4. Your Data Protection Rights</h2>
             <p>
               Under UK GDPR and European data protection law, you have the right to access, rectify, or erase your personal data, restrict or object to processing, and request data portability. Contact{' '}
-              <a href="mailto:support@misemealplanner.com" className="text-[#8bc020] underline font-semibold">
-                support@misemealplanner.com
+              <a href="mailto:support@meltto.com" className="text-[#8bc020] underline font-semibold">
+                support@meltto.com
               </a>{' '}
               at any time to exercise these rights.
             </p>

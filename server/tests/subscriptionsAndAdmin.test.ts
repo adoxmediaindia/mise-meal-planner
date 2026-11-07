@@ -76,6 +76,7 @@ describe('Phase 5 — SaaS Subscriptions, Entitlements & Admin Dashboard Suite',
       role: 'user',
       subscriptionTier: 'free',
       subscriptionStatus: 'trial',
+      onboardingCompleted: true,
     });
     regularUserId = regUser._id.toString();
     regularToken = jwt.sign(
@@ -91,6 +92,7 @@ describe('Phase 5 — SaaS Subscriptions, Entitlements & Admin Dashboard Suite',
       role: 'admin',
       subscriptionTier: 'pro',
       subscriptionStatus: 'active',
+      onboardingCompleted: true,
     });
     adminUserId = adminUser._id.toString();
     adminToken = jwt.sign(
@@ -106,6 +108,7 @@ describe('Phase 5 — SaaS Subscriptions, Entitlements & Admin Dashboard Suite',
       role: 'user',
       subscriptionTier: 'free',
       subscriptionStatus: 'trial',
+      onboardingCompleted: true,
     });
     otherUserId = otherUser._id.toString();
     otherToken = jwt.sign(

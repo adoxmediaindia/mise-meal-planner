@@ -1,11 +1,16 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from 'react';
 import { IMealPlan, IUserPreferences, IShoppingList } from '../types';
 import { mobileApi } from '../services/api';
 import { offlineSyncQueue } from '../services/offlineSync';
 import { useAuth } from './AuthContext';
+import { isLocalDemoMode } from '../demo/demoMode';
+import { runSingleFlight } from '../services/requestControl';
+
+const INITIAL_PLAN_REQUEST_TIMEOUT_MS = 45_000;
 
 interface PlanContextType {
   plan: IMealPlan | null;
+  planError: string | null;
   preferences: IUserPreferences | null;
   shoppingList: IShoppingList | null;
   planHistory: IMealPlan[];
@@ -13,6 +18,8 @@ interface PlanContextType {
   offlinePendingCount: number;
   fetchPlan: () => Promise<void>;
   regeneratePlan: () => Promise<void>;
+  retryInitialPlan: () => Promise<void>;
+  customizePlanWithIntent: (prompt: string) => Promise<{ summary: string; isAiGenerated: boolean; fallback: boolean }>;
   swapMeal: (day: string, targetRecipeId?: string) => Promise<void>;
   addMealSlot: (day: string, mealType: string, recipeId: string, servings?: number) => Promise<void>;
   removeMealSlot: (slotId: string) => Promise<void>;
@@ -29,22 +36,27 @@ interface PlanContextType {
   addCustomShoppingItem: (payload: any) => Promise<void>;
   editShoppingItem: (itemId: string, updates: any) => Promise<void>;
   deleteShoppingItem: (itemId: string) => Promise<void>;
+  addMissingIngredientsToGrocery: (recipeId: string) => Promise<{ addedCount: number }>;
   syncOfflineChanges: () => Promise<void>;
 }
 
 const PlanContext = createContext<PlanContextType | undefined>(undefined);
 
 export const PlanProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user, retryOnboardingCompletion } = useAuth();
   const [plan, setPlan] = useState<IMealPlan | null>(null);
+  const [planError, setPlanError] = useState<string | null>(null);
   const [preferences, setPreferences] = useState<IUserPreferences | null>(null);
   const [shoppingList, setShoppingList] = useState<IShoppingList | null>(null);
   const [planHistory, setPlanHistory] = useState<IMealPlan[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [offlinePendingCount, setOfflinePendingCount] = useState<number>(0);
+  const initialPlanRetryRef = useRef<Promise<void> | null>(null);
 
   // Subscribe to offline queue changes
   useEffect(() => {
+    if (isLocalDemoMode()) return;
+
     const unsubscribe = offlineSyncQueue.subscribe((count) => {
       setOfflinePendingCount(count);
     });
@@ -54,11 +66,17 @@ export const PlanProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const fetchPlan = useCallback(async () => {
     if (!isAuthenticated) return;
     setIsLoading(true);
+    setPlanError(null);
     try {
       const res = await mobileApi.getCurrentPlan();
       if (res.success && res.data) {
         setPlan(res.data);
+      } else {
+        setPlan(null);
       }
+    } catch (error) {
+      setPlanError(error instanceof Error ? error.message : 'Unable to load your meal plan.');
+      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -66,15 +84,76 @@ export const PlanProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const regeneratePlan = async () => {
     setIsLoading(true);
+    setPlanError(null);
     try {
       const res = await mobileApi.generatePlan();
       if (res.success && res.data) {
         setPlan(res.data);
         await fetchShoppingList();
+      } else {
+        throw new Error('The meal plan could not be generated. Please try again.');
       }
+    } catch (error) {
+      setPlanError(error instanceof Error ? error.message : 'Unable to generate your meal plan.');
+      throw error;
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const retryInitialPlan = () => {
+    return runSingleFlight(initialPlanRetryRef, async () => {
+      setIsLoading(true);
+      setPlanError(null);
+      const requestTimeoutMs = INITIAL_PLAN_REQUEST_TIMEOUT_MS;
+      try {
+        await retryOnboardingCompletion();
+        const res = await mobileApi.getCurrentPlan(requestTimeoutMs);
+        if (!res.success || !res.data) {
+          throw new Error('Your first meal plan is still being prepared. Please retry.');
+        }
+        setPlan(res.data);
+        await Promise.all([
+          fetchPreferences(requestTimeoutMs),
+          fetchShoppingList(requestTimeoutMs),
+        ]);
+      } catch (error) {
+        const message = error instanceof Error
+          ? error.message
+          : 'Your first meal plan could not be prepared. Please retry.';
+        setPlanError(message);
+        throw error;
+      } finally {
+        setIsLoading(false);
+      }
+    });
+  };
+
+  const customizePlanWithIntent = async (prompt: string) => {
+    setIsLoading(true);
+    try {
+      const res = await mobileApi.customizePlanWithIntent(prompt);
+      if (res.success && res.data) {
+        setPlan(res.data);
+        await fetchShoppingList();
+      }
+      return {
+        summary: res.summary,
+        isAiGenerated: res.isAiGenerated,
+        fallback: res.fallback,
+      };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const addMissingIngredientsToGrocery = async (recipeId: string) => {
+    const res = await mobileApi.addMissingIngredientsToGrocery(recipeId);
+    if (res.success) {
+      await fetchShoppingList();
+      return { addedCount: res.data?.addedCount ?? 0 };
+    }
+    return { addedCount: 0 };
   };
 
   const swapMeal = async (day: string, targetRecipeId?: string) => {
@@ -101,10 +180,10 @@ export const PlanProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  const fetchPreferences = useCallback(async () => {
+  const fetchPreferences = useCallback(async (timeoutMs?: number) => {
     if (!isAuthenticated) return;
     try {
-      const res = await mobileApi.getPreferences();
+      const res = await mobileApi.getPreferences(timeoutMs);
       if (res.success && res.data) {
         setPreferences(res.data);
       }
@@ -132,10 +211,10 @@ export const PlanProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  const fetchShoppingList = useCallback(async () => {
+  const fetchShoppingList = useCallback(async (timeoutMs?: number) => {
     if (!isAuthenticated) return;
     try {
-      const res = await mobileApi.getShoppingList();
+      const res = await mobileApi.getShoppingList(timeoutMs);
       if (res.success && res.data) {
         setShoppingList(res.data);
       }
@@ -308,24 +387,63 @@ export const PlanProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  // Load plan, preferences and shopping list when authenticated
+  // Load the saved planner or generate the first plan after onboarding.
   useEffect(() => {
     if (isAuthenticated) {
-      fetchPlan();
-      fetchPreferences();
-      fetchShoppingList();
+      let active = true;
+      setIsLoading(true);
+      setPlanError(null);
+
+      const loadPlanner = async () => {
+        try {
+          const currentPlan = await mobileApi.getCurrentPlan(INITIAL_PLAN_REQUEST_TIMEOUT_MS);
+          if (!active) return;
+          if (currentPlan.success && currentPlan.data) {
+            setPlan(currentPlan.data);
+          } else {
+            setPlan(null);
+          }
+
+          if (user?.onboardingStep === 25 && !user.onboardingCompleted) {
+            await retryOnboardingCompletion();
+            const finalizedPlan = await mobileApi.getCurrentPlan(INITIAL_PLAN_REQUEST_TIMEOUT_MS);
+            if (!finalizedPlan.success || !finalizedPlan.data) {
+              throw new Error('Your onboarding answers are saved, but your first meal plan is not ready yet.');
+            }
+            if (active) setPlan(finalizedPlan.data);
+          }
+          await Promise.all([
+            fetchPreferences(INITIAL_PLAN_REQUEST_TIMEOUT_MS),
+            fetchShoppingList(INITIAL_PLAN_REQUEST_TIMEOUT_MS),
+          ]);
+        } catch (error) {
+          console.warn('[PlanContext] Initial planner setup failed:', error);
+          if (active) {
+            setPlanError(error instanceof Error ? error.message : 'Unable to load your meal plan.');
+          }
+        } finally {
+          if (active) setIsLoading(false);
+        }
+      };
+
+      void loadPlanner();
+      return () => {
+        active = false;
+      };
     } else {
       setPlan(null);
+      setPlanError(null);
       setPreferences(null);
       setShoppingList(null);
       setPlanHistory([]);
     }
-  }, [isAuthenticated, fetchPlan, fetchPreferences, fetchShoppingList]);
+  }, [isAuthenticated, user?.id, user?.onboardingStep, fetchPreferences, fetchShoppingList]);
 
   return (
     <PlanContext.Provider
       value={{
         plan,
+        planError,
         preferences,
         shoppingList,
         planHistory,
@@ -333,6 +451,8 @@ export const PlanProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         offlinePendingCount,
         fetchPlan,
         regeneratePlan,
+        retryInitialPlan,
+        customizePlanWithIntent,
         swapMeal,
         addMealSlot,
         removeMealSlot,
@@ -349,6 +469,7 @@ export const PlanProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         addCustomShoppingItem,
         editShoppingItem,
         deleteShoppingItem,
+        addMissingIngredientsToGrocery,
         syncOfflineChanges,
       }}
     >

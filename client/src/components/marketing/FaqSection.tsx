@@ -8,12 +8,12 @@ export const FaqSection: React.FC = () => {
 
   const faqs = [
     {
-      q: t('faqSection.q1', 'Which supermarkets does mise support?'),
+      q: t('faqSection.q1', 'Which supermarkets does Meltto support?'),
       a: (
         <p>
           {t(
             'faqSection.a1',
-            'mise is built around major supermarkets including Walmart, Aldi, Kroger, Costco, Publix, Safeway and more, with support for stores across several countries. Your plan and shopping list are tuned to the shop you choose.'
+            'Meltto is built around major supermarkets including Walmart, Aldi, Kroger, Costco, Publix, Safeway and more, with support for stores across several countries. Your plan and shopping list are tuned to the shop you choose.'
           )}
         </p>
       ),
@@ -24,18 +24,18 @@ export const FaqSection: React.FC = () => {
         <p>
           {t(
             'faqSection.a2',
-            "Yes. Set preferences like vegetarian, vegan, pescatarian or gluten-free and flag allergens to avoid. Please always check ingredient labels before cooking. mise can't guarantee allergen safety."
+            "Yes. Set preferences like vegetarian, vegan, pescatarian or gluten-free and flag allergens to avoid. Please always check ingredient labels before cooking. Meltto can't guarantee allergen safety."
           )}
         </p>
       ),
     },
     {
-      q: t('faqSection.q3', 'How much does mise cost?'),
+      q: t('faqSection.q3', 'How much does Meltto cost?'),
       a: (
         <p>
           {t(
             'faqSection.a3',
-            'mise is a subscription. You can explore the app and see how it works, with full planning unlocked by a subscription managed through the App Store or Google Play. Cancel anytime from your store account.'
+            'Meltto is a subscription. You can explore the app and see how it works, with full planning unlocked by a subscription managed through the App Store or Google Play. Cancel anytime from your store account.'
           )}
         </p>
       ),

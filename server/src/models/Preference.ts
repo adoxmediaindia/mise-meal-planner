@@ -10,7 +10,10 @@ import {
 
 export interface IPreference extends Document {
   user: mongoose.Types.ObjectId;
-  supermarket: Supermarket;
+  supermarket: string;
+  countryCode?: string;
+  countryName?: string;
+  currencyCode?: string;
   householdSize: number;
   cookingDays: DayOfWeek[];
   weeklyBudget: number;
@@ -29,21 +32,11 @@ const PreferenceSchema = new Schema<IPreference>(
     supermarket: {
       type: String,
       default: 'Aldi',
-      enum: [
-        'Aldi',
-        'Walmart',
-        'Kroger',
-        'Costco',
-        'Publix',
-        'Safeway',
-        'H-E-B',
-        'Whole Foods',
-        "Trader Joe's",
-        'Food Lion',
-        'Sprouts',
-      ],
     },
-    householdSize: { type: Number, default: 2, min: 1, max: 12 },
+    countryCode: { type: String, default: 'US' },
+    countryName: { type: String, default: 'United States' },
+    currencyCode: { type: String, default: 'USD' },
+    householdSize: { type: Number, default: 2, min: 1, max: 20 },
     cookingDays: {
       type: [String],
       default: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],

@@ -11,7 +11,7 @@ interface PhoneMockupProps {
 
 export const PhoneMockup: React.FC<PhoneMockupProps> = ({
   src,
-  alt = 'mise mobile screen',
+  alt = 'Meltto mobile screen',
   children,
   className,
   floating = false,

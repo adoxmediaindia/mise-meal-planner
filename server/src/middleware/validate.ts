@@ -12,9 +12,10 @@ export const validate = (schema: ZodSchema) => {
           field: i.path.join('.'),
           message: i.message,
         }));
+        const messageSummary = issues.map((i) => (i.field ? `${i.field}: ${i.message}` : i.message)).join(', ');
         res.status(400).json({
           success: false,
-          error: 'Validation failed',
+          error: messageSummary || 'Validation failed',
           details: issues,
         });
         return;

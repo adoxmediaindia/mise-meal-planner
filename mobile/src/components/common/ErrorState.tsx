@@ -5,11 +5,13 @@ import { Button } from './Button';
 interface ErrorStateProps {
   message?: string;
   onRetry?: () => void;
+  loading?: boolean;
 }
 
 export const ErrorState: React.FC<ErrorStateProps> = ({
   message = 'An unexpected error occurred. Please check your connection and try again.',
   onRetry,
+  loading = false,
 }) => {
   return (
     <View style={styles.container}>
@@ -21,6 +23,8 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
           title="Try Again"
           onPress={onRetry}
           variant="secondary"
+          loading={loading}
+          disabled={loading}
           style={styles.retryBtn}
         />
       )}

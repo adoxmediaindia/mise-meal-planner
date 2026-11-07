@@ -72,8 +72,8 @@ export const Pantry: React.FC = () => {
   const [consumeAmount, setConsumeAmount] = useState<number>(1);
   const [isConsuming, setIsConsuming] = useState(false);
 
-  // Chef Mise AI Leftovers Modal State
-  const [isChefMiseModalOpen, setIsChefMiseModalOpen] = useState(false);
+  // Chef Meltto AI Leftovers Modal State
+  const [isChefMelttoModalOpen, setIsChefMelttoModalOpen] = useState(false);
   const [selectedIngredients, setSelectedIngredients] = useState<string[]>([]);
   const [customIngredientInput, setCustomIngredientInput] = useState('');
   const [leftoverMaxTime, setLeftoverMaxTime] = useState<number>(30);
@@ -83,7 +83,7 @@ export const Pantry: React.FC = () => {
   const [isLeftoverUpgradeRequired, setIsLeftoverUpgradeRequired] = useState(false);
   const [generatedRecipeResult, setGeneratedRecipeResult] = useState<any | null>(null);
 
-  const handleOpenChefMiseModal = () => {
+  const handleOpenChefMelttoModal = () => {
     // Pre-populate with top pantry items
     const defaultIngredients = items.slice(0, 5).map((i) => i.name);
     setSelectedIngredients(defaultIngredients);
@@ -91,7 +91,7 @@ export const Pantry: React.FC = () => {
     setLeftoverError(null);
     setIsLeftoverUpgradeRequired(false);
     setGeneratedRecipeResult(null);
-    setIsChefMiseModalOpen(true);
+    setIsChefMelttoModalOpen(true);
   };
 
   const handleToggleIngredient = (name: string) => {
@@ -371,12 +371,12 @@ export const Pantry: React.FC = () => {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={handleOpenChefMiseModal}
+            onClick={handleOpenChefMelttoModal}
             className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-[#E0D4FF] border border-[#cfbefb] text-[#3c2a68] text-xs font-bold shadow-xs hover:bg-[#d6c5fe] transition-all cursor-pointer"
             title="Generate recipe from leftover ingredients with AI"
           >
             <Sparkles className="w-4 h-4 text-[#633bba]" />
-            <span>Ask Chef Mise AI</span>
+            <span>Ask Chef Meltto AI</span>
           </button>
 
           {activeTab === 'inventory' ? (
@@ -1121,9 +1121,9 @@ export const Pantry: React.FC = () => {
       )}
 
       {/* ======================================================== */}
-      {/* MODAL: CHEF MISE AI LEFTOVERS GENERATOR                  */}
+      {/* MODAL: CHEF MELTTO AI LEFTOVERS GENERATOR                */}
       {/* ======================================================== */}
-      {isChefMiseModalOpen && (
+      {isChefMelttoModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-white rounded-[28px] max-w-xl w-full p-6 shadow-2xl animate-scaleUp space-y-4 my-8 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-gray-100 pb-3">
@@ -1133,7 +1133,7 @@ export const Pantry: React.FC = () => {
                 </div>
                 <div>
                   <h3 className="font-serif font-bold text-lg text-[#2a2a2a]">
-                    Chef Mise AI Leftovers
+                    Chef Meltto AI Leftovers
                   </h3>
                   <p className="text-xs text-gray-500">
                     Transform what's in your pantry into a fresh dinner
@@ -1142,7 +1142,7 @@ export const Pantry: React.FC = () => {
               </div>
               <button
                 type="button"
-                onClick={() => setIsChefMiseModalOpen(false)}
+                onClick={() => setIsChefMelttoModalOpen(false)}
                 className="p-1.5 rounded-full text-gray-400 hover:text-gray-700 cursor-pointer"
               >
                 <X className="w-5 h-5" />
@@ -1270,7 +1270,7 @@ export const Pantry: React.FC = () => {
                           to="/app/account"
                           className="inline-block mt-2 font-bold text-[#8bc020] hover:underline"
                         >
-                          Upgrade to Mise Pro for 50 AI queries / week &rarr;
+                          Upgrade to Meltto Pro for 50 AI queries / week &rarr;
                         </Link>
                       )}
                     </div>
@@ -1284,7 +1284,7 @@ export const Pantry: React.FC = () => {
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
-                      onClick={() => setIsChefMiseModalOpen(false)}
+                      onClick={() => setIsChefMelttoModalOpen(false)}
                       className="px-3.5 py-2 rounded-xl text-xs font-bold text-gray-500 hover:bg-gray-100 cursor-pointer"
                     >
                       Cancel
@@ -1313,7 +1313,7 @@ export const Pantry: React.FC = () => {
                     }`}
                   >
                     <Sparkles className="w-3.5 h-3.5" />
-                    {generatedRecipeResult.isAiGenerated ? 'Chef Mise AI Recipe' : 'Safe Catalog Match (Fallback)'}
+                    {generatedRecipeResult.isAiGenerated ? 'Chef Meltto AI Recipe' : 'Safe Catalog Match (Fallback)'}
                   </span>
                   <span className="text-xs text-gray-500 font-medium">
                     {generatedRecipeResult.recipe.cuisine} • {generatedRecipeResult.recipe.prepTimeMinutes + generatedRecipeResult.recipe.cookTimeMinutes} mins
@@ -1391,7 +1391,7 @@ export const Pantry: React.FC = () => {
                   >
                     &larr; Create another recipe
                   </button>
-                  <Button onClick={() => setIsChefMiseModalOpen(false)}>
+                  <Button onClick={() => setIsChefMelttoModalOpen(false)}>
                     Done
                   </Button>
                 </div>

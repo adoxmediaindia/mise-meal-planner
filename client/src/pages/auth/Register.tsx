@@ -53,11 +53,11 @@ export const Register: React.FC = () => {
       </Link>
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-        <Link to="/" className="inline-block relative w-[108px] h-[34px] overflow-hidden mb-6">
+        <Link to="/" className="inline-flex items-center justify-center mb-6" aria-label="Meltto home">
           <img
-            src="/assets/mise-logo.png"
-            alt="mise"
-            className="absolute max-w-none w-[153px] h-[153px] -left-[22px] -top-[36px]"
+            src="/assets/meltto-logo.svg"
+            alt="Meltto"
+            className="h-10 w-auto"
           />
         </Link>
         <h2 className="font-serif text-3xl font-semibold text-[#2a2a2a] mb-2">

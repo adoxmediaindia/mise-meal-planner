@@ -10,8 +10,7 @@ export const AppShell: React.FC = () => {
 
   const tabs = [
     { to: '/app/plan', label: 'plan', icon: ClipboardList },
-    { to: '/app/pantry', label: 'pantry', icon: Package },
-    { to: '/app/explore', label: 'explore', icon: Compass },
+    { to: '/app/explore', label: 'meals', icon: Compass },
     { to: '/app/preferences', label: 'preferences', icon: Sliders },
     { to: '/app/settings', label: 'settings', icon: SettingsIcon },
   ];
@@ -22,10 +21,10 @@ export const AppShell: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#f3f4f1] text-[#2a2a2a] flex flex-col items-center">
       {/* Top Desktop Helper Bar */}
-      <header className="w-full bg-white border-b border-gray-200 py-2.5 px-4 sm:px-8 flex justify-between items-center text-xs text-[#6b6b6b]">
-        <div className="flex items-center gap-3">
-          <NavLink to="/" className="font-bold text-[#2a2a2a] hover:text-[#8bc020] transition-colors">
-            ← Exit to Marketing Website
+      <header className="w-full bg-white border-b border-gray-200 py-2.5 px-3 sm:px-8 flex justify-between items-center text-xs text-[#6b6b6b] overflow-hidden">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <NavLink to="/" className="font-bold text-[#2a2a2a] hover:text-[#8bc020] transition-colors truncate">
+            <span className="hidden xs:inline">← Exit to </span>Website
           </NavLink>
           <span className="hidden sm:inline text-gray-300">|</span>
           <span className="hidden sm:inline">Logged in as: <strong>{user?.name}</strong> ({user?.subscriptionTier.toUpperCase()} TIER)</span>

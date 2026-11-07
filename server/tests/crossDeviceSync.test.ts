@@ -116,6 +116,22 @@ describe('Shared Backend & Cross-Device Synchronization Suite', () => {
     expect(res.body.success).toBe(true);
     sharedUserId = res.body.data.id;
 
+    // Mark shared user as onboardingCompleted and initialize baseline preference for sync tests
+    await User.findByIdAndUpdate(sharedUserId, { $set: { onboardingCompleted: true } });
+    await Preference.findOneAndUpdate(
+      { user: sharedUserId },
+      {
+        $set: {
+          supermarket: 'Kroger',
+          householdSize: 2,
+          cookingDays: ['Monday', 'Tuesday'],
+          dietaryNeeds: ['None'],
+          allergies: [],
+        },
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
+
     // Web Client receives HTTP-only cookie
     const cookies = res.headers['set-cookie'];
     expect(cookies).toBeDefined();
@@ -236,6 +252,31 @@ describe('Shared Backend & Cross-Device Synchronization Suite', () => {
     expect(regRes.status).toBe(201);
     secondaryUserId = regRes.body.data.id;
     secondaryBearerToken = regRes.body.data.token;
+
+    // Complete onboarding for User Charlie and establish an isolated plan via API
+    await User.findByIdAndUpdate(secondaryUserId, { $set: { onboardingCompleted: true } });
+    await Preference.findOneAndUpdate(
+      { user: secondaryUserId },
+      {
+        $set: {
+          supermarket: 'Aldi',
+          householdSize: 1,
+          cookingDays: ['Monday'],
+          dietaryNeeds: ['None'],
+          allergies: [],
+        },
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
+    const charlieGen = await request(app)
+      .post('/api/v1/plan/generate')
+      .set('Authorization', `Bearer ${secondaryBearerToken}`);
+    expect(charlieGen.status).toBe(200);
+    expect(charlieGen.body.success).toBe(true);
+    expect(charlieGen.body.data).toBeDefined();
+    expect(charlieGen.body.data._id).toBeDefined();
+    expect(charlieGen.body.data.user.toString()).toBe(secondaryUserId);
+    expect(charlieGen.body.data.dinners).toBeInstanceOf(Array);
 
     // User Charlie fetches shopping list -> gets their own shopping list, NOT Alex's
     const charlieList = await request(app)

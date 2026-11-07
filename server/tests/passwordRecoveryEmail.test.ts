@@ -57,7 +57,7 @@ describe('Phase 7.4 — Password Recovery Resend Email Integration Suite', () =>
       const sendArgs = mockSend.mock.calls[0][0];
       expect(sendArgs.to).toBe('sarah@email-test.com');
       expect(sendArgs.from).toBe('Mise <auth@misemealplanner.com>');
-      expect(sendArgs.subject).toBe('Reset your Mise Meal Planner password');
+      expect(sendArgs.subject).toBe('Reset your Meltto password');
 
       // Extract raw token from the email reset link
       const resetLink = sendArgs.html.match(/href="([^"]+)"/)[1];

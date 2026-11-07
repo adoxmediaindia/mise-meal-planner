@@ -129,6 +129,7 @@ describe('Phase 4: Pantry Inventory, Recipe Matching & Household Sharing', () =>
     user1Id = reg1.body.data.id;
     const cookies1 = reg1.headers['set-cookie'];
     user1Cookie = Array.isArray(cookies1) ? cookies1[0] : (cookies1 as any);
+    await User.findByIdAndUpdate(user1Id, { $set: { onboardingCompleted: true } });
 
     // Register User 2
     user2Email = 'user2@phase4-test.com';
@@ -140,6 +141,21 @@ describe('Phase 4: Pantry Inventory, Recipe Matching & Household Sharing', () =>
     user2Id = reg2.body.data.id;
     const cookies2 = reg2.headers['set-cookie'];
     user2Cookie = Array.isArray(cookies2) ? cookies2[0] : (cookies2 as any);
+    await User.findByIdAndUpdate(user2Id, { $set: { onboardingCompleted: true } });
+
+    // Set User 2 baseline preferences
+    await Preference.findOneAndUpdate(
+      { user: user2Id },
+      {
+        supermarket: 'Aldi',
+        householdSize: 2,
+        cookingDays: ['Monday', 'Tuesday'],
+        weeklyBudget: 50,
+        dietaryNeeds: ['None'],
+        allergies: [],
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
 
     // Set User 1 preferences with Peanuts allergy
     await Preference.findOneAndUpdate(
@@ -510,6 +526,15 @@ describe('Phase 4: Pantry Inventory, Recipe Matching & Household Sharing', () =>
     });
 
     it('Allows adding missing recipe ingredients directly to grocery list', async () => {
+      // Ensure User 1 has an active meal plan & shopping list before adding missing items
+      const planGenRes = await request(app)
+        .post('/api/v1/plan/generate')
+        .set('Cookie', user1Cookie);
+      expect(planGenRes.status).toBe(200);
+      expect(planGenRes.body.success).toBe(true);
+      expect(planGenRes.body.data).toBeDefined();
+      expect(planGenRes.body.data._id).toBeDefined();
+
       const res = await request(app)
         .post(`/api/v1/pantry/recipes/${testRecipe1._id}/add-missing-to-grocery`)
         .set('Cookie', user1Cookie);

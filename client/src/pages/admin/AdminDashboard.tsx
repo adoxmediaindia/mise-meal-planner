@@ -253,7 +253,7 @@ export const AdminDashboard: React.FC = () => {
               <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md bg-[#1f2a06] text-white">
                 Admin Console
               </span>
-              <span className="text-xs text-gray-500 font-medium">Mise SaaS Engine</span>
+              <span className="text-xs text-gray-500 font-medium">Meltto SaaS Engine</span>
             </div>
             <h1 className="font-serif font-black text-2xl sm:text-3xl text-[#2a2a2a] mt-0.5">
               Administration Dashboard

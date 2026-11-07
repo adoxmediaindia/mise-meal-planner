@@ -31,15 +31,22 @@ export const Login: React.FC = () => {
   };
 
   const fillDemoAccount = async () => {
-    setEmail('chef@misemealplanner.com');
-    setPassword('Password123!');
     setIsLoading(true);
     setError(null);
     try {
-      await login('chef@misemealplanner.com', 'Password123!');
+      await login('chef@meltto.com', 'Password123!');
+      setEmail('chef@meltto.com');
+      setPassword('Password123!');
       navigate('/app/plan', { replace: true });
-    } catch (err: any) {
-      setError(err.message || 'Could not log in with demo account.');
+    } catch {
+      try {
+        await login('chef@misemealplanner.com', 'Password123!');
+        setEmail('chef@misemealplanner.com');
+        setPassword('Password123!');
+        navigate('/app/plan', { replace: true });
+      } catch (err: any) {
+        setError(err.message || 'Could not log in with demo account.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -56,11 +63,11 @@ export const Login: React.FC = () => {
       </Link>
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-        <Link to="/" className="inline-block relative w-[108px] h-[34px] overflow-hidden mb-6">
+        <Link to="/" className="inline-flex items-center justify-center mb-6" aria-label="Meltto home">
           <img
-            src="/assets/mise-logo.png"
-            alt="mise"
-            className="absolute max-w-none w-[153px] h-[153px] -left-[22px] -top-[36px]"
+            src="/assets/meltto-logo.svg"
+            alt="Meltto"
+            className="h-10 w-auto"
           />
         </Link>
         <h2 className="font-serif text-3xl font-semibold text-[#2a2a2a] mb-2">
@@ -99,7 +106,7 @@ export const Login: React.FC = () => {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="chef@misemealplanner.com"
+                placeholder="you@meltto.com"
                 className="w-full px-4 py-3 rounded-xl border border-[#2a2a2a]/15 text-[#2a2a2a] focus:outline-none focus:border-[#8bc020] text-sm"
               />
             </div>

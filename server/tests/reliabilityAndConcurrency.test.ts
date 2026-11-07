@@ -10,6 +10,7 @@ import { ShoppingList } from '../src/models/ShoppingList.js';
 import { PantryItem } from '../src/models/PantryItem.js';
 import { Household } from '../src/models/Household.js';
 import { HouseholdInvitation } from '../src/models/HouseholdInvitation.js';
+import { Preference } from '../src/models/Preference.js';
 
 describe('Phase 6 — Cross-Device Reliability, Offline Queue & Concurrency Suite', () => {
   const secret = process.env.JWT_SECRET || 'mise_meal_planner_jwt_super_secure_dev_key_2026';
@@ -97,6 +98,21 @@ describe('Phase 6 — Cross-Device Reliability, Offline Queue & Concurrency Suit
     userAId = regResA.body.data.id;
     userAMobileBearer = regResA.body.data.token;
 
+    await User.findByIdAndUpdate(userAId, { $set: { onboardingCompleted: true } });
+    await Preference.findOneAndUpdate(
+      { user: userAId },
+      {
+        $set: {
+          supermarket: 'Aldi',
+          householdSize: 2,
+          cookingDays: ['Monday', 'Tuesday'],
+          dietaryNeeds: ['None'],
+          allergies: [],
+        },
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
+
     // Extract web cookie from register response
     const cookies = regResA.headers['set-cookie'];
     userAWebCookie = Array.isArray(cookies) ? cookies[0] : cookies;
@@ -108,6 +124,21 @@ describe('Phase 6 — Cross-Device Reliability, Offline Queue & Concurrency Suit
 
     userBId = regResB.body.data.id;
     userBBearer = regResB.body.data.token;
+
+    await User.findByIdAndUpdate(userBId, { $set: { onboardingCompleted: true } });
+    await Preference.findOneAndUpdate(
+      { user: userBId },
+      {
+        $set: {
+          supermarket: 'Aldi',
+          householdSize: 2,
+          cookingDays: ['Monday', 'Tuesday'],
+          dietaryNeeds: ['None'],
+          allergies: [],
+        },
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
   });
 
   afterAll(async () => {
@@ -233,19 +264,41 @@ describe('Phase 6 — Cross-Device Reliability, Offline Queue & Concurrency Suit
     let testShoppingItemId: string;
 
     beforeAll(async () => {
-      const listRes = await request(app)
+      // Independently ensure User A has an active plan and shopping list
+      let listRes = await request(app)
         .get('/api/v1/shopping-list')
         .set('Authorization', `Bearer ${userAMobileBearer}`);
 
-      if (listRes.body.data && listRes.body.data.items.length > 0) {
+      if (!listRes.body.data) {
+        const planGenRes = await request(app)
+          .post('/api/v1/plan/generate')
+          .set('Authorization', `Bearer ${userAMobileBearer}`)
+          .send({});
+        expect(planGenRes.status).toBe(200);
+        expect(planGenRes.body.success).toBe(true);
+        expect(planGenRes.body.data).toBeDefined();
+        expect(planGenRes.body.data._id).toBeDefined();
+
+        listRes = await request(app)
+          .get('/api/v1/shopping-list')
+          .set('Authorization', `Bearer ${userAMobileBearer}`);
+        expect(listRes.status).toBe(200);
+        expect(listRes.body.data).toBeDefined();
+      }
+
+      if (listRes.body.data.items && listRes.body.data.items.length > 0) {
         testShoppingItemId = listRes.body.data.items[0].id;
       } else {
         const addRes = await request(app)
           .post('/api/v1/shopping-list/items')
           .set('Authorization', `Bearer ${userAMobileBearer}`)
           .send({ name: 'Offline Queue Test Milk', totalQuantity: 1, unit: 'L' });
+        expect(addRes.status).toBe(201);
+        expect(addRes.body.success).toBe(true);
+        expect(addRes.body.data.items.length).toBeGreaterThan(0);
         testShoppingItemId = addRes.body.data.items[0].id;
       }
+      expect(testShoppingItemId).toBeDefined();
     });
 
     it('repeated retries of checkoff with explicit targetState are 100% idempotent', async () => {
@@ -405,6 +458,16 @@ describe('Phase 6 — Cross-Device Reliability, Offline Queue & Concurrency Suit
     });
 
     it('enforces zero-trust isolation: User B cannot view or tamper with User A data', async () => {
+      // Generate meal plan for User B via API to establish their own shopping list
+      const userBGenRes = await request(app)
+        .post('/api/v1/plan/generate')
+        .set('Authorization', `Bearer ${userBBearer}`);
+      expect(userBGenRes.status).toBe(200);
+      expect(userBGenRes.body.success).toBe(true);
+      expect(userBGenRes.body.data).toBeDefined();
+      expect(userBGenRes.body.data._id).toBeDefined();
+      expect(userBGenRes.body.data.user.toString()).toBe(userBId);
+
       // User B tries to fetch User A's shopping list
       const bList = await request(app)
         .get('/api/v1/shopping-list')

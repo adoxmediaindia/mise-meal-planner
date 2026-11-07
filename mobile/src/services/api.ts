@@ -1,8 +1,12 @@
 import { API_V1_URL } from '../config/env';
 import { secureStorage } from './secureStorage';
 import { offlineSyncQueue } from './offlineSync';
+import { getLocalDemoResponse } from '../demo/demoApi';
+import { isLocalDemoMode } from '../demo/demoMode';
+import { withRequestTimeout } from './requestControl';
 import {
   IUser,
+  IOnboardingData,
   IUserPreferences,
   IRecipe,
   IMealPlan,
@@ -34,9 +38,19 @@ export function toQueryString(params?: Record<string, any>): string {
 
 async function request<T>(
   endpoint: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
+  timeoutMs?: number
 ): Promise<T> {
-  const token = await secureStorage.getToken();
+  if (isLocalDemoMode()) {
+    return getLocalDemoResponse<T>(endpoint, options.method || 'GET');
+  }
+
+  const timeoutMessage =
+    'The request is taking longer than expected. Your saved answers are safe; please retry.';
+  const deadline = timeoutMs ? Date.now() + timeoutMs : undefined;
+  const token = timeoutMs
+    ? await withRequestTimeout(secureStorage.getToken(), timeoutMs, timeoutMessage)
+    : await secureStorage.getToken();
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -50,19 +64,37 @@ async function request<T>(
   const url = `${API_V1_URL}${endpoint}`;
 
   try {
-    const response = await fetch(url, {
-      ...options,
-      headers,
-    });
+    const fetchRequest = (async () => {
+      const response = await fetch(url, {
+        ...options,
+        headers,
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (!response.ok || data.success === false) {
-      const errorMsg = data.error || (data.details ? data.details.map((d: any) => d.message).join(', ') : 'Request failed');
-      throw new Error(errorMsg);
-    }
+      if (!response.ok || data.success === false) {
+        let errorMsg = data.error || 'Request failed';
+        if (data.details && Array.isArray(data.details) && data.details.length > 0) {
+          errorMsg = data.details
+            .map((d: any) => (d.message ? (d.field ? `${d.field}: ${d.message}` : d.message) : String(d)))
+            .join('\n');
+        }
+        const err: any = new Error(errorMsg);
+        err.status = response.status;
+        err.code = data.code;
+        err.details = data.details;
+        throw err;
+      }
 
-    return data;
+      return data as T;
+    })();
+
+    const remainingTimeoutMs = deadline === undefined
+      ? undefined
+      : Math.max(1, deadline - Date.now());
+    return remainingTimeoutMs !== undefined
+      ? await withRequestTimeout(fetchRequest, remainingTimeoutMs, timeoutMessage)
+      : await fetchRequest;
   } catch (err: any) {
     throw err;
   }
@@ -106,9 +138,18 @@ export const mobileApi = {
       body: JSON.stringify(payload),
     }),
 
+  updateOnboarding: (
+    payload: Partial<IOnboardingData>,
+    options?: { timeoutMs?: number }
+  ) =>
+    request<ApiResponse<IUser>>('/auth/onboarding', {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    }, options?.timeoutMs),
+
   // 2. Preferences Endpoints
-  getPreferences: () =>
-    request<ApiResponse<IUserPreferences>>('/preferences'),
+  getPreferences: (timeoutMs?: number) =>
+    request<ApiResponse<IUserPreferences>>('/preferences', {}, timeoutMs),
 
   updatePreferences: (payload: Partial<IUserPreferences> & { autoRegenerate?: boolean }) =>
     request<ApiResponse<IUserPreferences>>('/preferences', {
@@ -140,8 +181,8 @@ export const mobileApi = {
     }),
 
   // 4. Meal Plan Endpoints
-  getCurrentPlan: () =>
-    request<ApiResponse<IMealPlan>>('/plan/current'),
+  getCurrentPlan: (timeoutMs?: number) =>
+    request<ApiResponse<IMealPlan>>('/plan/current', {}, timeoutMs),
 
   getPlanHistory: () =>
     request<ApiResponse<IMealPlan[]>>('/plan/history'),
@@ -154,6 +195,12 @@ export const mobileApi = {
   generatePlan: () =>
     request<ApiResponse<IMealPlan>>('/plan/generate', {
       method: 'POST',
+    }),
+
+  generatePreviewPlan: (payload?: Record<string, any>) =>
+    request<ApiResponse<any>>('/plan/preview', {
+      method: 'POST',
+      body: JSON.stringify(payload || {}),
     }),
 
   swapMeal: (payload: { day: string; targetRecipeId?: string }) =>
@@ -191,8 +238,8 @@ export const mobileApi = {
     }),
 
   // 5. Shopping List Endpoints
-  getShoppingList: () =>
-    request<ApiResponse<IShoppingList>>('/shopping-list'),
+  getShoppingList: (timeoutMs?: number) =>
+    request<ApiResponse<IShoppingList>>('/shopping-list', {}, timeoutMs),
 
   addCustomShoppingItem: (payload: {
     name: string;
@@ -238,6 +285,10 @@ export const mobileApi = {
 
   // Process any pending offline toggle actions with idempotent target state
   flushOfflineCheckoffs: async () => {
+    if (isLocalDemoMode()) {
+      return { synced: 0, failed: 0 };
+    }
+
     return await offlineSyncQueue.flush(async (mutation) => {
       try {
         await request(`/shopping-list/item/${mutation.itemId}`, {
@@ -380,4 +431,32 @@ export const mobileApi = {
     request<ApiResponse<void>>('/household/leave', {
       method: 'POST',
     }),
+
+  // 9. AI Assistant Endpoints
+  generateLeftoverRecipe: (payload: {
+    ingredients: string[];
+    cuisine?: string;
+    maxCookTimeMinutes?: number;
+    equipment?: string;
+    servings?: number;
+    additionalNotes?: string;
+  }) =>
+    request<{ success: boolean; data: any; isAiGenerated: boolean; fallback: boolean; note?: string }>(
+      '/ai/leftover-recipe',
+      {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      }
+    ),
+
+  customizePlanWithIntent: (prompt: string) =>
+    request<{ success: boolean; data: IMealPlan; summary: string; isAiGenerated: boolean; fallback: boolean }>(
+      '/ai/plan-intent',
+      {
+        method: 'POST',
+        body: JSON.stringify({ prompt }),
+      }
+    ),
 };
+
+export const api = mobileApi;

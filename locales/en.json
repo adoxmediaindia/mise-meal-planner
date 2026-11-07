@@ -2,8 +2,8 @@
   "lang": "en",
   "label": "English",
   "meta": {
-    "title": "mise · Meal Planner App | Weekly Meal Plans, Recipes & Meal Prep",
-    "description": "mise is a meal planner app for weekly meal planning, recipes, meal prep and food prep. Build a personalised meal plan, get recipe ideas, and one smart shopping list for your supermarket."
+    "title": "Meltto · Meal Planner App | Weekly Meal Plans, Recipes & Meal Prep",
+    "description": "Meltto is a meal planner app for weekly meal planning, recipes, meal prep and food prep. Build a personalised meal plan, get recipe ideas, and one smart shopping list for your supermarket."
   },
   "regional": {
     "marqueeStores": [
@@ -26,10 +26,10 @@
     "toggleMenu": "Toggle menu"
   },
   "hero": {
-    "eyebrow": "🥗 Welcome to mise",
+    "eyebrow": "🥗 Welcome to Meltto",
     "titleLead": "Eat well,",
     "titleAccent": "stress less.",
-    "sub": "mise is a meal planner for weekly meal planning and meal prep. Plan dinners around your budget, your cravings, and what's already in your kitchen. Build your week and one smart shopping list in about five minutes.",
+    "sub": "Meltto is a meal planner for weekly meal planning and meal prep. Plan dinners around your budget, your cravings, and what's already in your kitchen. Build your week and one smart shopping list in about five minutes.",
     "chipList": "One shopping list",
     "chipBudget": "Under budget",
     "appStoreSmall": "Download on the",
@@ -52,7 +52,7 @@
   "how": {
     "eyebrow": "How it works",
     "title": "Dinner sorted in seconds",
-    "sub": "No spreadsheets, no scrolling recipe blogs. Just tell mise a little about you and it does the planning.",
+    "sub": "No spreadsheets, no scrolling recipe blogs. Just tell Meltto a little about you and it does the planning.",
     "step1Title": "Pick your shop",
     "step1Body": "{{step1Shops}}. Prices and lists are tuned to where you actually shop.",
     "step2Title": "Set your preferences",
@@ -65,7 +65,7 @@
   "showcaseA": {
     "eyebrow": "Personalised",
     "title": "A plan built around you, not a generic template",
-    "body": "mise learns your budget, the people you're feeding, your dietary needs and the vibes you fancy this week. Every plan is yours.",
+    "body": "Meltto learns your budget, the people you're feeding, your dietary needs and the vibes you fancy this week. Every plan is yours.",
     "tick1": "Budget-aware meals that hit your weekly spend",
     "tick2": "Diet and allergy safe for veggie, vegan, pescatarian, gluten-free and more",
     "tick3": "Cooks for your kitchen, from air fryer to hob-only and slow cooker",
@@ -89,13 +89,13 @@
     "f2Title": "One smart list",
     "f2Body": "All your ingredients combined into a single list, grouped for your supermarket.",
     "f3Title": "Budget-aware",
-    "f3Body": "Set your weekly spend and mise plans meals that keep you inside it.",
+    "f3Body": "Set your weekly spend and Meltto plans meals that keep you inside it.",
     "f4Title": "Diet and allergy filters",
     "f4Body": "Veggie, vegan, pescatarian, gluten-free and allergen avoidance baked in.",
     "f5Title": "Swap and regenerate",
     "f5Body": "Not feeling a meal? Swap it, or regenerate the whole week in a tap.",
     "f6Title": "Cooks for your kitchen",
-    "f6Body": "Tell mise your equipment and recipes adapt, from air fryer to hob-only and more.",
+    "f6Body": "Tell Meltto your equipment and recipes adapt, from air fryer to hob-only and more.",
     "f7Title": "Explore by cuisine",
     "f7Body": "Browse a world of recipes and pull favourites straight into your plan.",
     "f8Title": "Less food waste",
@@ -105,7 +105,7 @@
   },
   "vibesSection": {
     "eyebrow": "Meal vibes",
-    "title": "Tell mise the mood, get the meals",
+    "title": "Tell Meltto the mood, get the meals",
     "sub": "Pick a few vibes and your plan leans into exactly what you fancy this week.",
     "quickEasy": "Speedy Meals",
     "lowCalorie": "Low Calorie",
@@ -124,7 +124,7 @@
   "reviewsSection": {
     "eyebrow": "★★★★★ Loved by home cooks",
     "title": "Real weeknights, sorted",
-    "sub": "A few words from people who let mise plan their week.",
+    "sub": "A few words from people who let Meltto plan their week.",
     "r1Title": "ok this actually helped??",
     "r1Body": "didnt think i needed another app but grocery spend is definitely down. idk maybe $25–30? wife sends me the list now so im not just wandering aldi adding stuff",
     "r1User": "aldishopper_tx",
@@ -147,12 +147,12 @@
   "faqSection": {
     "eyebrow": "FAQ",
     "title": "Good to know",
-    "q1": "Which supermarkets does mise support?",
-    "a1": "mise is built around major supermarkets including {{faqStores}} and more, with support for stores across several countries. Your plan and shopping list are tuned to the shop you choose.",
+    "q1": "Which supermarkets does Meltto support?",
+    "a1": "Meltto is built around major supermarkets including {{faqStores}} and more, with support for stores across several countries. Your plan and shopping list are tuned to the shop you choose.",
     "q2": "Can it handle dietary needs and allergies?",
-    "a2": "Yes. Set preferences like vegetarian, vegan, pescatarian or gluten-free and flag allergens to avoid. Please always check ingredient labels before cooking. mise can't guarantee allergen safety.",
-    "q3": "How much does mise cost?",
-    "a3": "mise is a subscription. You can explore the app and see how it works, with full planning unlocked by a subscription managed through the App Store or Google Play. Cancel anytime from your store account.",
+    "a2": "Yes. Set preferences like vegetarian, vegan, pescatarian or gluten-free and flag allergens to avoid. Please always check ingredient labels before cooking. Meltto can't guarantee allergen safety.",
+    "q3": "How much does Meltto cost?",
+    "a3": "Meltto is a subscription. You can explore the app and see how it works, with full planning unlocked by a subscription managed through the App Store or Google Play. Cancel anytime from your store account.",
     "q4": "Do I have to cook every meal on my plan?",
     "a4": "Not at all. Plan as many or as few nights as you like, up to seven. Swap any meal you don't fancy, regenerate the whole week, or just cook the ones you like. Your shopping list updates to match.",
     "q5": "Will it really save me money?",
@@ -162,7 +162,7 @@
   },
   "cta": {
     "title": "Your week's dinners, sorted tonight",
-    "sub": "Download mise and get a personalised plan and shopping list in about five minutes."
+    "sub": "Download Meltto and get a personalised plan and shopping list in about five minutes."
   },
   "footer": {
     "about": "Personalised weekly meal plans and one smart shopping list, built around your budget and your supermarket. Eat well, stress less.",
@@ -174,7 +174,7 @@
     "privacy": "Privacy Policy",
     "terms": "Terms of Service",
     "contact": "Contact",
-    "rights": "TEGS Labs Ltd. All rights reserved.",
+    "rights": "Meltto. All rights reserved.",
     "madeIn": "Made with 🥬 in the UK · *Savings vary by household and shop."
   }
 }

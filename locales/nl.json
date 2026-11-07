@@ -2,8 +2,8 @@
   "lang": "nl",
   "label": "Nederlands",
   "meta": {
-    "title": "mise · App voor maaltijdplanning | Wekelijkse maaltijdplannen, recepten en maaltijdvoorbereiding",
-    "description": "mise is een app voor het plannen van maaltijden, recepten, het voorbereiden van maaltijden en het klaarmaken van eten. Stel een persoonlijk maaltijdplan samen, doe inspiratie op voor recepten en maak één slimme boodschappenlijst voor de supermarkt."
+    "title": "Meltto · App voor maaltijdplanning | Wekelijkse maaltijdplannen, recepten en maaltijdvoorbereiding",
+    "description": "Meltto is een app voor het plannen van maaltijden, recepten, het voorbereiden van maaltijden en het klaarmaken van eten. Stel een persoonlijk maaltijdplan samen, doe inspiratie op voor recepten en maak één slimme boodschappenlijst voor de supermarkt."
   },
   "regional": {
     "marqueeStores": [
@@ -33,10 +33,10 @@
     "toggleMenu": "Menu openen/sluiten"
   },
   "hero": {
-    "eyebrow": "🥗 Welkom bij mise",
+    "eyebrow": "🥗 Welkom bij Meltto",
     "titleLead": "Eet lekker,",
     "titleAccent": "Maak je niet zo druk.",
-    "sub": "mise is een maaltijdplanner voor het wekelijks plannen en voorbereiden van maaltijden. Stel je avondmaaltijden samen op basis van je budget, waar je zin in hebt en wat je al in huis hebt. Stel in ongeveer vijf minuten je weekmenu en één slimme boodschappenlijst samen.",
+    "sub": "Meltto is een maaltijdplanner voor het wekelijks plannen en voorbereiden van maaltijden. Stel je avondmaaltijden samen op basis van je budget, waar je zin in hebt en wat je al in huis hebt. Stel in ongeveer vijf minuten je weekmenu en één slimme boodschappenlijst samen.",
     "chipList": "Eén boodschappenlijstje",
     "chipBudget": "Binnen het budget",
     "appStoreSmall": "Download op de",
@@ -72,7 +72,7 @@
   "showcaseA": {
     "eyebrow": "Gepersonaliseerd",
     "title": "Een plan dat helemaal op jou is afgestemd, geen standaard sjabloon",
-    "body": "mise houdt rekening met je budget, de mensen voor wie je kookt, je voedingsbehoeften en de sfeer waar je deze week zin in hebt. Elk plan is helemaal op jou afgestemd.",
+    "body": "Meltto houdt rekening met je budget, de mensen voor wie je kookt, je voedingsbehoeften en de sfeer waar je deze week zin in hebt. Elk plan is helemaal op jou afgestemd.",
     "tick1": "Prijsbewuste maaltijden die binnen je wekelijkse budget passen",
     "tick2": "Geschikt voor vegetariërs, veganisten, pescatarianen, mensen met een glutenvrij dieet en meer, en veilig voor mensen met allergieën",
     "tick3": "Kookapparaten voor in je keuken, van de heteluchtfriteuse tot modellen die alleen op de kookplaat werken en de slowcooker",
@@ -154,12 +154,12 @@
   "faqSection": {
     "eyebrow": "Veelgestelde vragen",
     "title": "Goed om te weten",
-    "q1": "Welke supermarkten ondersteunt mise?",
+    "q1": "Welke supermarkten ondersteunt Meltto?",
     "a1": "De app is opgezet rond grote supermarktketens, waaronder Albert Heijn, Jumbo, Lidl, Aldi, PLUS, Dirk en nog veel meer, en biedt ondersteuning voor winkels in verschillende landen. Je abonnement en boodschappenlijstje worden afgestemd op de winkel die je kiest.",
     "q2": "Wordt er rekening gehouden met dieetwensen en allergieën?",
-    "a2": "Ja. Stel je voorkeuren in, zoals vegetarisch, veganistisch, pescatarisch of glutenvrij, en geef aan welke allergenen je wilt vermijden. Controleer altijd de ingrediëntenlijsten voordat je gaat koken. mise kan de veiligheid met betrekking tot allergenen niet garanderen.",
-    "q3": "Hoeveel kost een mise?",
-    "a3": "mise is een abonnement. Je kunt de app verkennen en ontdekken hoe deze werkt; de volledige planningsfuncties worden ontgrendeld via een abonnement dat je via de App Store of Google Play kunt beheren. Je kunt het abonnement op elk moment opzeggen via je account in de app store.",
+    "a2": "Ja. Stel je voorkeuren in, zoals vegetarisch, veganistisch, pescatarisch of glutenvrij, en geef aan welke allergenen je wilt vermijden. Controleer altijd de ingrediëntenlijsten voordat je gaat koken. Meltto kan de veiligheid met betrekking tot allergenen niet garanderen.",
+    "q3": "Hoeveel kost Meltto?",
+    "a3": "Meltto is een abonnement. Je kunt de app verkennen en ontdekken hoe deze werkt; de volledige planningsfuncties worden ontgrendeld via een abonnement dat je via de App Store of Google Play kunt beheren. Je kunt het abonnement op elk moment opzeggen via je account in de app store.",
     "q4": "Moet ik elke maaltijd uit mijn schema zelf bereiden?",
     "a4": "Helemaal niet. Plan zoveel of zo weinig overnachtingen als je wilt, tot maximaal zeven. Vervang elke maaltijd waar je geen zin in hebt, stel de hele week opnieuw samen, of kook gewoon de maaltijden die je lekker vindt. Je boodschappenlijstje wordt automatisch aangepast.",
     "q5": "Zal ik hiermee echt geld besparen?",
@@ -181,7 +181,7 @@
     "privacy": "Privacybeleid",
     "terms": "Gebruiksvoorwaarden",
     "contact": "Contact",
-    "rights": "TEGS Labs Ltd. Alle rechten voorbehouden.",
+    "rights": "Meltto. Alle rechten voorbehouden.",
     "madeIn": "Gemaakt met 🥬 in het Verenigd Koninkrijk · *De besparingen variëren per huishouden en winkel."
   }
 }

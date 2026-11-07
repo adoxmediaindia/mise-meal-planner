@@ -28,7 +28,21 @@ export const seedDatabase = async (): Promise<void> => {
     const insertedRecipes = await Recipe.find();
     console.log(`[Seed] Successfully synchronized ${insertedRecipes.length} recipes.`);
 
-    // Upsert Demo User
+    // Upsert Demo Users
+    const melttoEmail = 'chef@meltto.com';
+    let melttoUser = await User.findOne({ email: melttoEmail });
+    if (!melttoUser) {
+      melttoUser = await User.create({
+        name: 'Chef Alex',
+        email: melttoEmail,
+        password: 'Password123!',
+        subscriptionTier: 'pro',
+        subscriptionStatus: 'active',
+        favorites: [insertedRecipes[0]._id, insertedRecipes[1]._id],
+      });
+      console.log('[Seed] Created demo user: chef@meltto.com');
+    }
+
     const demoEmail = 'chef@misemealplanner.com';
     let demoUser = await User.findOne({ email: demoEmail });
     if (!demoUser) {

@@ -11,6 +11,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   toggleFavoriteInState: (recipeId: string) => void;
   refreshUser: () => Promise<void>;
+  updateOnboarding?: (data: any) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -19,16 +20,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<IUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const syncGuestOnboarding = async () => {
+    try {
+      const guestRaw = localStorage.getItem('meltto_onboarding_guest');
+      if (guestRaw) {
+        const guestData = JSON.parse(guestRaw);
+        // Ensure empty/null/undefined guest fields do NOT overwrite existing user data
+        const payload: Record<string, any> = {};
+        for (const [key, val] of Object.entries(guestData)) {
+          if (val !== null && val !== undefined && val !== '') {
+            payload[key] = val;
+          }
+        }
+        if (Object.keys(payload).length > 0) {
+          const res = await api.updateOnboarding(payload);
+          // Only clear guest data AFTER successful server sync
+          if (res && (res.success || res.data)) {
+            localStorage.removeItem('meltto_onboarding_guest');
+          }
+        } else {
+          localStorage.removeItem('meltto_onboarding_guest');
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to sync guest onboarding (persisting for retry):', e);
+      // Retain guest data in localStorage so sync can be retried
+    }
+  };
+
   const refreshUser = async () => {
     try {
       const res = await api.getMe();
       if (res.data) {
         setUser({
+          ...res.data,
           id: res.data._id || res.data.id,
-          name: res.data.name,
-          email: res.data.email,
-          subscriptionTier: res.data.subscriptionTier,
-          subscriptionStatus: res.data.subscriptionStatus,
           favorites: res.data.favorites?.map((f: any) => (typeof f === 'string' ? f : f._id)) || [],
         });
       }
@@ -50,13 +76,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setStoredToken(res.data.token);
       }
       setUser({
+        ...res.data,
         id: res.data.id || res.data._id,
-        name: res.data.name,
-        email: res.data.email,
-        subscriptionTier: res.data.subscriptionTier,
-        subscriptionStatus: res.data.subscriptionStatus,
         favorites: res.data.favorites || [],
       });
+      await syncGuestOnboarding();
+      await refreshUser();
     }
   };
 
@@ -67,13 +92,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setStoredToken(res.data.token);
       }
       setUser({
+        ...res.data,
         id: res.data.id || res.data._id,
-        name: res.data.name,
-        email: res.data.email,
-        subscriptionTier: res.data.subscriptionTier,
-        subscriptionStatus: res.data.subscriptionStatus,
         favorites: [],
       });
+      await syncGuestOnboarding();
+      await refreshUser();
+    }
+  };
+
+  const updateOnboarding = async (data: any) => {
+    if (user) {
+      const res = await api.updateOnboarding(data);
+      if (res.data) {
+        setUser((prev) => (prev ? { ...prev, ...res.data } : null));
+      }
+    } else {
+      const existing = localStorage.getItem('meltto_onboarding_guest');
+      const parsed = existing ? JSON.parse(existing) : {};
+      const updated = { ...parsed, ...data };
+      localStorage.setItem('meltto_onboarding_guest', JSON.stringify(updated));
     }
   };
 
@@ -105,6 +143,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         logout,
         toggleFavoriteInState,
         refreshUser,
+        updateOnboarding,
       }}
     >
       {children}

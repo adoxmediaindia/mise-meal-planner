@@ -26,8 +26,10 @@ export const normalizeOrigin = (origin: string): string => {
   return origin.trim().replace(/\/+$/, '');
 };
 
-// Default allowed origins: production Vercel frontend and local development
+// Default allowed origins: production Meltto frontend, legacy Vercel frontend, and local development
 const DEFAULT_ALLOWED_ORIGINS = [
+  'https://meltto.com',
+  'https://www.meltto.com',
   'https://mise-meal-planner-pi.vercel.app',
   'http://localhost:5173',
   'http://127.0.0.1:5173',
@@ -92,6 +94,7 @@ app.options('*', cors(corsOptions));
 app.use(cookieParser());
 app.use(
   express.json({
+    limit: '100kb',
     verify: (req: any, _res, buf) => {
       req.rawBody = buf;
     },
@@ -128,7 +131,7 @@ if (process.env.NODE_ENV !== 'test') {
       const { SEED_RECIPES } = await import('./seeds/recipeData.js');
       const count = await Recipe.countDocuments();
       if (count < SEED_RECIPES.length) {
-        console.log(`[Mise API] Synchronizing base recipe catalogue (${count}/${SEED_RECIPES.length} present)...`);
+        console.log(`[Meltto API] Synchronizing base recipe catalogue (${count}/${SEED_RECIPES.length} present)...`);
         for (const recipe of SEED_RECIPES) {
           await Recipe.findOneAndUpdate(
             { slug: recipe.slug },
@@ -137,24 +140,24 @@ if (process.env.NODE_ENV !== 'test') {
           );
         }
         const seededCount = await Recipe.countDocuments();
-        console.log(`[Mise API] Successfully synchronized ${seededCount} recipes.`);
+        console.log(`[Meltto API] Successfully synchronized ${seededCount} recipes.`);
       }
     } catch (seedErr) {
-      console.warn('[Mise API] Warning: Recipe auto-seed failed:', seedErr);
+      console.warn('[Meltto API] Warning: Recipe auto-seed failed:', seedErr);
     }
 
     const server = app.listen(PORT, () => {
-      console.log(`[Mise API] Server running on http://localhost:${PORT}`);
+      console.log(`[Meltto API] Server running on http://localhost:${PORT}`);
     });
 
     const gracefulShutdown = (signal: string) => {
-      console.log(`[Mise API] Received ${signal}. Shutting down gracefully...`);
+      console.log(`[Meltto API] Received ${signal}. Shutting down gracefully...`);
       server.close(async () => {
         try {
           await mongoose.connection.close();
-          console.log('[Mise API] MongoDB connection and server closed.');
+          console.log('[Meltto API] MongoDB connection and server closed.');
         } catch (e) {
-          console.error('[Mise API] Error during shutdown:', e);
+          console.error('[Meltto API] Error during shutdown:', e);
         }
         process.exit(0);
       });

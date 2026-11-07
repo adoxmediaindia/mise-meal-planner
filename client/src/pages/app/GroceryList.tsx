@@ -73,7 +73,7 @@ export const GroceryList: React.FC = () => {
 
   const handleCopyList = () => {
     if (items.length === 0) return;
-    let text = `🛒 Mise Grocery List (${shoppingList?.supermarket || 'Supermarket'})\n\n`;
+    let text = `🛒 Meltto Grocery List (${shoppingList?.supermarket || 'Supermarket'})\n\n`;
 
     aisles.forEach((aisle) => {
       const aisleItems = items.filter((i) => i.aisle === aisle);

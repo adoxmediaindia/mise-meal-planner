@@ -29,7 +29,7 @@ export class EmailService {
    * Resolves configured sender address or defaults to Resend testing sender.
    */
   public static getFromAddress(): string {
-    return process.env.EMAIL_FROM || 'Mise Meal Planner <onboarding@resend.dev>';
+    return process.env.EMAIL_FROM || 'Meltto <onboarding@resend.dev>';
   }
 
   /**
@@ -102,14 +102,14 @@ export class EmailService {
     try {
       const resend = this.getClient();
       const from = this.getFromAddress();
-      const displayName = name && name.trim() ? name.trim() : 'Mise Cook';
+      const displayName = name && name.trim() ? name.trim() : 'Meltto Cook';
 
       const html = `
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Reset your Mise password</title>
+  <title>Reset your Meltto password</title>
 </head>
 <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #faf9f5; padding: 40px 20px; color: #2a2a2a; margin: 0;">
   <table width="100%" border="0" cellspacing="0" cellpadding="0">
@@ -118,7 +118,7 @@ export class EmailService {
         <table width="560" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border-radius: 16px; padding: 40px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #e5e5dc;">
           <tr>
             <td align="center" style="padding-bottom: 24px;">
-              <h1 style="color: #0D5C3A; margin: 0; font-size: 28px; font-weight: 700;">Mise</h1>
+              <h1 style="color: #0D5C3A; margin: 0; font-size: 28px; font-weight: 700;">Meltto</h1>
               <p style="color: #767571; margin: 4px 0 0 0; font-size: 14px;">Smart Meal Planning & Grocery Engine</p>
             </td>
           </tr>
@@ -129,7 +129,7 @@ export class EmailService {
                 Hi ${displayName},
               </p>
               <p style="font-size: 15px; line-height: 24px; color: #4a4a48; margin: 0 0 24px 0;">
-                We received a request to reset your password for your Mise Meal Planner account. Click the button below to choose a new password:
+                We received a request to reset your password for your Meltto account. Click the button below to choose a new password:
               </p>
             </td>
           </tr>
@@ -163,7 +163,7 @@ export class EmailService {
       `.trim();
 
       const text = `
-Mise Meal Planner - Password Reset
+Meltto - Password Reset
 
 Hi ${displayName},
 
@@ -177,7 +177,7 @@ This link expires in 1 hour and can only be used once. If you did not request a 
       const response = await resend.emails.send({
         from,
         to,
-        subject: 'Reset your Mise Meal Planner password',
+        subject: 'Reset your Meltto password',
         html,
         text,
       });

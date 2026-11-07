@@ -210,6 +210,13 @@ export const PlanOverview: React.FC = () => {
   const budget = plan?.budgetLimit || 40;
   const costPercentage = Math.min(100, Math.round((cost / budget) * 100));
 
+  const currencySymbol =
+    preferences?.currencyCode === 'INR' || user?.currencyCode === 'INR' ? '₹'
+    : preferences?.currencyCode === 'GBP' || user?.currencyCode === 'GBP' ? '£'
+    : preferences?.currencyCode === 'EUR' || user?.currencyCode === 'EUR' ? '€'
+    : preferences?.currencyCode === 'BRL' || user?.currencyCode === 'BRL' ? 'R$'
+    : '$';
+
   const itemsBought = shoppingList?.itemsBoughtCount || 0;
   const totalItems = shoppingList?.totalItemsCount || 0;
 
@@ -317,7 +324,7 @@ export const PlanOverview: React.FC = () => {
                 <Sparkles className="w-4 h-4" />
               </div>
               <div>
-                <h3 className="font-bold text-sm text-[#4A154B]">Tailor Week with Chef Mise AI</h3>
+                <h3 className="font-bold text-sm text-[#4A154B]">Tailor Week with Chef Meltto AI</h3>
                 <p className="text-xs text-[#6B21A8]">Describe your week in plain English. We'll pick safe catalog recipes and update your shopping list.</p>
               </div>
             </div>
@@ -371,7 +378,7 @@ export const PlanOverview: React.FC = () => {
                       to="/app/account"
                       className="inline-block mt-2 font-bold text-[#8bc020] hover:underline"
                     >
-                      Upgrade to Mise Pro for 50 AI queries / week &rarr;
+                      Upgrade to Meltto Pro for 50 AI queries / week &rarr;
                     </Link>
                   )}
                 </div>
@@ -413,7 +420,7 @@ export const PlanOverview: React.FC = () => {
         <div className="p-4 bg-[#F5F3FF] border border-[#DDD6FE] rounded-[18px] text-xs text-[#5B21B6] flex items-center justify-between shadow-xs animate-fadeIn">
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-[#7C3AED] shrink-0" />
-            <span><strong className="font-bold">Chef Mise AI:</strong> {aiSummary}</span>
+            <span><strong className="font-bold">Chef Meltto AI:</strong> {aiSummary}</span>
           </div>
           <button
             type="button"
@@ -431,7 +438,7 @@ export const PlanOverview: React.FC = () => {
         <div className="bg-white rounded-[22px] p-4 shadow-[0_4px_16px_rgba(42,42,42,0.06)] border border-[#2a2a2a]/5 flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#9a9a94]">
-              Est. Cost
+              Planned for {preferences?.supermarket || 'Supermarket'}
             </span>
             {/* Household size stepper */}
             <div className="flex items-center gap-1 bg-gray-50 border border-gray-200 rounded-lg px-1.5 py-0.5 text-xs font-bold">
@@ -454,8 +461,8 @@ export const PlanOverview: React.FC = () => {
             </div>
           </div>
           <div className="my-1.5 font-sans">
-            <span className="text-2xl font-black text-[#2a2a2a]">${cost.toFixed(2)}</span>
-            <span className="text-sm font-bold text-[#9a9a94]"> / ${budget}</span>
+            <span className="text-2xl font-black text-[#2a2a2a]">{currencySymbol}{cost.toFixed(2)}</span>
+            <span className="text-sm font-bold text-[#9a9a94]"> / {currencySymbol}{budget}</span>
           </div>
           {/* Progress bar */}
           <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
@@ -471,16 +478,16 @@ export const PlanOverview: React.FC = () => {
         {/* Grocery List Shortcut Card */}
         <Link
           to="/app/grocery-list"
-          className="bg-[#ddf4ff] rounded-[22px] p-4 shadow-[0_4px_16px_rgba(42,42,42,0.06)] border border-[#7dd3fc]/30 flex flex-col justify-between hover:bg-[#d0f0ff] transition-all cursor-pointer select-none group"
+          className="bg-[#9ed034] rounded-[22px] p-4 shadow-[0_4px_16px_rgba(42,42,42,0.06)] border border-[#8bc020]/30 flex flex-col justify-between hover:bg-[#92c52e] transition-all cursor-pointer select-none group"
         >
-          <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#0284c7]">
+          <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#1f2a06] opacity-80">
             Tap to view
           </span>
           <div>
-            <h4 className="font-sans font-black text-lg text-[#0f3a52] leading-tight group-hover:text-[#0369a1] transition-colors">
+            <h4 className="font-sans font-black text-lg text-[#1f2a06] leading-tight">
               Grocery list
             </h4>
-            <p className="text-xs font-bold text-[#0284c7] mt-0.5">
+            <p className="text-xs font-bold text-[#1f2a06] mt-0.5 opacity-90">
               {itemsBought}/{totalItems} items bought
             </p>
           </div>

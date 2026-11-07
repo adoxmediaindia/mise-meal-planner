@@ -9,7 +9,7 @@ export const ScreenshotGallery: React.FC = () => {
     { src: '/assets/screens/en/preferences-vibes.png', alt: 'Meal vibe picker' },
     { src: '/assets/screens/en/explore-by-cuisine.png', alt: 'Explore by cuisine' },
     { src: '/assets/screens/en/recipe-detail.png', alt: 'Recipe detail' },
-    { src: '/assets/screens/en/preferences-setup.png', alt: 'Setting up preferences in mise' },
+    { src: '/assets/screens/en/preferences-setup.png', alt: 'Setting up preferences in Meltto' },
     { src: '/assets/screens/en/spaghetti-bolognese-recipe-detail.png', alt: 'Spaghetti bolognese recipe' },
   ];
 

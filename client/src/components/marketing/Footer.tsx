@@ -11,8 +11,8 @@ export const Footer: React.FC = () => {
       <div className="container">
         <div className="footer-grid">
           <div className="footer-about">
-            <Link to="/" className="brand" aria-label="mise home">
-              <img src="/assets/mise-logo.png" alt="mise" />
+            <Link to="/" className="brand" aria-label="Meltto home">
+              <img src="/assets/meltto-logo.svg" alt="Meltto" />
             </Link>
             <p>
               {t(
@@ -57,7 +57,7 @@ export const Footer: React.FC = () => {
             <Link to="/support">{t('footer.support', 'Support')}</Link>
             <Link to="/privacy">{t('footer.privacy', 'Privacy Policy')}</Link>
             <Link to="/terms">{t('footer.terms', 'Terms of Service')}</Link>
-            <a href="mailto:support@misemealplanner.com">{t('footer.contact', 'Contact')}</a>
+            <a href="mailto:support@meltto.com">{t('footer.contact', 'Contact')}</a>
           </div>
         </div>
 
